@@ -1,0 +1,1350 @@
+settings
+{
+	main
+	{
+		Description: "Work cooperatively to escape death row. Escape prison with all heroes to finish the game.\n\nThis is the Global Effects version of PRISON ESCAPE."
+		Mode Name: "PRISON ESCAPE [GFX]"
+	}
+
+	lobby
+	{
+		Allow Players Who Are In Queue: Yes
+		Map Rotation: After A Game
+		Match Voice Chat: Enabled
+		Max Spectators: 12
+		Max Team 1 Players: 9
+		Max Team 2 Players: 0
+		Return To Lobby: Never
+		Swap Teams After Match: No
+	}
+
+	modes
+	{
+		Skirmish
+		{
+			disabled maps
+			{
+				Workshop Chamber
+				Workshop Expanse
+				Workshop Expanse Night
+				Workshop Green Screen
+				Workshop Island
+				Workshop Island Night
+			}
+		}
+
+		General
+		{
+			Allow Hero Switching: Off
+			Enemy Health Bars: Off
+			Game Mode Start: Immediately
+			Health Pack Respawn Time Scalar: 10%
+			Hero Limit: Off
+			Respawn As Random Hero: On
+			Respawn Time Scalar: 40%
+			Spawn Health Packs: Enabled
+		}
+	}
+
+	heroes
+	{
+		Team 1
+		{
+			Bastion
+			{
+				Configuration: Tank Weapon Knockback Scalar: 300%
+				Health: 135%
+				Infinite Ultimate Duration: On
+				Self-Repair Maximum Time: 200%
+				Self-Repair Recharge Rate: 150%
+			}
+		}
+
+		Team 2
+		{
+			Bastion
+			{
+				Configuration: Tank Weapon Knockback Scalar: 300%
+				Health: 135%
+				Infinite Ultimate Duration: On
+				No Ammunition Requirement: On
+				Quick Melee: Off
+				Self-Repair Maximum Time: 200%
+				Self-Repair Recharge Rate: 150%
+				Ultimate Ability Configuration: Tank: Off
+			}
+		}
+
+		General
+		{
+			Ability Cooldown Time: 30%
+			No Ammunition Requirement: On
+			Ultimate Generation: 10%
+			Ultimate Generation - Combat: 0%
+			Ultimate Generation - Passive: 0%
+
+			Ana
+			{
+				Sleep Dart Cooldown Time: 500%
+			}
+
+			Baptiste
+			{
+				Healing Received: 10%
+				Health: 10%
+				Immortality Field Cooldown Time: 15%
+				No Ammunition Requirement: On
+				Projectile Gravity: 0%
+				Projectile Speed: 500%
+				Regenerative Burst Cooldown Time: 15%
+			}
+
+			Hanzo
+			{
+				Lunge Distance Scalar: 125%
+				Storm Arrows Quantity: 12
+			}
+
+			Mercy
+			{
+				Secondary Fire: Off
+				Weapons Enabled: Caduceus Staff Only
+			}
+
+			Orisa
+			{
+				Ultimate Ability Supercharger: Off
+			}
+
+			Roadhog
+			{
+				Chain Hook: Off
+			}
+
+			Sombra
+			{
+				Translocator Cooldown Time: 0%
+			}
+
+			Symmetra
+			{
+				Sentry Turret: Off
+			}
+
+			Torbjörn
+			{
+				Deploy Turret: Off
+				Overload Cooldown Time: 250%
+				Overload Duration Scalar: 500%
+				Weapons Enabled: Forge Hammer Only
+			}
+
+			Winston
+			{
+				Infinite Ultimate Duration: On
+				Primal Rage Melee Knockback Scalar: 200%
+			}
+
+			Wrecking Ball
+			{
+				Roll Always Active: On
+			}
+
+			Zarya
+			{
+				Jump Vertical Speed: 140%
+				Particle Cannon Secondary Knockback Scalar: 200%
+			}
+
+			Zenyatta
+			{
+				Healing Dealt: 200%
+				Health: 175%
+				Orb of Discord: Off
+			}
+		}
+	}
+
+	extensions
+	{
+		Buff and Debuff Sounds
+		Explosion Sounds
+		Play More Effects
+		Spawn More Dummy Bots
+	}
+}
+
+variables
+{
+	global:
+		0: ScoreboardArray
+		1: EndPosition
+		2: BastionBotCount
+		3: IsGEEnabledWS
+		4: GEChoice
+		5: IsDVADebug
+		6: IsDebugMode
+		7: kills
+		8: GEText
+		9: JumpPadLocList
+		10: JumpPadPowerList
+		11: HeroList
+		12: First
+		13: Second
+		14: Third
+		15: AllBastionPositions
+		16: TempVar
+		17: IsGEIntervalRandomWS
+		18: GEIntervalWS
+		20: IsBastionLastHeroWS
+		21: BacktrackMinMaxListWS
+		22: HeroListTypeWS
+		23: BacktrackDeathsWS
+		25: HeroDataSaveIndexWS
+		26: TempVar2
+		27: GameSettingsHUDWT
+		28: SavedIndex
+		29: SavedHero
+		30: SavedDeaths
+		31: SavedWinners
+		32: SavedBacktrackDeaths
+		33: BlizzWorldSpawnLoc
+		34: WinnerCountToCycleWS
+		35: HollywoodSpawns
+		36: RBPDefaultMaps
+		37: isTeleporterEnabled
+		38: JumpPadRadius
+		39: TempVar3
+		40: TempVar4
+		41: GEMinPlayerReq
+		42: GEName
+		43: GEHelpText
+		44: GameSettingTextVec
+		45: CanStartGE
+		46: IsGETimerStart
+		47: GEEndTime
+		48: GEWaitTime
+		49: GERadius
+		50: GECarriers
+		51: GEViewAngle
+		52: GERequiredNum
+		53: WinnerHeroesList
+		54: GEBallPosition
+		55: GEBallID
+		56: GEMeleeDistance
+		57: GEMultiChoice
+		58: GESpawnDistance
+		59: GECurReqNum
+		60: GETarget
+		61: GEBallSpeed
+		62: WinnerHeroesRingStats
+		63: WinnerResetRingStats
+		65: IsBastionUpgradableWS
+		66: BastionUpgradeChoice
+		67: BastionPosLocType
+		68: BastionPosDistance
+		69: BastionPosIntervalMinMaxWS
+		70: BastionPosTypeWS
+		71: GEAffectedPlayer
+		72: RBPIndex
+		73: BacktrackSteps
+		74: GEMaxNum
+		75: GEMaxBacktrackSteps
+		76: CurWinnerCount
+		77: GameOptTextVec
+		78: GameOptTextSpacing
+		80: GEPatrolChoice
+		81: GETempVar5
+		82: GEToggles
+
+	player:
+		0: IsWinner
+		2: temp
+		3: CurrentHero
+		5: Deaths
+		6: DVADebugStates
+		8: BacktrackDeaths
+		9: randBacktrackNum
+		10: hasPlayedSaveMessage
+		11: playerToPushBack
+		13: GEHelpTextIDs
+		14: GETimerID
+		15: GEID
+		16: GEHUDID
+		17: GETempVar
+		18: GECount
+		19: GEIsAffectedPlayer
+		20: TargetHero
+		21: loopNum
+		23: IsGETBagStand
+		24: IsGETBagCrouched
+		26: Enemy
+		27: AimPosition
+		28: TurnSpeed
+		29: TempAimPosition
+		30: EnemyUnSeen
+		31: InvisibleText
+		32: Invis
+		33: GEIsHeroCarrier
+		34: GEHeroRider
+		35: GEHeroCarrier
+		36: GEGuardianAngel
+		37: GEHumanProtect
+		38: GESoulMate
+		39: GEIsRecentlyHurt
+		40: GEIsTagger
+		41: GEIsTagged
+		42: GELagType
+		43: GELagDistance
+		44: GELagPos
+		45: WinnerHeroCursor
+		46: IndieHeroList
+		47: temp2
+		48: BUTelePos
+		49: BUTeleType
+		50: BUTeleDistance
+		51: WinnerDeathID
+}
+
+subroutines
+{
+	0: SavePlayerData
+	1: DestroyDVAMechHUD
+	2: PlaySaveUnlockedMSG
+	3: SpawnAtAltLoc
+	4: InitCustomHeroOrder
+	5: SpawnFriendlySoldier
+	6: IncrementGameSettingsPos
+	7: SelectGlobalEffect
+	8: StartGETimer
+	9: EndGlobalEffect
+	10: GESetPongBallSpeed
+	11: GEStartTypeA
+	12: SpawnPatrolLoc
+	13: GESpecificEndCleanUp
+	14: GEStartTypeB
+	15: GEStartTypeC
+	16: GEStartTypeD
+	17: GEStartTypeE
+	18: GEStartTypeF
+	19: GEStartTypeG
+	20: GEStartTypeH
+	21: GEResetHeroCarrierStats
+	22: GEResetHeroRiderStats
+	23: GECombineMaxHealth
+	24: GESelectThrottle
+	25: GEStartTypeI
+	26: GEStartTypeJ
+	27: AddBacktrackDeath
+	28: SelectBastionUpgrade
+	29: BastionUpgradeReset
+	30: SetNewBastionPosition
+	31: ApplyWinnerStats
+	32: SetupGameSettingsText
+	33: CreateJumpPads
+	34: CreateTeleporters
+	35: PromoteHeroRider
+	36: SetKeyLocation
+	37: EscapeWithKey
+	38: SelectWindDir
+	39: SetWindSpeedRate
+	40: BeforeNewBastionUpgrade
+	41: SelectAPatrol
+	42: CleanUpPatrol
+	43: SetPatrolDuration
+	44: NewBastionPosOnEscape
+	45: RBPCheckAndSet
+}
+
+rule("Workshop Settings")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	actions
+	{
+		Global.BacktrackDeathsWS = Workshop Setting Integer(Custom String("Backtracking"), Custom String(
+			"# of deaths before backtracking (0=disable)"), 8, 0, 999, 0);
+		Global.HeroDataSaveIndexWS = Workshop Setting Integer(Custom String("Game"), Custom String(
+			"Unlock Save feature At Hero Number (0=disable)"), 5, 0, 32, 0) - 1;
+		Global.BacktrackMinMaxListWS = Empty Array;
+		Global.BacktrackMinMaxListWS[0] = Workshop Setting Integer(Custom String("Backtracking"), Custom String(
+			"Minimum random number to backtrack by"), 1, 1, 31, 0);
+		Global.BacktrackMinMaxListWS[1] = Workshop Setting Integer(Custom String("Backtracking"), Custom String(
+			"Maximum random number to backtrack by"), 3, 1, 31, 1);
+		Global.BacktrackMinMaxListWS = Array(Min(Global.BacktrackMinMaxListWS[0], Global.BacktrackMinMaxListWS[1]), Max(
+			Global.BacktrackMinMaxListWS[0], Global.BacktrackMinMaxListWS[1]));
+		Global.IsGEEnabledWS = Workshop Setting Toggle(Custom String("Global Effect Mode"), Custom String("Enabled"), True, 0);
+		Global.GEIntervalWS = Workshop Setting Integer(Custom String("Global Effect Mode"), Custom String("Interval (in seconds)"), 60, 20,
+			999, 1);
+		Global.IsGEIntervalRandomWS = Workshop Setting Toggle(Custom String("Global Effect Mode"), Custom String(
+			"Randomize the interval.  Between (0.5 * [INTERVAL]) & (1.5 * [INTERVAL])"), True, 2);
+		Global.IsBastionUpgradableWS = Workshop Setting Toggle(Custom String("Global Effect Mode"), Custom String(
+			"Can Bastions Receive Upgrades"), True, 3);
+		Global.IsBastionLastHeroWS = Workshop Setting Toggle(Custom String("Hero Ordering"), Custom String(
+			"Set Bastion as the last hero [random/independent only]"), False, 0);
+		Global.HeroListTypeWS = Workshop Setting Combo(Custom String("Hero Ordering"), Custom String("Hero order to use"), 2, Array(
+			Custom String("Normal"), Custom String("Random"), Custom String("Independent"), Custom String("Custom")), 0);
+		Global.BastionPosIntervalMinMaxWS[0] = Workshop Setting Integer(Custom String("Bastion Position"), Custom String(
+			"Minimum change interval (random only)"), 70, 30, 1000, 1);
+		Global.BastionPosIntervalMinMaxWS[1] = Workshop Setting Integer(Custom String("Bastion Position"), Custom String(
+			"Maximum change interval (random only)"), 190, 30, 1000, 2);
+		Global.BastionPosIntervalMinMaxWS = Array(Min(Global.BastionPosIntervalMinMaxWS[0], Global.BastionPosIntervalMinMaxWS[1]), Max(
+			Global.BastionPosIntervalMinMaxWS[0], Global.BastionPosIntervalMinMaxWS[1]));
+		Global.BastionPosTypeWS = Workshop Setting Combo(Custom String("Bastion Position"), Custom String("Position Type"), 1, Array(
+			Custom String("Original"), Custom String("Random"), Custom String("Random Once"), Custom String("On Escape")), 0);
+		Global.WinnerCountToCycleWS = Workshop Setting Integer(Custom String("Game"), Custom String(
+			"Winners needed to cycle map(0=disabled)"), 2, 0, 100, 0);
+	}
+}
+
+rule("Init custom hero list")
+{
+	event
+	{
+		Subroutine;
+		InitCustomHeroOrder;
+	}
+
+	actions
+	{
+		Global.HeroList = Empty Array;
+		Global.HeroList[0] = Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 1"), Sombra, 0);
+		Global.HeroList[1] = Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 2"), Tracer, 0);
+		Global.HeroList[2] = Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 3"), Reaper, 0);
+		Global.HeroList[3] = Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 4"), Symmetra, 0);
+		Global.HeroList[4] = Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 5"), Moira, 0);
+		Global.HeroList[5] = Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 6"), Doomfist, 0);
+		Global.HeroList[6] = Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 7"), Genji, 0);
+		Global.HeroList[7] = Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 8"), D.Va, 0);
+		Global.HeroList[8] = Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 9"), Echo, 0);
+		Global.HeroList[9] = Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 10"), Brigitte, 1);
+		Global.HeroList[10] = Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 11"), Widowmaker, 1);
+		Global.HeroList[11] = Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 12"), Mei, 1);
+		Global.HeroList[12] = Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 13"), Baptiste, 1);
+		Global.HeroList[13] = Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 14"), Soldier: 76, 1);
+		Global.HeroList[14] = Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 15"), Wrecking Ball, 1);
+		Global.HeroList[15] = Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 16"), Hanzo, 1);
+		Global.HeroList[16] = Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 17"), Ashe, 1);
+		Global.HeroList[17] = Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 18"), Cassidy, 1);
+		Global.HeroList[18] = Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 19"), Lúcio, 1);
+		Global.HeroList[19] = Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 20"), Winston, 2);
+		Global.HeroList[20] = Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 21"), Junkrat, 2);
+		Global.HeroList[21] = Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 22"), Pharah, 2);
+		Global.HeroList[22] = Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 23"), Mercy, 2);
+		Global.HeroList[23] = Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 24"), Reinhardt, 2);
+		Global.HeroList[24] = Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 25"), Zarya, 2);
+		Global.HeroList[25] = Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 26"), Orisa, 2);
+		Global.HeroList[26] = Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 27"), Sigma, 2);
+		Global.HeroList[27] = Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 28"), Torbjörn, 2);
+		Global.HeroList[28] = Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 29"), Ana, 2);
+		Global.HeroList[29] = Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 30"), Zenyatta, 3);
+		Global.HeroList[30] = Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 31"), Roadhog, 3);
+		Global.HeroList[31] = Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 32"), Bastion, 3);
+	}
+}
+
+rule("init winner hero list")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		Global.WinnerHeroesList == Null;
+	}
+
+	actions
+	{
+		Global.WinnerHeroesList = Array(Hero(Ana), Hero(Brigitte), Hero(Cassidy), Hero(D.Va), Hero(Genji), Hero(Lúcio), Hero(Mercy), Hero(
+			Moira), Hero(Orisa), Hero(Reinhardt), Hero(Sigma), Hero(Soldier: 76), Hero(Winston), Hero(Zarya), Hero(Zenyatta));
+	}
+}
+
+rule("init hero list sequence")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	actions
+	{
+		"HeroListTypeWS: 0 = Normal, 1 = Random Order, 2 = Independent Order, 3 = Custom Order"
+		If(Global.HeroListTypeWS == 3);
+			Call Subroutine(InitCustomHeroOrder);
+		Else;
+			Global.HeroList = Array(Hero(Sombra), Hero(Tracer), Hero(Reaper), Hero(Symmetra), Hero(Moira), Hero(Doomfist), Hero(Genji), Hero(
+				D.Va), Hero(Echo), Hero(Brigitte), Hero(Widowmaker), Hero(Mei), Hero(Baptiste), Hero(Soldier: 76), Hero(Wrecking Ball), Hero(
+				Hanzo), Hero(Ashe), Hero(Cassidy), Hero(Lúcio), Hero(Winston), Hero(Junkrat), Hero(Pharah), Hero(Mercy), Hero(Reinhardt), Hero(
+				Zarya), Hero(Orisa), Hero(Sigma), Hero(Torbjörn), Hero(Ana), Hero(Zenyatta), Hero(Roadhog), Hero(Bastion));
+			If(Global.HeroListTypeWS == 1);
+				Global.HeroList = Randomized Array(Global.HeroList);
+				If(Global.IsBastionLastHeroWS == True);
+					If(Last Of(Global.HeroList) != Hero(Bastion));
+						Global.TempVar = Last Of(Global.HeroList);
+						Global.HeroList[Index Of Array Value(Global.HeroList, Hero(Bastion))] = Global.TempVar;
+						Global.HeroList[Count Of(Global.HeroList) - 1] = Hero(Bastion);
+	}
+}
+
+rule("Global Stats & inits")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	actions
+	{
+		Disable Inspector Recording;
+		Disable Built-In Game Mode Completion;
+		Create HUD Text(All Players(All Teams), Null, Null, Custom String("WORKSHOP.CODES/PRISON-ESCAPE-GFX | SERVER CPU: {0}%",
+			Round To Integer(Server Load / 255 * 100, To Nearest)), Left, -1000, Color(White), Color(White), Color(White),
+			Visible To and String, Default Visibility);
+		Set Slow Motion(90);
+		Create HUD Text(All Players(All Teams), Null, Null, Custom String("Server hosted \"{1}\" for {0} seconds!\r\n \r\n ",
+			Round To Integer(Total Time Elapsed, To Nearest), Current Map), Left, -1, Color(White), Color(White), Color(White),
+			Visible To and String, Default Visibility);
+		Create HUD Text(All Players(All Teams), Null, Null, Custom String(" \n \nEscape Status:"), Left, 10, Color(White), Color(White),
+			Color(Aqua), Visible To and String, Default Visibility);
+		Create HUD Text(All Players(All Teams), Null, Null, Custom String("{0}", !Has Spawned(Global.First) ? Custom String(" ")
+			: Custom String("1. {0} {1} - {2}", Hero Icon String(Hero Of(Global.First)), Global.First, Global.First.TargetHero + 1)), Left,
+			11, Color(White), Color(White), Color(Green), Visible To and String, Default Visibility);
+		Create HUD Text(All Players(All Teams), Null, Null, Custom String("{0}", !Has Spawned(Global.Second) ? Custom String(" ")
+			: Custom String("2. {0} {1} - {2}", Hero Icon String(Hero Of(Global.Second)), Global.Second, Global.Second.TargetHero + 1)),
+			Left, 12, Color(White), Color(White), Color(Yellow), Visible To and String, Default Visibility);
+		Create HUD Text(All Players(All Teams), Null, Null, Custom String("{0}", !Has Spawned(Global.Third) ? Custom String(" ")
+			: Custom String("3. {0} {1} - {2}", Hero Icon String(Hero Of(Global.Third)), Global.Third, Global.Third.TargetHero + 1)), Left,
+			13, Color(White), Color(White), Color(Orange), Visible To and String, Default Visibility);
+		Create HUD Text(All Players(All Teams), Null, Null, Custom String("PRISON ESCAPE [GFX]"), Top, 0, Color(White), Color(White),
+			Color(White), Visible To and String, Default Visibility);
+		Create HUD Text(All Players(All Teams), Null, Custom String("Code: N0B1R"), Null, Top, 1, Color(White), Color(White), Color(White),
+			Visible To and String, Default Visibility);
+		"Holds kill stats for each bastion"
+		Global.kills = Array(0, 0, 0, 0, 0, 0);
+		Global.SavedWinners = Empty Array;
+		Global.SavedIndex = Empty Array;
+		Global.SavedHero = Empty Array;
+		Global.SavedBacktrackDeaths = Empty Array;
+		Global.JumpPadRadius = 2.500;
+		Global.BacktrackSteps = 1;
+		"[0] Location,[1] Radius, [2] RingID, [3] Text Height"
+		Global.WinnerHeroesRingStats = Array(Null, 1.750, Null, Vector(0, 1, 0));
+		Global.WinnerResetRingStats = Array(Null, 1.750, Null, Vector(0, 1, 0));
+		"Maps with Players spawns using the game's default locations "
+		Global.RBPDefaultMaps = Array(Map(Busan), Map(Eichenwalde), Map(Eichenwalde Halloween), Map(Hanamura), Map(Hanamura Winter), Map(
+			Havana), Map(Horizon Lunar Colony), Map(King's Row), Map(King's Row Winter), Map(Numbani), Map(Oasis), Map(Paris), Map(Rialto),
+			Map(Route 66), Map(Temple of Anubis), Map(Watchpoint: Gibraltar), Map(Volskaya Industries));
+		"0 = Clandestine; 1 = Big Barrier; 2 = Bastion Drop; 3 = Die With Me; 4 = More Health; 5 = Leap Frog; 6 = I Need Healing; 7 = Spotlight"
+		Global.GEToggles = Array(False, False);
+	}
+}
+
+rule("Init independent hero list")
+{
+	event
+	{
+		Player Joined Match;
+		Team 1;
+		All;
+	}
+
+	conditions
+	{
+		Global.HeroListTypeWS == 2;
+		Event Player.IndieHeroList == Null;
+	}
+
+	actions
+	{
+		Event Player.IndieHeroList = Randomized Array(Global.HeroList);
+		If(Global.IsBastionLastHeroWS == True);
+			If(Last Of(Event Player.IndieHeroList) != Hero(Bastion));
+				Event Player.temp2 = Last Of(Event Player.IndieHeroList);
+				Event Player.IndieHeroList[Index Of Array Value(Event Player.IndieHeroList, Hero(Bastion))] = Event Player.temp2;
+				Event Player.IndieHeroList[Count Of(Event Player.IndieHeroList) - 1] = Hero(Bastion);
+	}
+}
+
+disabled rule("map setting (global arr p, global b, global d, global c) - [template]")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		"Insert map name here"
+		Current Map == Null;
+	}
+
+	actions
+	{
+		"Total amount of Bastion Bots to spawn"
+		Global.BastionBotCount = 6;
+		Global.AllBastionPositions = Array(Null, Null, Null, Null, Null, Null);
+		"Goal position"
+		Global.EndPosition = Left - Left;
+		Start Forcing Spawn Room(Team 1, 2);
+		"Location of winners end game rings"
+		Global.WinnerHeroesRingStats[0] = Vector(0, 0, 0);
+		Global.WinnerResetRingStats[0] = Vector(0, 0, 0);
+		"The text above the endgame rings for winners"
+		Global.WinnerHeroesRingStats[3] = Vector(0, 0, 0);
+		Global.WinnerResetRingStats[3] = Vector(0, 0, 0);
+		"Base coordinates for world game settings HUD"
+		Global.GameSettingTextVec = Vector(0, 0, 0);
+	}
+}
+
+disabled rule("Teleporter position init (global T) [template]")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		Global.T == Empty Array;
+		Current Map == Null;
+	}
+
+	actions
+	{
+		"Even indexes (0, 2, ...)  are portal senders. Odd indexes (1, 3, ...) are portal receivers. Example: 0 index sends players to 1 index position."
+		Global.T = Array(Vector(0, 0, 0), Vector(0, 0, 0));
+	}
+}
+
+disabled rule("Jump pad position init (global J)(global K) [template]")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		Global.JumpPadLocList == Empty Array;
+		Current Map == Null;
+	}
+
+	actions
+	{
+		"Location of the jump pad"
+		Modify Global Variable(JumpPadLocList, Append To Array, Left - Left);
+		"How powerful the jump pad should be?"
+		Modify Global Variable(JumpPadPowerList, Append To Array, Left - Left);
+	}
+}
+
+rule("Cycle to next map (Map Cycling)")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		Global.WinnerCountToCycleWS != 0;
+		Global.CurWinnerCount >= Global.WinnerCountToCycleWS;
+	}
+
+	actions
+	{
+		Big Message(All Players(Team 1), Custom String("     Winner Limit Reached!\n\nMap will cycle in 60 seconds!"));
+		Wait(3, Abort When False);
+		Wait(45, Abort When False);
+		Big Message(All Players(Team 1), Custom String("Map will cycle in 15 seconds!"));
+		Wait(2, Abort When False);
+		Wait(12, Abort When False);
+		Big Message(All Players(Team 1), Custom String("Cycling Map!"));
+		Wait(3, Abort When False);
+		Restart Match;
+	}
+}
+
+rule("map setting (global arr p, global b, global d, global c) - oasis(all)")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		"Insert map name here"
+		Current Map == Map(Oasis);
+	}
+
+	actions
+	{
+		"Total amount of Bastion Bots to spawn"
+		Global.BastionBotCount = 6;
+		Start Forcing Spawn Room(Team 1, 2);
+		"REQUIRED for control maps (ilios, lijiang tower, nepal, etc)"
+		Wait Until(Is True For Any(All Players(Team 1), Has Spawned(Current Array Element)), 99999);
+		"University"
+		If(Count Of(Players Within Radius(Vector(-193.743, 21.300, 91.204), 40, Team 1, Off)) != 0);
+			"The text above the endgame rings for winners"
+			Global.WinnerHeroesRingStats[3] = Vector(0, 0.750, 0);
+			Global.AllBastionPositions = Array(Vector(-168.599, 22.258, 68.245), Vector(-180.717, 16.300, 25.092), Vector(-183.567, 16.905,
+				9.355), Vector(-200.438, 20.300, -4.854), Vector(-185.219, 16.296, -25.005), Vector(-175.947, 20.261, -48.694));
+			"University goal position"
+			Global.EndPosition = Vector(-188.063, 19.298, -63.705) - Vector(0, 2, 0);
+			"Location of winners end game rings"
+			Global.WinnerHeroesRingStats[0] = Vector(-178.052, 20.350, 81.100);
+			Global.WinnerResetRingStats[0] = Vector(-197.983, 20.350, 81.201);
+			"Base coordinates for world game settings HUD"
+			Global.GameSettingTextVec = Vector(-188.171, 20.300, 81.549);
+		"Garden"
+		Else If(Count Of(Players Within Radius(Vector(203.074, 8.038, -185.630), 40, Team 1, Off)) != 0);
+			"The text above the endgame rings for winners"
+			Global.WinnerHeroesRingStats[3] = Vector(0, 1, 0);
+			Global.AllBastionPositions = Array(Vector(144.649, 4.488, -184.348), Vector(151.869, 8.800, -225.833), Vector(131.907, 16.581,
+				-238.408), Vector(127.361, 8.772, -233.725), Vector(131.369, 10.300, -267.255), Vector(108.870, 13.853, -277.224));
+			"Garden goal position"
+			Global.EndPosition = Vector(71.347, 9.120, -279.602) - Vector(0, 2, 0);
+			"Base coordinates for world game settings HUD"
+			Global.GameSettingTextVec = Vector(192.857, 9.038, -196.085);
+			"Location of winners end game rings"
+			Global.WinnerHeroesRingStats[0] = Vector(202.107, 6.719, -196.908);
+			Global.WinnerResetRingStats[0] = Vector(204.878, 7.247, -199.526);
+		"City Center"
+		Else If(Count Of(Players Within Radius(Vector(66.241, 2.300, 324.072), 40, Team 1, Off)) != 0);
+			Global.AllBastionPositions = Array(Vector(95.535, 2.200, 272.691), Vector(143.308, 3.448, 247.397), Vector(139.550, 11.298,
+				251.107), Vector(147.400, 11.299, 243.810), Vector(209.108, 2.303, 213.907), Vector(157.325, 5.232, 213.538));
+			"City Center goal position"
+			Global.EndPosition = Vector(178.628, 2.276, 174.641) - Vector(0, 2, 0);
+			"Location of winners end game rings"
+			Global.WinnerHeroesRingStats[0] = Vector(73.560, 2.300, 327.104);
+			Global.WinnerResetRingStats[0] = Vector(65.313, 2.300, 314.109);
+			"Base coordinates for world game settings HUD"
+			Global.GameSettingTextVec = Vector(84.820, 2.148, 310.593);
+			"The text above the endgame rings for winners"
+			Global.WinnerHeroesRingStats[3] = Vector(0, 0.750, 0);
+		End;
+		Global.WinnerResetRingStats[3] = Vector(0, 0.750, 0);
+	}
+}
+
+rule("map setting (global arr p, global b, global d, global c) - nepal(all)")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		"Insert map name here"
+		Current Map == Map(Nepal);
+	}
+
+	actions
+	{
+		"Total amount of Bastion Bots to spawn"
+		Global.BastionBotCount = 6;
+		Start Forcing Spawn Room(Team 1, 2);
+		"REQUIRED for control maps (ilios, lijiang tower, nepal, etc)"
+		Wait Until(Is True For Any(All Players(Team 1), Has Spawned(Current Array Element)), 99999);
+		"Shrine"
+		If(Count Of(Players Within Radius(Vector(-41.729, 19.079, -93.923), 30, Team 1, Off)) != 0);
+			Global.AllBastionPositions = Array(Vector(-70.186, 20.076, -40.441), Vector(-43.379, 19.417, -20.224), Vector(-43.716, 19.442,
+				20.212), Vector(-52.963, 20.606, 44.634), Vector(-72.738, 12.476, 47.462), Vector(-30.099, 16.585, 51.459));
+			"Shrine goal position"
+			Global.EndPosition = Vector(-45.233, 16.300, 72.137) - Vector(0, 2, 0);
+			"Location of winners end game rings"
+			Global.WinnerHeroesRingStats[0] = Vector(-45.895, 18.079, -88.959);
+			Global.WinnerResetRingStats[0] = Vector(-49.186, 18.079, -89.027);
+			"Base coordinates for world game settings HUD"
+			Global.GameSettingTextVec = Vector(-37.556, 18.946, -88.505);
+		"Sanctum"
+		Else If(Count Of(Players Within Radius(Vector(82.236, 133.730, -90.834), 30, Team 1, Off)) != 0);
+			Global.AllBastionPositions = Array(Vector(92.358, 140.810, -47.405), Vector(84.485, 131.300, -12.016), Vector(107.637, 133.300,
+				18.065), Vector(85.505, 131.675, 40.858), Vector(94.228, 138.254, 47.119), Vector(70.771, 129.837, 66.950));
+			"Sanctum goal position"
+			Global.EndPosition = Vector(81.344, 131.245, 70.547) - Vector(0, 2, 0);
+			"Base coordinates for world game settings HUD"
+			Global.GameSettingTextVec = Vector(86.482, 133.595, -84.782);
+			"Location of winners end game rings"
+			Global.WinnerHeroesRingStats[0] = Vector(78.553, 132.729, -85.378);
+			Global.WinnerResetRingStats[0] = Vector(75.105, 132.730, -85.197);
+		"Village"
+		Else If(Count Of(Players Within Radius(Vector(-160.389, -94.271, -84.060), 30, Team 1, Off)) != 0);
+			Global.AllBastionPositions = Array(Vector(-179.755, -88.685, -26.069), Vector(-204.373, -89.729, -12.570), Vector(-204.457,
+				-89.727, 12.440), Vector(-195.496, -93.630, 45.155), Vector(-163.005, -88.821, 43.442), Vector(-147.271, -83.869, 50.381));
+			"Village goal position"
+			Global.EndPosition = Vector(-167.446, -97.633, 68.291) - Vector(0, 2, 0);
+			"Location of winners end game rings"
+			Global.WinnerHeroesRingStats[0] = Vector(-166.073, -95.271, -81.014);
+			Global.WinnerResetRingStats[0] = Vector(-168.919, -95.271, -82.581);
+			"Base coordinates for world game settings HUD"
+			Global.GameSettingTextVec = Vector(-159.261, -94.705, -76.760);
+		End;
+		"The text above the endgame rings for winners"
+		Global.WinnerHeroesRingStats[3] = Vector(0, 1, 0);
+		Global.WinnerResetRingStats[3] = Vector(0, 1, 0);
+	}
+}
+
+rule("map setting (global arr p, global b, global d, global c) - ilios(all)")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		"Insert map name here"
+		Current Map == Map(Ilios);
+	}
+
+	actions
+	{
+		"Total amount of Bastion Bots to spawn"
+		Global.BastionBotCount = 6;
+		Start Forcing Spawn Room(Team 1, 2);
+		"REQUIRED for control maps (ilios, lijiang tower, nepal, etc)"
+		Wait Until(Is True For Any(All Players(Team 1), Has Spawned(Current Array Element)), 99999);
+		"Well"
+		If(Count Of(Players Within Radius(Vector(-152.014, -1.104, -93.120), 30, Team 1, Off)) != 0);
+			Global.AllBastionPositions = Array(Vector(-181.480, 0.300, -50.903), Vector(-197.571, 11.191, -13.818), Vector(-223.199, 6.427,
+				7.091), Vector(-236.558, 6.300, -9.246), Vector(-262.055, -3.701, 31.839), Vector(-213.939, 3.300, 6.564));
+			"Well goal position"
+			Global.EndPosition = Vector(-271.140, -3.585, 33.279) - Vector(0, 2, 0);
+			"Location of winners end game rings"
+			Global.WinnerHeroesRingStats[0] = Vector(-157.019, -1.355, -89.945);
+			Global.WinnerResetRingStats[0] = Vector(-160.308, -1.355, -91.403);
+			"Base coordinates for world game settings HUD"
+			Global.GameSettingTextVec = Vector(-149.658, -1.587, -86.416);
+		"Ruins"
+		Else If(Count Of(Players Within Radius(Vector(131.609, 64.254, -159.135), 30, Team 1, Off)) != 0);
+			Global.AllBastionPositions = Array(Vector(91.562, 65.583, -174.582), Vector(66.927, 68.505, -169.264), Vector(28.390, 62.689,
+				-148.659), Vector(-1.205, 65.524, -147.564), Vector(-33.746, 65.611, -173.263), Vector(-65.140, 61.666, -168.727));
+			"Tower goal position"
+			Global.EndPosition = Vector(-51.248, 67.259, -158.371) - Vector(0, 2, 0);
+			"Base coordinates for world game settings HUD"
+			Global.GameSettingTextVec = Vector(127.484, 63.920, -154.025);
+			"Location of winners end game rings"
+			Global.WinnerHeroesRingStats[0] = Vector(128.139, 63.254, -161.875);
+			Global.WinnerResetRingStats[0] = Vector(128.072, 63.254, -165.528);
+		"Town"
+		Else If(Count Of(Players Within Radius(Vector(322.692, -21.520, 42.832), 30, Team 1, Off)) != 0);
+			Global.AllBastionPositions = Array(Vector(355.021, -19.264, -4.231), Vector(330.019, -16.347, -30.497), Vector(350.081, -15.408,
+				-56.854), Vector(304.817, -16.160, -73.229), Vector(294.972, -19.341, -75.245), Vector(276.960, -20.361, -83.065));
+			"Town goal position"
+			Global.EndPosition = Vector(290.229, -23.291, -88.556) - Vector(0, 3, 0);
+			"Location of winners end game rings"
+			Global.WinnerHeroesRingStats[0] = Vector(327.717, -21.520, 39.609);
+			Global.WinnerResetRingStats[0] = Vector(331.080, -21.520, 41.121);
+			"Base coordinates for world game settings HUD"
+			Global.GameSettingTextVec = Vector(320.494, -21.755, 36);
+		End;
+		"The text above the endgame rings for winners"
+		Global.WinnerHeroesRingStats[3] = Vector(0, 0.250, 0);
+		Global.WinnerResetRingStats[3] = Vector(0, 0.250, 0);
+	}
+}
+
+rule("map setting (global arr p, global b, global d, global c) - lijiang tower(all)(lunar new year)")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		(Current Map == Map(Lijiang Tower) || Current Map == Map(Lijiang Tower Lunar New Year)) == True;
+	}
+
+	actions
+	{
+		"Total amount of Bastion Bots to spawn"
+		Global.BastionBotCount = 6;
+		Start Forcing Spawn Room(Team 1, 2);
+		"REQUIRED for control maps (ilios, lijiang tower, nepal, etc)"
+		Wait Until(Is True For Any(All Players(Team 1), Has Spawned(Current Array Element)), 99999);
+		"Data Center"
+		If(Count Of(Players Within Radius(Vector(61.699, 268.879, 342.773), 30, Team 1, Off)) != 0);
+			Global.AllBastionPositions = Array(Vector(30.128, 270.151, 282.442), Vector(2.043, 280.231, 312.979), Vector(-0.085, 273.800,
+				280.044), Vector(-2.029, 280.231, 313.200), Vector(-38.268, 268.300, 295.176), Vector(-28.765, 271.300, 340.361));
+			"Data Center goal position"
+			Global.EndPosition = Vector(-51.280, 266.300, 332.484) - Vector(0, 2, 0);
+			"Location of winners end game rings"
+			Global.WinnerHeroesRingStats[0] = Vector(59.981, 268.878, 336.868);
+			Global.WinnerResetRingStats[0] = Vector(62.727, 268.878, 334.382);
+			"Base coordinates for world game settings HUD"
+			Global.GameSettingTextVec = Vector(54.159, 268.545, 342.362);
+		"Tower"
+		Else If(Count Of(Players Within Radius(Vector(79.167, 97.863, 144.773), 30, Team 1, Off)) != 0);
+			Global.AllBastionPositions = Array(Vector(46.896, 96.452, 136.808), Vector(-0.070, 95.551, 158.403), Vector(0.028, 95.550,
+				141.938), Vector(-36.303, 96.450, 137.238), Vector(53.242, 97.554, 169.195), Vector(-54.166, 95.551, 159.799));
+			"Tower goal position"
+			Global.EndPosition = Vector(-65.245, 95.552, 146.885) - Vector(0, 2, 0);
+			"Base coordinates for world game settings HUD"
+			Global.GameSettingTextVec = Vector(75.006, 97.780, 150.128);
+			"Location of winners end game rings"
+			Global.WinnerHeroesRingStats[0] = Vector(74.991, 98.113, 142.005);
+			Global.WinnerResetRingStats[0] = Vector(74.509, 98.113, 138.469);
+		"Shrine"
+		Else If(Count Of(Players Within Radius(Vector(78.273, 6.208, -30.659), 30, Team 1, Off)) != 0);
+			Global.AllBastionPositions = Array(Vector(59.281, 3.741, -12.995), Vector(6.914, 0.741, -39.069), Vector(-2.149, 9.756, -52.371),
+				Vector(-34.343, 0.741, -12.038), Vector(-57.683, 3.745, -12.967), Vector(-53.844, 4.400, -30.280));
+			"Shrine goal position"
+			Global.EndPosition = Vector(-60.904, 7.743, -14.404) - Vector(0, 2, 0);
+			"Location of winners end game rings"
+			Global.WinnerHeroesRingStats[0] = Vector(74.181, 5.900, -34.525);
+			Global.WinnerResetRingStats[0] = Vector(74.792, 5.900, -37.957);
+			"Base coordinates for world game settings HUD"
+			Global.GameSettingTextVec = Vector(72.166, 5.786, -26.690);
+		End;
+		"The text above the endgame rings for winners"
+		Global.WinnerHeroesRingStats[3] = Vector(0, 0, 0);
+		Global.WinnerResetRingStats[3] = Vector(0, 0, 0);
+	}
+}
+
+rule("map setting (global arr p, global b, global d, global c) - busan(all)")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		"Insert map name here"
+		Current Map == Map(Busan);
+	}
+
+	actions
+	{
+		"Total amount of Bastion Bots to spawn"
+		Global.BastionBotCount = 6;
+		Start Forcing Spawn Room(Team 1, 2);
+		"REQUIRED for control maps (ilios, lijiang tower, nepal, etc)"
+		Wait Until(Is True For Any(All Players(Team 1), Has Spawned(Current Array Element)), 99999);
+		"Factory"
+		If(Count Of(Players Within Radius(Vector(290.902, 12.396, 213.099), 30, Team 1, Off)) != 0);
+			Global.AllBastionPositions = Array(Vector(251.444, 13.395, 221.373), Vector(223.880, 19.332, 214.017), Vector(51.997, 7.309,
+				-101.671), Vector(177.838, 12.395, 275.812), Vector(186.569, 13.395, 248.653), Vector(194.799, 22.393, 246.564));
+			"Factory goal position"
+			Global.EndPosition = Vector(163.996, 11.397 - 1.320, 259.067);
+			"Location of winners end game rings"
+			Global.WinnerHeroesRingStats[0] = Vector(292.254, 12.494, 219.868);
+			Global.WinnerResetRingStats[0] = Vector(295.837, 12.494, 218.427);
+			"Base coordinates for world game settings HUD"
+			Global.GameSettingTextVec = Vector(295.322, 11.595, 221.749);
+		"Plaza"
+		Else If(Count Of(Players Within Radius(Vector(-31.724, 18.300, -125.575), 30, Team 1, Off)) != 0);
+			Global.AllBastionPositions = Array(Vector(26.382, 23.990, -110.239), Vector(34.637, 16.300, -122.903), Vector(51.761, 7.309,
+				-101.209), Vector(69.110, 16.300, -122.896), Vector(77.047, 24.050, -110.099), Vector(107.594, 18.314, -148.811));
+			"Plaza goal position"
+			Global.EndPosition = Vector(112.557, 17.246 - 1.320, -125.478);
+			"Base coordinates for world game settings HUD"
+			Global.GameSettingTextVec = Vector(-43.861, 17.820, -125.438);
+			"Location of winners end game rings"
+			Global.WinnerHeroesRingStats[0] = Vector(-43.677, 18.253, -122.800);
+			Global.WinnerResetRingStats[0] = Vector(-43.634, 18.253, -128.069);
+		"Dojo"
+		Else If(Count Of(Players Within Radius(Vector(-426.165, 12.407, 165.979), 30, Team 1, Off)) != 0);
+			Global.AllBastionPositions = Array(Vector(-365.499, 15.267, 130.545), Vector(-328.646, 18.403, 167.589), Vector(-329.006, 16.203,
+				138.519), Vector(-307.520, 11.953, 139.141), Vector(-291.570, 13.334, 157.068), Vector(-252.461, 10.655, 152.426));
+			"Dojo goal position"
+			Global.EndPosition = Vector(-262.352, 10.460 - 1.320, 161.585);
+			"Location of winners end game rings"
+			Global.WinnerHeroesRingStats[0] = Vector(-411.092, 11.462, 174.379);
+			Global.WinnerResetRingStats[0] = Vector(-412.805, 11.462, 154.558);
+			"Base coordinates for world game settings HUD"
+			Global.GameSettingTextVec = Vector(-410.566, 11.463, 164.413);
+		End;
+		"The text above the endgame rings for winners"
+		Global.WinnerHeroesRingStats[3] = Vector(0, 0, 0);
+		Global.WinnerResetRingStats[3] = Vector(0, 0, 0);
+	}
+}
+
+rule("map setting (global arr p, global b, global d, global c) - hanamura (winter)")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		(Current Map == Map(Hanamura) || Current Map == Map(Hanamura Winter)) == True;
+	}
+
+	actions
+	{
+		Global.AllBastionPositions = Array(Vector(-14.835, 7.540, -94.010), Vector(-23.327, -1, -47.090), Vector(13.117, 7.170, -50.253),
+			Vector(24.812, 6, 9.457), Vector(46.742, 6, -13.957), Vector(68.033, -1.900, 12.950));
+		Global.EndPosition = Vector(68.166, -2, -0.310);
+		Start Forcing Spawn Room(Team 1, 2);
+		"Total amount of Bastion Bots to spawn"
+		Global.BastionBotCount = 6;
+		"Location of winners end game rings"
+		Global.WinnerHeroesRingStats[0] = Vector(-30.205, 0.500, -105.354);
+		Global.WinnerResetRingStats[0] = Vector(-37.960, 0.500, -97.845);
+		"The text above the endgame rings for winners"
+		Global.WinnerHeroesRingStats[3] = Vector(0, 2, 0);
+		Global.WinnerResetRingStats[3] = Vector(0, 2, 0);
+		"Base coordinates for world game settings HUD"
+		Global.GameSettingTextVec = Vector(-33.825, 1.750, -101.375);
+	}
+}
+
+rule("map setting (global arr p, global b, global d, global c) - gibraltar")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		Current Map == Map(Watchpoint: Gibraltar);
+	}
+
+	actions
+	{
+		Global.AllBastionPositions = Array(Vector(70.099, 9, 26.803), Vector(81.759, 6, 3.200), Vector(64.465, 9.690, -32.138), Vector(
+			32.373, 3, -50.866), Vector(31.113, 7.300, -89.871), Vector(41.383, 4, -124.788));
+		Global.EndPosition = Vector(46.558, 1, -146.808);
+		Start Forcing Spawn Room(Team 1, 2);
+		"Total amount of Bastion Bots to spawn"
+		Global.BastionBotCount = 6;
+		"Location of winners end game rings"
+		Global.WinnerHeroesRingStats[0] = Vector(82.842, -8.700, 44.751);
+		Global.WinnerResetRingStats[0] = Vector(77.831, -8.700, 49.404);
+		"The text above the endgame rings for winners"
+		Global.WinnerHeroesRingStats[3] = Vector(0, 2, 0);
+		Global.WinnerResetRingStats[3] = Vector(0, 2, 0);
+		"Base coordinates for world game settings HUD"
+		Global.GameSettingTextVec = Vector(77.495, -9.676, 44.697);
+	}
+}
+
+rule("map setting (global arr p, global b, global d, global c) - numbani")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		Current Map == Map(Numbani);
+	}
+
+	actions
+	{
+		Global.AllBastionPositions = Array(Vector(179.102, 4.250, 13.115), Vector(154.224, -4.180, 13.616), Vector(118.815, 4.250, 3.556),
+			Vector(78.459, 6.250, -11.527), Vector(-49.872, 11.283, -43.701), Vector(7.964, 1.270, -6.488));
+		Global.EndPosition = Vector(6.984, -1, 5.778);
+		Start Forcing Spawn Room(Team 1, 1);
+		"Base coordinates for world game settings HUD"
+		Global.GameSettingTextVec = Vector(241.550, 1.665, 22.677);
+		"Total amount of Bastion Bots to spawn"
+		Global.BastionBotCount = 6;
+		"Location of winners end game rings"
+		Global.WinnerHeroesRingStats[0] = Vector(238.587, 1.455, 18.412);
+		Global.WinnerResetRingStats[0] = Vector(238.587, 1.505, 26.771);
+	}
+}
+
+rule("map setting (global arr p, global b, global d, global c) - volskaya industries")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		Current Map == Map(Volskaya Industries);
+	}
+
+	actions
+	{
+		Global.AllBastionPositions = Array(Vector(-87.972, 2.020, 38.919), Vector(-67.835, 10.390, 49.479), Vector(-63.809, -0.410,
+			77.730), Vector(-11.250, 1.270, 76.356), Vector(-16.279, 2.200, 41.017), Vector(-6.364, 8.240, 35.514));
+		Global.EndPosition = Vector(-11.477, -6, 19.868);
+		Start Forcing Spawn Room(Team 1, 0);
+		"Total amount of Bastion Bots to spawn"
+		Global.BastionBotCount = 6;
+		"Location of winners end game rings"
+		Global.WinnerHeroesRingStats[0] = Vector(-108.629, -0.680, 27.504);
+		Global.WinnerResetRingStats[0] = Vector(-117.908, -0.680, 36.678);
+		"Base coordinates for world game settings HUD"
+		Global.GameSettingTextVec = Vector(-112.517, -1.680, 32.352);
+	}
+}
+
+rule("map setting (global arr p, global b, global d, global c) - route 66")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		Current Map == Map(Route 66);
+	}
+
+	actions
+	{
+		Global.AllBastionPositions = Array(Vector(-95.624, 12.660, -5.541), Vector(-38.680, 12.750, -22.136), Vector(-15.784, 8.540,
+			-12.685), Vector(36.467, 2.140, -4.003), Vector(48.707, 10.110, 25.063), Vector(26.871, 7.010, 2.468));
+		Global.EndPosition = Vector(47.956, 5.200, 47.318);
+		Start Forcing Spawn Room(Team 1, 1);
+		"Total amount of Bastion Bots to spawn"
+		Global.BastionBotCount = 6;
+		"Location of winners end game rings"
+		Global.WinnerHeroesRingStats[0] = Vector(-106.441, 6, -58.824);
+		Global.WinnerResetRingStats[0] = Vector(-108.447, 6, -62.336);
+		"The text above the endgame rings for winners"
+		Global.WinnerHeroesRingStats[3] = Vector(0, 0, 0);
+		Global.WinnerResetRingStats[3] = Vector(0, 0, 0);
+		"Base coordinates for world game settings HUD"
+		Global.GameSettingTextVec = Vector(-108.281, 5.812, -50.656);
+	}
+}
+
+rule("map setting (global arr p, global b, global d, global c) - rialto")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		Current Map == Map(Rialto);
+	}
+
+	actions
+	{
+		Global.AllBastionPositions = Array(Vector(-64.421, 5.040, -125.927), Vector(-16.976, 1.660, -38.459), Vector(-36.002, 4.750,
+			-77.344), Vector(59.058, 0.070, -8.103), Vector(54.797, 1.740, -59.938), Vector(87.874, -0.370, 0.268));
+		Global.EndPosition = Vector(98.662, -1.500, -21.009);
+		Start Forcing Spawn Room(Team 1, 2);
+		"Total amount of Bastion Bots to spawn"
+		Global.BastionBotCount = 6;
+		"Location of winners end game rings"
+		Global.WinnerHeroesRingStats[0] = Vector(-49.550, 5.050, -171.124);
+		Global.WinnerResetRingStats[0] = Vector(-63.679, 5.050, -170.880);
+		"Base coordinates for world game settings HUD"
+		Global.GameSettingTextVec = Vector(-57, 4.050, -156.838);
+	}
+}
+
+rule("map setting (global arr p, global b, global d, global c) - horizon lunar colony")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		Current Map == Map(Horizon Lunar Colony);
+	}
+
+	actions
+	{
+		Global.AllBastionPositions = Array(Vector(-15.287, 6, -127.244), Vector(16.250, 11.860, -106.756), Vector(70.800, 15, -76.840),
+			Vector(62.340, 6, -34.740), Vector(19.496, 9, -1.439), Vector(66.687, 8.520, -37.241));
+		Global.EndPosition = Vector(34.476, 12, -23.518);
+		Start Forcing Spawn Room(Team 1, 0);
+		"Base coordinates for world game settings HUD"
+		Global.GameSettingTextVec = Vector(-43.492, 5.800, -156.776);
+		"Total amount of Bastion Bots to spawn"
+		Global.BastionBotCount = 6;
+		"Location of winners end game rings"
+		Global.WinnerHeroesRingStats[0] = Vector(-37.170, 6.450, -161.895);
+		Global.WinnerResetRingStats[0] = Vector(-38.639, 6.450, -165.470);
+	}
+}
+
+rule("map setting (global arr p, global b, global d, global c) - havana")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		Current Map == Map(Havana);
+	}
+
+	actions
+	{
+		Global.AllBastionPositions = Array(Vector(117.332, 14.433, -58.091), Vector(140.438, 6.413, -16.667), Vector(31.288, 18.900,
+			-75.331), Vector(-32.514, 7.150, -79.487), Vector(14.787, 7.300, -47.470), Vector(-71.110, 5.846, -72.362));
+		Global.EndPosition = Vector(-71.203, 2, -50.678);
+		Start Forcing Spawn Room(Team 1, 2);
+		"Base coordinates for world game settings HUD"
+		Global.GameSettingTextVec = Vector(158.050, 12.302, -46.921);
+		"Total amount of Bastion Bots to spawn"
+		Global.BastionBotCount = 6;
+		"Location of winners end game rings"
+		Global.WinnerHeroesRingStats[0] = Vector(172.764, 12.300, -51.870);
+		Global.WinnerResetRingStats[0] = Vector(172.695, 12.300, -41.247);
+	}
+}
+
+rule("map setting (global arr p, global b, global d, global c) - dorado")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		Current Map == Map(Dorado);
+	}
+
+	actions
+	{
+		Global.AllBastionPositions = Array(Vector(170.288, 19.100, 45.051), Vector(118.262, 18.250, 1.209), Vector(78.973, 17.480, -6.843),
+			Vector(34.074, 11.080, -17.958), Vector(26.361, 10.650, 20.115), Vector(126.713, 16.300, 17.517));
+		Global.EndPosition = Vector(16.012, Empty Array, 5.874);
+		Start Forcing Spawn Room(Team 1, 1);
+		"Base coordinates for world game settings HUD"
+		Global.GameSettingTextVec = Vector(184.096, 7.840, 40.671);
+		"Total amount of Bastion Bots to spawn"
+		Global.BastionBotCount = 6;
+		"Location of winners end game rings"
+		Global.WinnerHeroesRingStats[0] = Vector(182.148, 8.390, 42.701);
+		Global.WinnerResetRingStats[0] = Vector(183.660, 8.390, 37.902);
+	}
+}
+
+rule("map setting (global arr p, global b, global d, global c) - king's row (winter)")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		(Current Map == Map(King's Row) || Current Map == Map(King's Row Winter)) == True;
+	}
+
+	actions
+	{
+		Global.AllBastionPositions = Array(Vector(-143.900, 7.130, 10.150), Vector(-120.990, 1.070, -12.080), Vector(-91.380, 1.140,
+			-27.900), Vector(-55.460, -0.200, -29.830), Vector(5.980, 6.110, -30.350), Vector(-21.560, 2.580, -8.160));
+		Global.EndPosition = Vector(-1.900, 5, -0.290);
+		Start Forcing Spawn Room(Team 1, 1);
+		"Base coordinates for world game settings HUD"
+		Global.GameSettingTextVec = Vector(-173.483, 0.762, 36.414);
+		"Total amount of Bastion Bots to spawn"
+		Global.BastionBotCount = 6;
+		"Location of winners end game rings"
+		Global.WinnerHeroesRingStats[0] = Vector(-178.034, 1.260, 43.774);
+		Global.WinnerResetRingStats[0] = Vector(-180.556, 1.262, 30.807);
+	}
+}
+
+rule("map setting (global arr p, global b, global d, global c) - blizzworld (winter)")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		(Current Map == Map(Blizzard World) || Current Map == Map(Blizzard World Winter)) == True;
+	}
+
+	actions
+	{
+		Global.AllBastionPositions = Array(Vector(-121.979, 0.148, 110.507), Vector(-93.733, -1.047, 110.100), Vector(-66.733, 7.079,
+			110.571), Vector(-0.165, 7.421, 89.178), Vector(3.082, 3.900, 43.609), Vector(3.049, -4.850, 16.685), Vector(-30.574, 12.966,
+			87.938));
+		Start Forcing Spawn Room(Team 1, 1);
+		Global.EndPosition = Vector(2.772, -6.500, -6.900);
+		"Base coordinates for world game settings HUD"
+		Global.GameSettingTextVec = Vector(-151.769, 1.648, 101.924);
+		Global.BlizzWorldSpawnLoc = Vector(-169.871, 2.948, 96.498);
+		"Total amount of Bastion Bots to spawn"
+		Global.BastionBotCount = 7;
+		"Location of winners end game rings"
+		Global.WinnerHeroesRingStats[0] = Vector(-152.835, 0.500, 106.112);
+		Global.WinnerResetRingStats[0] = Vector(-150.326, 0.500, 98.171);
+		"The text above the endgame rings for winners"
+		Global.WinnerHeroesRingStats[3] = Vector(0, 2, 0);
+		Global.WinnerResetRingStats[3] = Vector(0, 2, 0);
+	}
+}
+
+rule("map setting (global arr p, global b, global d, global c) - eichenwalde (halloween)")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		(Current Map == Map(Eichenwalde) || Current Map == Map(Eichenwalde Halloween)) == True;
+	}
+
+	actions
+	{
+		Global.AllBastionPositions = Array(Vector(123.333, 8.971, -27.303), Vector(89.318, 21.095, -62.697), Vector(38.021, 13.917,
+			-79.821), Vector(23.799, 7.417, -53.839), Vector(-4.858, 6.957, -31.559), Vector(25.587, 6.300, -14.531));
+		Global.EndPosition = Vector(-10.354, -2.149, -12.399);
+		Start Forcing Spawn Room(Team 1, 2);
+		"Base coordinates for world game settings HUD"
+		Global.GameSettingTextVec = Vector(129.339, 12.120, -2.655);
+		"Total amount of Bastion Bots to spawn"
+		Global.BastionBotCount = 6;
+		"Location of winners end game rings"
+		Global.WinnerHeroesRingStats[0] = Vector(135.825, 11.899, -2.692);
+		Global.WinnerResetRingStats[0] = Vector(124.359, 11.898, 0.626);
+	}
+}
+
+rule("map setting (global arr p, global b, global d, global c) - hollywood (halloween)")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		(Current Map == Map(Hollywood) || Current Map == Map(Hollywood Halloween)) == True;
+	}
+
+	actions
+	{
+		Global.AllBastionPositions = Array(Vector(-26.166, 7.503, -134.609), Vector(-2.241, 12.161, -112.505), Vector(11.552, 6.303,
+			-69.943), Vector(-7.480, 7.441, -43.441), Vector(-20.714, 8.050, 9.977), Vector(4.864, 7.147, 38.401));
+		Start Forcing Spawn Room(Team 1, 2);
+		Global.EndPosition = Vector(-12.002, -1.307, 69.489);
+		"Base coordinates for world game settings HUD"
+		Global.GameSettingTextVec = Vector(-32.049, 4.714, -155.052);
+		"Total amount of Bastion Bots to spawn"
+		Global.BastionBotCount = 6;
+		"Location of winners end game rings"
