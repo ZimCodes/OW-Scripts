@@ -2360,7 +2360,7 @@ rule("Display message to players attempting to shoot Bastion")
 
 	actions
 	{
-		Big Message(Attacker, Custom String("Bastion is Invincible. Stop shooting!"));
+		Big Message(Attacker, Custom String("Bastion is Invincible. Ceasefire Now!"));
 		Wait(2, Ignore Condition);
 	}
 }
@@ -4055,7 +4055,7 @@ rule("force winner player hero")
 	}
 }
 
-disabled rule("Spawn a lot of friendly soldiers. Stress Test (debug)")
+rule("Spawn a lot of friendly soldiers. Stress Test (debug)")
 {
 	event
 	{
@@ -4072,7 +4072,6 @@ disabled rule("Spawn a lot of friendly soldiers. Stress Test (debug)")
 		Call Subroutine(SpawnFriendlySoldier);
 		Call Subroutine(SpawnFriendlySoldier);
 		Call Subroutine(SpawnFriendlySoldier);
-		disabled Call Subroutine(SpawnFriendlySoldier);
 	}
 }
 
@@ -8563,7 +8562,8 @@ rule("Body reaches goal (One-For-All)(GE)[SR]")
 
 	actions
 	{
-		Teleport(Filtered Array(All Players(Team 1), Global.GEAffectedPlayer != Current Array Element && !Current Array Element.IsWinner),
-			Position Of(Event Player));
+		If(Global.GEChoice == 44);
+			Teleport(Filtered Array(All Players(Team 1), Global.GEAffectedPlayer != Current Array Element && !Current Array Element.IsWinner),
+				Position Of(Event Player));
 	}
 }
