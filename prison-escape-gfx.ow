@@ -364,6 +364,7 @@ subroutines
 	50: DisablePlayer
 	51: EnablePlayer
 	52: OneForAllGoal
+	53: NextHero
 }
 
 rule("Workshop Settings")
@@ -2360,7 +2361,7 @@ rule("Display message to players attempting to shoot Bastion")
 
 	actions
 	{
-		Big Message(Attacker, Custom String("Bastion is Invincible. Ceasefire Now!"));
+		Big Message(Attacker, Custom String("I'm invincible! Stop hurting me!"));
 		Wait(2, Ignore Condition);
 	}
 }
@@ -2385,6 +2386,21 @@ rule("Display info about the goal of the game")
 		Small Message(Event Player, Custom String("Mission --> Escape prison with all heroes!"));
 		Wait(2.900, Abort When False);
 		Loop If Condition Is True;
+	}
+}
+
+rule("Go to next hero [SR]")
+{
+	event
+	{
+		Subroutine;
+		NextHero;
+	}
+
+	actions
+	{
+		Event Player.CurrentHero += 1;
+		Event Player.TargetHero = Event Player.CurrentHero;
 	}
 }
 
@@ -2414,8 +2430,7 @@ rule("winner effects on reach to end")
 		Respawn(Event Player);
 		Wait(0.032, Ignore Condition);
 		If(Event Player.CurrentHero < Count Of(Global.HeroList) && Event Player.CurrentHero == Event Player.TargetHero);
-			Event Player.CurrentHero += 1;
-			Event Player.TargetHero = Event Player.CurrentHero;
+			Call Subroutine(NextHero);
 		End;
 		Event Player.BacktrackDeaths = 0;
 		If(Event Player.CurrentHero == Count Of(Global.HeroList));
@@ -3219,8 +3234,7 @@ disabled rule("Fast Hero (debug)")
 	actions
 	{
 		If(Event Player.CurrentHero < 31);
-			Event Player.CurrentHero += 1;
-			Event Player.TargetHero = Event Player.CurrentHero;
+			Call Subroutine(NextHero);
 			Wait(0.625, Ignore Condition);
 	}
 }
@@ -4055,7 +4069,7 @@ rule("force winner player hero")
 	}
 }
 
-rule("Spawn a lot of friendly soldiers. Stress Test (debug)")
+disabled rule("Spawn a lot of friendly soldiers. Stress Test (debug)")
 {
 	event
 	{
@@ -4134,7 +4148,7 @@ rule("Select a global effect & configurate (GE)[SR]")
 		"Current NUMBER of players currently around. Used if global effect requires more than 1 player"
 		Global.TempVar2 = 1;
 		"DEBUG: Chose a specific global effect"
-		disabled Global.TempVar = 34;
+		disabled Global.TempVar = 44;
 		If(Global.TempVar == 1);
 			"The Patrol Guard to use"
 			Global.GEPatrolChoice = Random Integer(0, 2);
@@ -4448,13 +4462,13 @@ rule("Select a global effect & configurate (GE)[SR]")
 			"DEBUGGING only"
 			disabled Global.BUExtraChoice = 1;
 		Else If(Global.TempVar == 44);
-			Global.GEMinPlayerReq = 2;
+			Global.GEMinPlayerReq = 3;
 			Global.TempVar3 = Custom String("Players all share one mind. Bodies will switch at random.");
 			"Switcharoo"
 			Global.TempVar2 = Count Of(Filtered Array(All Players(Team 1), !Current Array Element.IsWinner));
 			Global.GEName = Custom String("One-For-All!");
 			"Set the timer for the Global Effect"
-			Global.GEWaitTime = Random Integer(60, 260);
+			Global.GEWaitTime = Random Integer(60, 280);
 		End;
 		Wait(0.300, Ignore Condition);
 		"DEBUGGING ONLY: bypass minimum player req."
@@ -8453,7 +8467,7 @@ rule("Assign new body (One-For-All)(GE)")
 
 	actions
 	{
-		Wait Until(Global.GEAffectedPlayer == Null, Random Integer(20, 40));
+		Wait Until(Global.GEAffectedPlayer == Null, Random Integer(15, 40));
 		Abort If Condition Is False;
 		Global.GETarget = Global.GEAffectedPlayer;
 		Global.GEAffectedPlayer = Random Value In Array(Filtered Array(All Players(Team 1),
@@ -8562,8 +8576,16 @@ rule("Body reaches goal (One-For-All)(GE)[SR]")
 
 	actions
 	{
-		If(Global.GEChoice == 44);
-			Teleport(Filtered Array(All Players(Team 1), Global.GEAffectedPlayer != Current Array Element && !Current Array Element.IsWinner),
-				Position Of(Event Player));
+		If(Global.GEChoice == 44 && Global.GEAffectedPlayer == Event Player);
+			Global.TempVar = Filtered Array(All Players(Team 1),
+				Global.GEAffectedPlayer != Current Array Element && !Current Array Element.IsWinner);
+			For Global Variable(TempVar2, 0, Count Of(Global.TempVar), 1);
+				If((Global.HeroListTypeWS != 2 && Global.TempVar[Global.TempVar2].CurrentHero == Count Of(Global.HeroList) - 1) || (
+					Global.HeroListTypeWS == 2 && Global.TempVar[Global.TempVar2].CurrentHero == Count Of(
+					Global.TempVar[Global.TempVar2].IndieHeroList) - 1));
+					Teleport(Global.TempVar[Global.TempVar2], Global.EndPosition + Vector(0, 1.500, 0));
+				Else;
+					Global.TempVar[Global.TempVar2].CurrentHero += 1;
+					Global.TempVar[Global.TempVar2].TargetHero = Global.TempVar[Global.TempVar2].CurrentHero;
 	}
 }
