@@ -4463,7 +4463,8 @@ rule("Select a global effect & configurate (GE)[SR]")
 			disabled Global.BUExtraChoice = 1;
 		Else If(Global.TempVar == 44);
 			Global.GEMinPlayerReq = 3;
-			Global.TempVar3 = Custom String("Players all share one mind. Bodies will switch at random.");
+			Global.TempVar3 = Custom String(
+				"Players randomly take turns controlling one body. \nIf the body dies or escapes, it affects everyone..");
 			"Switcharoo"
 			Global.TempVar2 = Count Of(Filtered Array(All Players(Team 1), !Current Array Element.IsWinner));
 			Global.GEName = Custom String("One-For-All!");
@@ -4823,6 +4824,7 @@ rule("Init Type B (CHOICE:All) (GE)[SR]")
 			Set Ultimate Charge(Global.TempVar, 100);
 			Press Button(Global.TempVar, Button(Ultimate));
 			Disallow Button(Global.TempVar, Button(Ultimate));
+			Start Forcing Player Outlines(Global.TempVar, All Players(Team 1), True, Color(Yellow), Always);
 	}
 }
 
@@ -8304,7 +8306,7 @@ rule("Widowmaker communicates (Reveal)(GE)")
 		Start Facing(Event Player, Direction Towards(Position Of(Event Player), Position Of(Global.TempVar4)), 200, To World,
 			Direction and Turn Rate);
 		"Delay before responding to player"
-		Wait(0.600, Abort When False);
+		Wait(0.600, Ignore Condition);
 		If(Is Communicating(Global.TempVar4, Hello));
 			Communicate(Event Player, Hello);
 		Else If(Is Communicating(Global.TempVar4, Thanks));
@@ -8358,7 +8360,7 @@ rule("Widowmaker communicates (Reveal)(GE)")
 		End;
 		Stop Facing(Event Player);
 		"Cooldown before accepting next responses from players"
-		Wait(Random Real(1, 2), Ignore Condition);
+		Wait(1, Ignore Condition);
 	}
 }
 

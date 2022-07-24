@@ -1,0 +1,1434 @@
+settings
+{
+	main
+	{
+		Description: "Watch Colorful Orbs fall from the sky! Beware! Orbs are very acidic!"
+		Mode Name: "Colorful Acid Rain"
+	}
+
+	modes
+	{
+		Skirmish
+
+		General
+		{
+			Limit Roles: 2 Of Each Role Per Team
+		}
+	}
+
+	workshop
+	{
+		Max. Fall Speed: 8.000
+	}
+}
+
+variables
+{
+	global:
+		0: MinSpeed
+		1: MaxSpeed
+		2: SpreadDistance
+		3: DirectionType
+		4: Radius
+		5: DetectRange
+		6: SpawnHeight
+		7: Damage
+		8: SpreadRadius
+
+	player:
+		0: PosA
+		1: PosB
+		2: PosC
+		3: PosD
+		4: PosE
+		5: ParticleIDs
+		6: PosTemp
+		7: PosF
+		8: PosG
+		9: PosH
+		10: PosI
+		11: PosJ
+		12: SpeedF
+		13: SpeedG
+		14: SpeedH
+		15: SpeedI
+		16: SpeedJ
+		17: PosK
+		18: SpeedA
+		19: SpeedB
+		20: SpeedC
+		21: SpeedD
+		22: SpeedE
+		23: SpeedK
+		24: PosL
+		25: PosM
+		26: PosN
+		27: PosO
+		28: PosP
+		29: PosQ
+		30: PosR
+		31: PosS
+		32: PosT
+		33: PosU
+		34: PosV
+		35: PosW
+		36: PosX
+		37: PosY
+		38: PosZ
+		39: SpeedL
+		40: SpeedM
+		41: SpeedN
+		42: SpeedO
+		43: SpeedP
+		44: SpeedQ
+		45: SpeedR
+		46: SpeedS
+		47: SpeedT
+		48: SpeedU
+		49: SpeedV
+		50: SpeedW
+		51: SpeedX
+		52: SpeedY
+		53: SpeedZ
+}
+
+subroutines
+{
+	0: ParticleSetup
+	1: ParticleAssignA
+	2: ParticleAssignB
+	3: ParticleAssignC
+	4: ParticleAssignD
+	5: ParticleAssignE
+	6: ParticleAssignF
+	7: ParticleAssignG
+	8: ParticleAssignH
+	9: ParticleAssignI
+	10: ParticleAssignJ
+	11: ParticleAssignK
+	12: ParticleAssignL
+	13: ParticleAssignM
+	14: ParticleAssignN
+	15: ParticleAssignO
+	16: ParticleAssignP
+	17: ParticleAssignQ
+	18: ParticleAssignR
+	19: ParticleAssignS
+	20: ParticleAssignT
+	21: ParticleAssignU
+	22: ParticleAssignV
+	23: ParticleAssignW
+	24: ParticleAssignX
+	25: ParticleAssignY
+	26: ParticleAssignZ
+}
+
+rule("Populate Particles")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	actions
+	{
+		Wait Until(Has Spawned(Event Player) && !Is In Spawn Room(Event Player), 99999);
+		Wait(10, Ignore Condition);
+		Global.SpreadRadius = Workshop Setting Integer(Custom String("Orbs"), Custom String("spawn radius"), 20, 1, 100, 0);
+		Global.Damage = Workshop Setting Integer(Custom String("Orbs"), Custom String("Damage dealt when touched"), 10, 0, 500, 0);
+		"How far in the sky to spawn orbs?"
+		Global.SpawnHeight = Workshop Setting Integer(Custom String("Orbs"), Custom String("How far in the sky to spawn"), 30, 0, 100, 0);
+		"Speed Ranges"
+		Global.MinSpeed = Workshop Setting Real(Custom String("Orbs"), Custom String("Min. Fall Speed"), 1.400, 0.100, 20, 0);
+		Global.MaxSpeed = Workshop Setting Real(Custom String("Orbs"), Custom String("Max. Fall Speed"), 8, 0.100, 20, 0);
+		"Orb Size"
+		Global.Radius = Workshop Setting Integer(Custom String("Orbs"), Custom String("Size"), 2, 1, 10, 0);
+		"Detection range of Orbs to detect floor or player"
+		Global.DetectRange = Workshop Setting Integer(Custom String("Orbs"), Custom String("Range to detect floor or players"), -100,
+			-1000, -100, 0);
+		Event Player.ParticleIDs = Empty Array;
+		Call Subroutine(ParticleAssignA);
+		Create Effect(All Players(All Teams), Orb, Color(Green), Event Player.PosA, Global.Radius, Visible To Position and Radius);
+		Modify Player Variable(Event Player, ParticleIDs, Append To Array, Last Created Entity);
+		Chase Player Variable At Rate(Event Player, PosA, Ray Cast Hit Position(Event Player.PosA, Vector(X Component Of(
+			Event Player.PosA), Global.DetectRange, Z Component Of(Event Player.PosA)), All Players(All Teams), Null, True),
+			Event Player.SpeedA, Destination and Rate);
+		Call Subroutine(ParticleAssignB);
+		Create Effect(All Players(All Teams), Orb, Color(Yellow), Event Player.PosB, Global.Radius, Visible To Position and Radius);
+		Modify Player Variable(Event Player, ParticleIDs, Append To Array, Last Created Entity);
+		Chase Player Variable At Rate(Event Player, PosB, Ray Cast Hit Position(Event Player.PosB, Vector(X Component Of(
+			Event Player.PosB), Global.DetectRange, Z Component Of(Event Player.PosB)), All Players(All Teams), Null, True),
+			Event Player.SpeedB, Destination and Rate);
+		Call Subroutine(ParticleAssignC);
+		Create Effect(All Players(All Teams), Orb, Color(Purple), Event Player.PosC, Global.Radius, Visible To Position and Radius);
+		Modify Player Variable(Event Player, ParticleIDs, Append To Array, Last Created Entity);
+		Chase Player Variable At Rate(Event Player, PosC, Ray Cast Hit Position(Event Player.PosC, Vector(X Component Of(
+			Event Player.PosC), Global.DetectRange, Z Component Of(Event Player.PosC)), All Players(All Teams), Null, True),
+			Event Player.SpeedC, Destination and Rate);
+		Call Subroutine(ParticleAssignD);
+		Create Effect(All Players(All Teams), Orb, Color(Red), Event Player.PosD, Global.Radius, Visible To Position and Radius);
+		Modify Player Variable(Event Player, ParticleIDs, Append To Array, Last Created Entity);
+		Chase Player Variable At Rate(Event Player, PosD, Ray Cast Hit Position(Event Player.PosD, Vector(X Component Of(
+			Event Player.PosD), Global.DetectRange, Z Component Of(Event Player.PosD)), All Players(All Teams), Null, True),
+			Event Player.SpeedD, Destination and Rate);
+		Call Subroutine(ParticleAssignE);
+		Create Effect(All Players(All Teams), Orb, Color(Blue), Event Player.PosE, Global.Radius, Visible To Position and Radius);
+		Modify Player Variable(Event Player, ParticleIDs, Append To Array, Last Created Entity);
+		Chase Player Variable At Rate(Event Player, PosE, Ray Cast Hit Position(Event Player.PosE, Vector(X Component Of(
+			Event Player.PosE), Global.DetectRange, Z Component Of(Event Player.PosE)), All Players(All Teams), Null, True),
+			Event Player.SpeedE, Destination and Rate);
+		Call Subroutine(ParticleAssignF);
+		Create Effect(All Players(All Teams), Orb, Color(Aqua), Event Player.PosF, Global.Radius, Visible To Position and Radius);
+		Modify Player Variable(Event Player, ParticleIDs, Append To Array, Last Created Entity);
+		Chase Player Variable At Rate(Event Player, PosF, Ray Cast Hit Position(Event Player.PosF, Vector(X Component Of(
+			Event Player.PosF), Global.DetectRange, Z Component Of(Event Player.PosF)), All Players(All Teams), Null, True),
+			Event Player.SpeedF, Destination and Rate);
+		Call Subroutine(ParticleAssignG);
+		Create Effect(All Players(All Teams), Orb, Color(Orange), Event Player.PosG, Global.Radius, Visible To Position and Radius);
+		Modify Player Variable(Event Player, ParticleIDs, Append To Array, Last Created Entity);
+		Chase Player Variable At Rate(Event Player, PosG, Ray Cast Hit Position(Event Player.PosG, Vector(X Component Of(
+			Event Player.PosG), Global.DetectRange, Z Component Of(Event Player.PosG)), All Players(All Teams), Null, True),
+			Event Player.SpeedG, Destination and Rate);
+		Call Subroutine(ParticleAssignH);
+		Create Effect(All Players(All Teams), Orb, Color(Sky Blue), Event Player.PosH, Global.Radius, Visible To Position and Radius);
+		Modify Player Variable(Event Player, ParticleIDs, Append To Array, Last Created Entity);
+		Chase Player Variable At Rate(Event Player, PosH, Ray Cast Hit Position(Event Player.PosH, Vector(X Component Of(
+			Event Player.PosH), Global.DetectRange, Z Component Of(Event Player.PosH)), All Players(All Teams), Null, True),
+			Event Player.SpeedH, Destination and Rate);
+		Call Subroutine(ParticleAssignI);
+		Create Effect(All Players(All Teams), Orb, Color(Rose), Event Player.PosI, Global.Radius, Visible To Position and Radius);
+		Modify Player Variable(Event Player, ParticleIDs, Append To Array, Last Created Entity);
+		Chase Player Variable At Rate(Event Player, PosI, Ray Cast Hit Position(Event Player.PosI, Vector(X Component Of(
+			Event Player.PosI), Global.DetectRange, Z Component Of(Event Player.PosI)), All Players(All Teams), Null, True),
+			Event Player.SpeedI, Destination and Rate);
+		Call Subroutine(ParticleAssignJ);
+		Create Effect(All Players(All Teams), Orb, Color(Violet), Event Player.PosJ, Global.Radius, Visible To Position and Radius);
+		Modify Player Variable(Event Player, ParticleIDs, Append To Array, Last Created Entity);
+		Chase Player Variable At Rate(Event Player, PosJ, Ray Cast Hit Position(Event Player.PosJ, Vector(X Component Of(
+			Event Player.PosJ), Global.DetectRange, Z Component Of(Event Player.PosJ)), All Players(All Teams), Null, True),
+			Event Player.SpeedJ, Destination and Rate);
+		Call Subroutine(ParticleAssignK);
+		Create Effect(All Players(All Teams), Orb, Color(Lime Green), Event Player.PosK, Global.Radius, Visible To Position and Radius);
+		Modify Player Variable(Event Player, ParticleIDs, Append To Array, Last Created Entity);
+		Chase Player Variable At Rate(Event Player, PosK, Ray Cast Hit Position(Event Player.PosK, Vector(X Component Of(
+			Event Player.PosK), Global.DetectRange, Z Component Of(Event Player.PosK)), All Players(All Teams), Null, True),
+			Event Player.SpeedK, Destination and Rate);
+		Call Subroutine(ParticleAssignL);
+		Create Effect(All Players(All Teams), Orb, Color(Green), Event Player.PosL, Global.Radius, Visible To Position and Radius);
+		Modify Player Variable(Event Player, ParticleIDs, Append To Array, Last Created Entity);
+		Chase Player Variable At Rate(Event Player, PosL, Ray Cast Hit Position(Event Player.PosL, Vector(X Component Of(
+			Event Player.PosL), Global.DetectRange, Z Component Of(Event Player.PosL)), All Players(All Teams), Null, True),
+			Event Player.SpeedL, Destination and Rate);
+		Call Subroutine(ParticleAssignM);
+		Create Effect(All Players(All Teams), Orb, Color(Yellow), Event Player.PosM, Global.Radius, Visible To Position and Radius);
+		Modify Player Variable(Event Player, ParticleIDs, Append To Array, Last Created Entity);
+		Chase Player Variable At Rate(Event Player, PosM, Ray Cast Hit Position(Event Player.PosM, Vector(X Component Of(
+			Event Player.PosM), Global.DetectRange, Z Component Of(Event Player.PosM)), All Players(All Teams), Null, True),
+			Event Player.SpeedM, Destination and Rate);
+		Call Subroutine(ParticleAssignN);
+		Create Effect(All Players(All Teams), Orb, Color(Orange), Event Player.PosN, Global.Radius, Visible To Position and Radius);
+		Modify Player Variable(Event Player, ParticleIDs, Append To Array, Last Created Entity);
+		Chase Player Variable At Rate(Event Player, PosN, Ray Cast Hit Position(Event Player.PosN, Vector(X Component Of(
+			Event Player.PosN), Global.DetectRange, Z Component Of(Event Player.PosN)), All Players(All Teams), Null, True),
+			Event Player.SpeedN, Destination and Rate);
+		Call Subroutine(ParticleAssignO);
+		Create Effect(All Players(All Teams), Orb, Color(Red), Event Player.PosO, Global.Radius, Visible To Position and Radius);
+		Modify Player Variable(Event Player, ParticleIDs, Append To Array, Last Created Entity);
+		Chase Player Variable At Rate(Event Player, PosO, Ray Cast Hit Position(Event Player.PosO, Vector(X Component Of(
+			Event Player.PosO), Global.DetectRange, Z Component Of(Event Player.PosO)), All Players(All Teams), Null, True),
+			Event Player.SpeedO, Destination and Rate);
+		Call Subroutine(ParticleAssignP);
+		Create Effect(All Players(All Teams), Orb, Color(Violet), Event Player.PosP, Global.Radius, Visible To Position and Radius);
+		Modify Player Variable(Event Player, ParticleIDs, Append To Array, Last Created Entity);
+		Chase Player Variable At Rate(Event Player, PosP, Ray Cast Hit Position(Event Player.PosP, Vector(X Component Of(
+			Event Player.PosP), Global.DetectRange, Z Component Of(Event Player.PosP)), All Players(All Teams), Null, True),
+			Event Player.SpeedP, Destination and Rate);
+		Call Subroutine(ParticleAssignQ);
+		Create Effect(All Players(All Teams), Orb, Color(Purple), Event Player.PosQ, Global.Radius, Visible To Position and Radius);
+		Modify Player Variable(Event Player, ParticleIDs, Append To Array, Last Created Entity);
+		Chase Player Variable At Rate(Event Player, PosQ, Ray Cast Hit Position(Event Player.PosQ, Vector(X Component Of(
+			Event Player.PosQ), Global.DetectRange, Z Component Of(Event Player.PosQ)), All Players(All Teams), Null, True),
+			Event Player.SpeedQ, Destination and Rate);
+		Call Subroutine(ParticleAssignR);
+		Create Effect(All Players(All Teams), Orb, Color(Blue), Event Player.PosR, Global.Radius, Visible To Position and Radius);
+		Modify Player Variable(Event Player, ParticleIDs, Append To Array, Last Created Entity);
+		Chase Player Variable At Rate(Event Player, PosR, Ray Cast Hit Position(Event Player.PosR, Vector(X Component Of(
+			Event Player.PosR), Global.DetectRange, Z Component Of(Event Player.PosR)), All Players(All Teams), Null, True),
+			Event Player.SpeedR, Destination and Rate);
+		Call Subroutine(ParticleAssignS);
+		Create Effect(All Players(All Teams), Orb, Color(Aqua), Event Player.PosS, Global.Radius, Visible To Position and Radius);
+		Modify Player Variable(Event Player, ParticleIDs, Append To Array, Last Created Entity);
+		Chase Player Variable At Rate(Event Player, PosS, Ray Cast Hit Position(Event Player.PosS, Vector(X Component Of(
+			Event Player.PosS), Global.DetectRange, Z Component Of(Event Player.PosS)), All Players(All Teams), Null, True),
+			Event Player.SpeedS, Destination and Rate);
+		Call Subroutine(ParticleAssignT);
+		Create Effect(All Players(All Teams), Orb, Color(Sky Blue), Event Player.PosT, Global.Radius, Visible To Position and Radius);
+		Modify Player Variable(Event Player, ParticleIDs, Append To Array, Last Created Entity);
+		Chase Player Variable At Rate(Event Player, PosT, Ray Cast Hit Position(Event Player.PosT, Vector(X Component Of(
+			Event Player.PosT), Global.DetectRange, Z Component Of(Event Player.PosT)), All Players(All Teams), Null, True),
+			Event Player.SpeedT, Destination and Rate);
+		Call Subroutine(ParticleAssignU);
+		Create Effect(All Players(All Teams), Orb, Color(Turquoise), Event Player.PosU, Global.Radius, Visible To Position and Radius);
+		Modify Player Variable(Event Player, ParticleIDs, Append To Array, Last Created Entity);
+		Chase Player Variable At Rate(Event Player, PosU, Ray Cast Hit Position(Event Player.PosU, Vector(X Component Of(
+			Event Player.PosU), Global.DetectRange, Z Component Of(Event Player.PosU)), All Players(All Teams), Null, True),
+			Event Player.SpeedU, Destination and Rate);
+		Call Subroutine(ParticleAssignV);
+		Create Effect(All Players(All Teams), Orb, Color(Rose), Event Player.PosV, Global.Radius, Visible To Position and Radius);
+		Modify Player Variable(Event Player, ParticleIDs, Append To Array, Last Created Entity);
+		Chase Player Variable At Rate(Event Player, PosV, Ray Cast Hit Position(Event Player.PosV, Vector(X Component Of(
+			Event Player.PosV), Global.DetectRange, Z Component Of(Event Player.PosV)), All Players(All Teams), Null, True),
+			Event Player.SpeedV, Destination and Rate);
+		Call Subroutine(ParticleAssignW);
+		Create Effect(All Players(All Teams), Orb, Color(Lime Green), Event Player.PosW, Global.Radius, Visible To Position and Radius);
+		Modify Player Variable(Event Player, ParticleIDs, Append To Array, Last Created Entity);
+		Chase Player Variable At Rate(Event Player, PosW, Ray Cast Hit Position(Event Player.PosW, Vector(X Component Of(
+			Event Player.PosW), Global.DetectRange, Z Component Of(Event Player.PosW)), All Players(All Teams), Null, True),
+			Event Player.SpeedW, Destination and Rate);
+		Call Subroutine(ParticleAssignX);
+		Create Effect(All Players(All Teams), Orb, Color(Rose), Event Player.PosX, Global.Radius, Visible To Position and Radius);
+		Modify Player Variable(Event Player, ParticleIDs, Append To Array, Last Created Entity);
+		Chase Player Variable At Rate(Event Player, PosX, Ray Cast Hit Position(Event Player.PosX, Vector(X Component Of(
+			Event Player.PosX), Global.DetectRange, Z Component Of(Event Player.PosX)), All Players(All Teams), Null, True),
+			Event Player.SpeedX, Destination and Rate);
+		Call Subroutine(ParticleAssignY);
+		Create Effect(All Players(All Teams), Orb, Color(Blue), Event Player.PosY, Global.Radius, Visible To Position and Radius);
+		Modify Player Variable(Event Player, ParticleIDs, Append To Array, Last Created Entity);
+		Chase Player Variable At Rate(Event Player, PosY, Ray Cast Hit Position(Event Player.PosY, Vector(X Component Of(
+			Event Player.PosY), Global.DetectRange, Z Component Of(Event Player.PosY)), All Players(All Teams), Null, True),
+			Event Player.SpeedY, Destination and Rate);
+		Call Subroutine(ParticleAssignZ);
+		Create Effect(All Players(All Teams), Orb, Color(Purple), Event Player.PosZ, Global.Radius, Visible To Position and Radius);
+		Modify Player Variable(Event Player, ParticleIDs, Append To Array, Last Created Entity);
+		Chase Player Variable At Rate(Event Player, PosZ, Ray Cast Hit Position(Event Player.PosZ, Vector(X Component Of(
+			Event Player.PosZ), Global.DetectRange, Z Component Of(Event Player.PosZ)), All Players(All Teams), Null, True),
+			Event Player.SpeedZ, Destination and Rate);
+	}
+}
+
+rule("Particle Placement [SR]")
+{
+	event
+	{
+		Subroutine;
+		ParticleSetup;
+	}
+
+	actions
+	{
+		Global.DirectionType = Random Integer(0, 7);
+		Global.SpreadDistance = Random Real(0, Global.SpreadRadius);
+		If(Global.DirectionType == 0);
+			Event Player.PosTemp = Nearest Walkable Position(Position Of(Event Player) + Forward * Global.SpreadDistance);
+		Else If(Global.DirectionType == 1);
+			Event Player.PosTemp = Nearest Walkable Position(Position Of(Event Player) + (Forward + Right) * Global.SpreadDistance);
+		Else If(Global.DirectionType == 2);
+			Event Player.PosTemp = Nearest Walkable Position(Position Of(Event Player) + Right * Global.SpreadDistance);
+		Else If(Global.DirectionType == 3);
+			Event Player.PosTemp = Nearest Walkable Position(Position Of(Event Player) + (Backward + Right) * Global.SpreadDistance);
+		Else If(Global.DirectionType == 4);
+			Event Player.PosTemp = Nearest Walkable Position(Position Of(Event Player) + Backward * Global.SpreadDistance);
+		Else If(Global.DirectionType == 5);
+			Event Player.PosTemp = Nearest Walkable Position(Position Of(Event Player) + (Backward + Left) * Global.SpreadDistance);
+		Else If(Global.DirectionType == 6);
+			Event Player.PosTemp = Nearest Walkable Position(Position Of(Event Player) + Left * Global.SpreadDistance);
+		Else If(Global.DirectionType == 7);
+			Event Player.PosTemp = Nearest Walkable Position(Position Of(Event Player) + (Forward + Left) * Global.SpreadDistance);
+		End;
+		Event Player.PosTemp += Vector(0, Global.SpawnHeight, 0);
+	}
+}
+
+rule("Particle Assignment A [SR]")
+{
+	event
+	{
+		Subroutine;
+		ParticleAssignA;
+	}
+
+	actions
+	{
+		Call Subroutine(ParticleSetup);
+		Event Player.PosA = Event Player.PosTemp;
+		Event Player.SpeedA = Random Real(Global.MinSpeed, Global.MaxSpeed);
+	}
+}
+
+rule("Particle Assignment B [SR]")
+{
+	event
+	{
+		Subroutine;
+		ParticleAssignB;
+	}
+
+	actions
+	{
+		Call Subroutine(ParticleSetup);
+		Event Player.PosB = Event Player.PosTemp;
+		Event Player.SpeedB = Random Real(Global.MinSpeed, Global.MaxSpeed);
+	}
+}
+
+rule("Particle Assignment C [SR]")
+{
+	event
+	{
+		Subroutine;
+		ParticleAssignC;
+	}
+
+	actions
+	{
+		Call Subroutine(ParticleSetup);
+		Event Player.PosC = Event Player.PosTemp;
+		Event Player.SpeedC = Random Real(Global.MinSpeed, Global.MaxSpeed);
+	}
+}
+
+rule("Particle Assignment D [SR]")
+{
+	event
+	{
+		Subroutine;
+		ParticleAssignD;
+	}
+
+	actions
+	{
+		Call Subroutine(ParticleSetup);
+		Event Player.PosD = Event Player.PosTemp;
+		Event Player.SpeedD = Random Real(Global.MinSpeed, Global.MaxSpeed);
+	}
+}
+
+rule("Particle Assignment E [SR]")
+{
+	event
+	{
+		Subroutine;
+		ParticleAssignE;
+	}
+
+	actions
+	{
+		Call Subroutine(ParticleSetup);
+		Event Player.PosE = Event Player.PosTemp;
+		Event Player.SpeedE = Random Real(Global.MinSpeed, Global.MaxSpeed);
+	}
+}
+
+rule("Particle Assignment F [SR]")
+{
+	event
+	{
+		Subroutine;
+		ParticleAssignF;
+	}
+
+	actions
+	{
+		Call Subroutine(ParticleSetup);
+		Event Player.PosF = Event Player.PosTemp;
+		Event Player.SpeedF = Random Real(Global.MinSpeed, Global.MaxSpeed);
+	}
+}
+
+rule("Particle Assignment G [SR]")
+{
+	event
+	{
+		Subroutine;
+		ParticleAssignG;
+	}
+
+	actions
+	{
+		Call Subroutine(ParticleSetup);
+		Event Player.PosG = Event Player.PosTemp;
+		Event Player.SpeedG = Random Real(Global.MinSpeed, Global.MaxSpeed);
+	}
+}
+
+rule("Particle Assignment H [SR]")
+{
+	event
+	{
+		Subroutine;
+		ParticleAssignH;
+	}
+
+	actions
+	{
+		Call Subroutine(ParticleSetup);
+		Event Player.PosH = Event Player.PosTemp;
+		Event Player.SpeedH = Random Real(Global.MinSpeed, Global.MaxSpeed);
+	}
+}
+
+rule("Particle Assignment I [SR]")
+{
+	event
+	{
+		Subroutine;
+		ParticleAssignI;
+	}
+
+	actions
+	{
+		Call Subroutine(ParticleSetup);
+		Event Player.PosI = Event Player.PosTemp;
+		Event Player.SpeedI = Random Real(Global.MinSpeed, Global.MaxSpeed);
+	}
+}
+
+rule("Particle Assignment J [SR]")
+{
+	event
+	{
+		Subroutine;
+		ParticleAssignJ;
+	}
+
+	actions
+	{
+		Call Subroutine(ParticleSetup);
+		Event Player.PosJ = Event Player.PosTemp;
+		Event Player.SpeedJ = Random Real(Global.MinSpeed, Global.MaxSpeed);
+	}
+}
+
+rule("Particle Assignment K [SR]")
+{
+	event
+	{
+		Subroutine;
+		ParticleAssignK;
+	}
+
+	actions
+	{
+		Call Subroutine(ParticleSetup);
+		Event Player.PosK = Event Player.PosTemp;
+		Event Player.SpeedK = Random Real(Global.MinSpeed, Global.MaxSpeed);
+	}
+}
+
+rule("Particle Assignment L [SR]")
+{
+	event
+	{
+		Subroutine;
+		ParticleAssignL;
+	}
+
+	actions
+	{
+		Call Subroutine(ParticleSetup);
+		Event Player.PosL = Event Player.PosTemp;
+		Event Player.SpeedL = Random Real(Global.MinSpeed, Global.MaxSpeed);
+	}
+}
+
+rule("Particle Assignment M [SR]")
+{
+	event
+	{
+		Subroutine;
+		ParticleAssignM;
+	}
+
+	actions
+	{
+		Call Subroutine(ParticleSetup);
+		Event Player.PosM = Event Player.PosTemp;
+		Event Player.SpeedM = Random Real(Global.MinSpeed, Global.MaxSpeed);
+	}
+}
+
+rule("Particle Assignment N [SR]")
+{
+	event
+	{
+		Subroutine;
+		ParticleAssignN;
+	}
+
+	actions
+	{
+		Call Subroutine(ParticleSetup);
+		Event Player.PosN = Event Player.PosTemp;
+		Event Player.SpeedN = Random Real(Global.MinSpeed, Global.MaxSpeed);
+	}
+}
+
+rule("Particle Assignment O [SR]")
+{
+	event
+	{
+		Subroutine;
+		ParticleAssignO;
+	}
+
+	actions
+	{
+		Call Subroutine(ParticleSetup);
+		Event Player.PosO = Event Player.PosTemp;
+		Event Player.SpeedO = Random Real(Global.MinSpeed, Global.MaxSpeed);
+	}
+}
+
+rule("Particle Assignment P [SR]")
+{
+	event
+	{
+		Subroutine;
+		ParticleAssignP;
+	}
+
+	actions
+	{
+		Call Subroutine(ParticleSetup);
+		Event Player.PosP = Event Player.PosTemp;
+		Event Player.SpeedP = Random Real(Global.MinSpeed, Global.MaxSpeed);
+	}
+}
+
+rule("Particle Assignment Q [SR]")
+{
+	event
+	{
+		Subroutine;
+		ParticleAssignQ;
+	}
+
+	actions
+	{
+		Call Subroutine(ParticleSetup);
+		Event Player.PosQ = Event Player.PosTemp;
+		Event Player.SpeedQ = Random Real(Global.MinSpeed, Global.MaxSpeed);
+	}
+}
+
+rule("Particle Assignment R [SR]")
+{
+	event
+	{
+		Subroutine;
+		ParticleAssignR;
+	}
+
+	actions
+	{
+		Call Subroutine(ParticleSetup);
+		Event Player.PosR = Event Player.PosTemp;
+		Event Player.SpeedR = Random Real(Global.MinSpeed, Global.MaxSpeed);
+	}
+}
+
+rule("Particle Assignment S [SR]")
+{
+	event
+	{
+		Subroutine;
+		ParticleAssignS;
+	}
+
+	actions
+	{
+		Call Subroutine(ParticleSetup);
+		Event Player.PosS = Event Player.PosTemp;
+		Event Player.SpeedS = Random Real(Global.MinSpeed, Global.MaxSpeed);
+	}
+}
+
+rule("Particle Assignment T [SR]")
+{
+	event
+	{
+		Subroutine;
+		ParticleAssignT;
+	}
+
+	actions
+	{
+		Call Subroutine(ParticleSetup);
+		Event Player.PosT = Event Player.PosTemp;
+		Event Player.SpeedT = Random Real(Global.MinSpeed, Global.MaxSpeed);
+	}
+}
+
+rule("Particle Assignment U [SR]")
+{
+	event
+	{
+		Subroutine;
+		ParticleAssignU;
+	}
+
+	actions
+	{
+		Call Subroutine(ParticleSetup);
+		Event Player.PosU = Event Player.PosTemp;
+		Event Player.SpeedU = Random Real(Global.MinSpeed, Global.MaxSpeed);
+	}
+}
+
+rule("Particle Assignment V [SR]")
+{
+	event
+	{
+		Subroutine;
+		ParticleAssignV;
+	}
+
+	actions
+	{
+		Call Subroutine(ParticleSetup);
+		Event Player.PosV = Event Player.PosTemp;
+		Event Player.SpeedV = Random Real(Global.MinSpeed, Global.MaxSpeed);
+	}
+}
+
+rule("Particle Assignment W [SR]")
+{
+	event
+	{
+		Subroutine;
+		ParticleAssignW;
+	}
+
+	actions
+	{
+		Call Subroutine(ParticleSetup);
+		Event Player.PosW = Event Player.PosTemp;
+		Event Player.SpeedW = Random Real(Global.MinSpeed, Global.MaxSpeed);
+	}
+}
+
+rule("Particle Assignment X [SR]")
+{
+	event
+	{
+		Subroutine;
+		ParticleAssignX;
+	}
+
+	actions
+	{
+		Call Subroutine(ParticleSetup);
+		Event Player.PosX = Event Player.PosTemp;
+		Event Player.SpeedX = Random Real(Global.MinSpeed, Global.MaxSpeed);
+	}
+}
+
+rule("Particle Assignment Y [SR]")
+{
+	event
+	{
+		Subroutine;
+		ParticleAssignY;
+	}
+
+	actions
+	{
+		Call Subroutine(ParticleSetup);
+		Event Player.PosY = Event Player.PosTemp;
+		Event Player.SpeedY = Random Real(Global.MinSpeed, Global.MaxSpeed);
+	}
+}
+
+rule("Particle Assignment Z [SR]")
+{
+	event
+	{
+		Subroutine;
+		ParticleAssignZ;
+	}
+
+	actions
+	{
+		Call Subroutine(ParticleSetup);
+		Event Player.PosZ = Event Player.PosTemp;
+		Event Player.SpeedZ = Random Real(Global.MinSpeed, Global.MaxSpeed);
+	}
+}
+
+rule("Particle A")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		(Event Player.PosA == Ray Cast Hit Position(Event Player.PosA, Vector(X Component Of(Event Player.PosA), Global.DetectRange,
+			Z Component Of(Event Player.PosA)), All Players(All Teams), Null, True) || Is True For Any(Players Within Radius(
+			Event Player.PosA, Global.Radius, All Teams, Off), Is Alive(Current Array Element))) == True;
+	}
+
+	actions
+	{
+		If(Is True For Any(Players Within Radius(Event Player.PosA, Global.Radius, All Teams, Off), Current Array Element == Event Player)
+			&& Global.Damage != 0);
+			Damage(Event Player, Null, Global.Damage);
+		End;
+		Call Subroutine(ParticleAssignA);
+	}
+}
+
+rule("Particle B")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		(Event Player.PosB == Ray Cast Hit Position(Event Player.PosB, Vector(X Component Of(Event Player.PosB), Global.DetectRange,
+			Z Component Of(Event Player.PosB)), All Players(All Teams), Null, True) || Is True For Any(Players Within Radius(
+			Event Player.PosB, Global.Radius, All Teams, Off), Is Alive(Current Array Element))) == True;
+	}
+
+	actions
+	{
+		If(Is True For Any(Players Within Radius(Event Player.PosB, Global.Radius, All Teams, Off), Current Array Element == Event Player)
+			&& Global.Damage != 0);
+			Damage(Event Player, Null, Global.Damage);
+		End;
+		Call Subroutine(ParticleAssignB);
+	}
+}
+
+rule("Particle C")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		(Event Player.PosC == Ray Cast Hit Position(Event Player.PosC, Vector(X Component Of(Event Player.PosC), Global.DetectRange,
+			Z Component Of(Event Player.PosC)), All Players(All Teams), Null, True) || Is True For Any(Players Within Radius(
+			Event Player.PosC, Global.Radius, All Teams, Off), Is Alive(Current Array Element))) == True;
+	}
+
+	actions
+	{
+		If(Is True For Any(Players Within Radius(Event Player.PosC, Global.Radius, All Teams, Off), Current Array Element == Event Player)
+			&& Global.Damage != 0);
+			Damage(Event Player, Null, Global.Damage);
+		End;
+		Call Subroutine(ParticleAssignC);
+	}
+}
+
+rule("Particle D")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		(Event Player.PosD == Ray Cast Hit Position(Event Player.PosD, Vector(X Component Of(Event Player.PosD), Global.DetectRange,
+			Z Component Of(Event Player.PosD)), All Players(All Teams), Null, True) || Is True For Any(Players Within Radius(
+			Event Player.PosD, Global.Radius, All Teams, Off), Is Alive(Current Array Element))) == True;
+	}
+
+	actions
+	{
+		If(Is True For Any(Players Within Radius(Event Player.PosD, Global.Radius, All Teams, Off), Current Array Element == Event Player)
+			&& Global.Damage != 0);
+			Damage(Event Player, Null, Global.Damage);
+		End;
+		Call Subroutine(ParticleAssignD);
+	}
+}
+
+rule("Particle E")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		(Event Player.PosE == Ray Cast Hit Position(Event Player.PosE, Vector(X Component Of(Event Player.PosE), Global.DetectRange,
+			Z Component Of(Event Player.PosE)), All Players(All Teams), Null, True) || Is True For Any(Players Within Radius(
+			Event Player.PosE, Global.Radius, All Teams, Off), Is Alive(Current Array Element))) == True;
+	}
+
+	actions
+	{
+		If(Is True For Any(Players Within Radius(Event Player.PosE, Global.Radius, All Teams, Off), Current Array Element == Event Player)
+			&& Global.Damage != 0);
+			Damage(Event Player, Null, Global.Damage);
+		End;
+		Call Subroutine(ParticleAssignE);
+	}
+}
+
+rule("Particle F")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		(Event Player.PosF == Ray Cast Hit Position(Event Player.PosF, Vector(X Component Of(Event Player.PosF), Global.DetectRange,
+			Z Component Of(Event Player.PosF)), All Players(All Teams), Null, True) || Is True For Any(Players Within Radius(
+			Event Player.PosF, Global.Radius, All Teams, Off), Is Alive(Current Array Element))) == True;
+	}
+
+	actions
+	{
+		If(Is True For Any(Players Within Radius(Event Player.PosF, Global.Radius, All Teams, Off), Current Array Element == Event Player)
+			&& Global.Damage != 0);
+			Damage(Event Player, Null, Global.Damage);
+		End;
+		Call Subroutine(ParticleAssignF);
+	}
+}
+
+rule("Particle G")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		(Event Player.PosG == Ray Cast Hit Position(Event Player.PosG, Vector(X Component Of(Event Player.PosG), Global.DetectRange,
+			Z Component Of(Event Player.PosG)), All Players(All Teams), Null, True) || Is True For Any(Players Within Radius(
+			Event Player.PosG, Global.Radius, All Teams, Off), Is Alive(Current Array Element))) == True;
+	}
+
+	actions
+	{
+		If(Is True For Any(Players Within Radius(Event Player.PosG, Global.Radius, All Teams, Off), Current Array Element == Event Player)
+			&& Global.Damage != 0);
+			Damage(Event Player, Null, Global.Damage);
+		End;
+		Call Subroutine(ParticleAssignG);
+	}
+}
+
+rule("Particle H")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		(Event Player.PosH == Ray Cast Hit Position(Event Player.PosH, Vector(X Component Of(Event Player.PosH), Global.DetectRange,
+			Z Component Of(Event Player.PosH)), All Players(All Teams), Null, True) || Is True For Any(Players Within Radius(
+			Event Player.PosH, Global.Radius, All Teams, Off), Is Alive(Current Array Element))) == True;
+	}
+
+	actions
+	{
+		If(Is True For Any(Players Within Radius(Event Player.PosH, Global.Radius, All Teams, Off), Current Array Element == Event Player)
+			&& Global.Damage != 0);
+			Damage(Event Player, Null, Global.Damage);
+		End;
+		Call Subroutine(ParticleAssignH);
+	}
+}
+
+rule("Particle I")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		(Event Player.PosI == Ray Cast Hit Position(Event Player.PosI, Vector(X Component Of(Event Player.PosI), Global.DetectRange,
+			Z Component Of(Event Player.PosI)), All Players(All Teams), Null, True) || Is True For Any(Players Within Radius(
+			Event Player.PosI, Global.Radius, All Teams, Off), Is Alive(Current Array Element))) == True;
+	}
+
+	actions
+	{
+		If(Is True For Any(Players Within Radius(Event Player.PosI, Global.Radius, All Teams, Off), Current Array Element == Event Player)
+			&& Global.Damage != 0);
+			Damage(Event Player, Null, Global.Damage);
+		End;
+		Call Subroutine(ParticleAssignI);
+	}
+}
+
+rule("Particle J")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		(Event Player.PosJ == Ray Cast Hit Position(Event Player.PosJ, Vector(X Component Of(Event Player.PosJ), Global.DetectRange,
+			Z Component Of(Event Player.PosJ)), All Players(All Teams), Null, True) || Is True For Any(Players Within Radius(
+			Event Player.PosJ, Global.Radius, All Teams, Off), Is Alive(Current Array Element))) == True;
+	}
+
+	actions
+	{
+		If(Is True For Any(Players Within Radius(Event Player.PosJ, Global.Radius, All Teams, Off), Current Array Element == Event Player)
+			&& Global.Damage != 0);
+			Damage(Event Player, Null, Global.Damage);
+		End;
+		Call Subroutine(ParticleAssignJ);
+	}
+}
+
+rule("Particle K")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		(Event Player.PosK == Ray Cast Hit Position(Event Player.PosK, Vector(X Component Of(Event Player.PosK), Global.DetectRange,
+			Z Component Of(Event Player.PosK)), All Players(All Teams), Null, True) || Is True For Any(Players Within Radius(
+			Event Player.PosK, Global.Radius, All Teams, Off), Is Alive(Current Array Element))) == True;
+	}
+
+	actions
+	{
+		If(Is True For Any(Players Within Radius(Event Player.PosK, Global.Radius, All Teams, Off), Current Array Element == Event Player)
+			&& Global.Damage != 0);
+			Damage(Event Player, Null, Global.Damage);
+		End;
+		Call Subroutine(ParticleAssignK);
+	}
+}
+
+rule("Particle L")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		(Event Player.PosL == Ray Cast Hit Position(Event Player.PosL, Vector(X Component Of(Event Player.PosL), Global.DetectRange,
+			Z Component Of(Event Player.PosL)), All Players(All Teams), Null, True) || Is True For Any(Players Within Radius(
+			Event Player.PosL, Global.Radius, All Teams, Off), Is Alive(Current Array Element))) == True;
+	}
+
+	actions
+	{
+		If(Is True For Any(Players Within Radius(Event Player.PosL, Global.Radius, All Teams, Off), Current Array Element == Event Player)
+			&& Global.Damage != 0);
+			Damage(Event Player, Null, Global.Damage);
+		End;
+		Call Subroutine(ParticleAssignL);
+	}
+}
+
+rule("Particle M")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		(Event Player.PosM == Ray Cast Hit Position(Event Player.PosM, Vector(X Component Of(Event Player.PosM), Global.DetectRange,
+			Z Component Of(Event Player.PosM)), All Players(All Teams), Null, True) || Is True For Any(Players Within Radius(
+			Event Player.PosM, Global.Radius, All Teams, Off), Is Alive(Current Array Element))) == True;
+	}
+
+	actions
+	{
+		If(Is True For Any(Players Within Radius(Event Player.PosM, Global.Radius, All Teams, Off), Current Array Element == Event Player)
+			&& Global.Damage != 0);
+			Damage(Event Player, Null, Global.Damage);
+		End;
+		Call Subroutine(ParticleAssignM);
+	}
+}
+
+rule("Particle N")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		(Event Player.PosN == Ray Cast Hit Position(Event Player.PosN, Vector(X Component Of(Event Player.PosN), Global.DetectRange,
+			Z Component Of(Event Player.PosN)), All Players(All Teams), Null, True) || Is True For Any(Players Within Radius(
+			Event Player.PosN, Global.Radius, All Teams, Off), Is Alive(Current Array Element))) == True;
+	}
+
+	actions
+	{
+		If(Is True For Any(Players Within Radius(Event Player.PosN, Global.Radius, All Teams, Off), Current Array Element == Event Player)
+			&& Global.Damage != 0);
+			Damage(Event Player, Null, Global.Damage);
+		End;
+		Call Subroutine(ParticleAssignN);
+	}
+}
+
+rule("Particle O")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		(Event Player.PosO == Ray Cast Hit Position(Event Player.PosO, Vector(X Component Of(Event Player.PosO), Global.DetectRange,
+			Z Component Of(Event Player.PosO)), All Players(All Teams), Null, True) || Is True For Any(Players Within Radius(
+			Event Player.PosO, Global.Radius, All Teams, Off), Is Alive(Current Array Element))) == True;
+	}
+
+	actions
+	{
+		If(Is True For Any(Players Within Radius(Event Player.PosO, Global.Radius, All Teams, Off), Current Array Element == Event Player)
+			&& Global.Damage != 0);
+			Damage(Event Player, Null, Global.Damage);
+		End;
+		Call Subroutine(ParticleAssignO);
+	}
+}
+
+rule("Particle P")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		(Event Player.PosP == Ray Cast Hit Position(Event Player.PosP, Vector(X Component Of(Event Player.PosP), Global.DetectRange,
+			Z Component Of(Event Player.PosP)), All Players(All Teams), Null, True) || Is True For Any(Players Within Radius(
+			Event Player.PosP, Global.Radius, All Teams, Off), Is Alive(Current Array Element))) == True;
+	}
+
+	actions
+	{
+		If(Is True For Any(Players Within Radius(Event Player.PosP, Global.Radius, All Teams, Off), Current Array Element == Event Player)
+			&& Global.Damage != 0);
+			Damage(Event Player, Null, Global.Damage);
+		End;
+		Call Subroutine(ParticleAssignP);
+	}
+}
+
+rule("Particle Q")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		(Event Player.PosQ == Ray Cast Hit Position(Event Player.PosQ, Vector(X Component Of(Event Player.PosQ), Global.DetectRange,
+			Z Component Of(Event Player.PosQ)), All Players(All Teams), Null, True) || Is True For Any(Players Within Radius(
+			Event Player.PosQ, Global.Radius, All Teams, Off), Is Alive(Current Array Element))) == True;
+	}
+
+	actions
+	{
+		If(Is True For Any(Players Within Radius(Event Player.PosQ, Global.Radius, All Teams, Off), Current Array Element == Event Player)
+			&& Global.Damage != 0);
+			Damage(Event Player, Null, Global.Damage);
+		End;
+		Call Subroutine(ParticleAssignQ);
+	}
+}
+
+rule("Particle R")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		(Event Player.PosR == Ray Cast Hit Position(Event Player.PosR, Vector(X Component Of(Event Player.PosR), Global.DetectRange,
+			Z Component Of(Event Player.PosR)), All Players(All Teams), Null, True) || Is True For Any(Players Within Radius(
+			Event Player.PosR, Global.Radius, All Teams, Off), Is Alive(Current Array Element))) == True;
+	}
+
+	actions
+	{
+		If(Is True For Any(Players Within Radius(Event Player.PosR, Global.Radius, All Teams, Off), Current Array Element == Event Player)
+			&& Global.Damage != 0);
+			Damage(Event Player, Null, Global.Damage);
+		End;
+		Call Subroutine(ParticleAssignR);
+	}
+}
+
+rule("Particle S")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		(Event Player.PosS == Ray Cast Hit Position(Event Player.PosS, Vector(X Component Of(Event Player.PosS), Global.DetectRange,
+			Z Component Of(Event Player.PosS)), All Players(All Teams), Null, True) || Is True For Any(Players Within Radius(
+			Event Player.PosS, Global.Radius, All Teams, Off), Is Alive(Current Array Element))) == True;
+	}
+
+	actions
+	{
+		If(Is True For Any(Players Within Radius(Event Player.PosS, Global.Radius, All Teams, Off), Current Array Element == Event Player)
+			&& Global.Damage != 0);
+			Damage(Event Player, Null, Global.Damage);
+		End;
+		Call Subroutine(ParticleAssignS);
+	}
+}
+
+rule("Particle T")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		(Event Player.PosT == Ray Cast Hit Position(Event Player.PosT, Vector(X Component Of(Event Player.PosT), Global.DetectRange,
+			Z Component Of(Event Player.PosT)), All Players(All Teams), Null, True) || Is True For Any(Players Within Radius(
+			Event Player.PosT, Global.Radius, All Teams, Off), Is Alive(Current Array Element))) == True;
+	}
+
+	actions
+	{
+		If(Is True For Any(Players Within Radius(Event Player.PosT, Global.Radius, All Teams, Off), Current Array Element == Event Player)
+			&& Global.Damage != 0);
+			Damage(Event Player, Null, Global.Damage);
+		End;
+		Call Subroutine(ParticleAssignT);
+	}
+}
+
+rule("Particle U")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		(Event Player.PosU == Ray Cast Hit Position(Event Player.PosU, Vector(X Component Of(Event Player.PosU), Global.DetectRange,
+			Z Component Of(Event Player.PosU)), All Players(All Teams), Null, True) || Is True For Any(Players Within Radius(
+			Event Player.PosU, Global.Radius, All Teams, Off), Is Alive(Current Array Element))) == True;
+	}
+
+	actions
+	{
+		If(Is True For Any(Players Within Radius(Event Player.PosU, Global.Radius, All Teams, Off), Current Array Element == Event Player)
+			&& Global.Damage != 0);
+			Damage(Event Player, Null, Global.Damage);
+		End;
+		Call Subroutine(ParticleAssignU);
+	}
+}
+
+rule("Particle V")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		(Event Player.PosV == Ray Cast Hit Position(Event Player.PosV, Vector(X Component Of(Event Player.PosV), Global.DetectRange,
+			Z Component Of(Event Player.PosV)), All Players(All Teams), Null, True) || Is True For Any(Players Within Radius(
+			Event Player.PosV, Global.Radius, All Teams, Off), Is Alive(Current Array Element))) == True;
+	}
+
+	actions
+	{
+		If(Is True For Any(Players Within Radius(Event Player.PosV, Global.Radius, All Teams, Off), Current Array Element == Event Player)
+			&& Global.Damage != 0);
+			Damage(Event Player, Null, Global.Damage);
+		End;
+		Call Subroutine(ParticleAssignV);
+	}
+}
+
+rule("Particle W")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		(Event Player.PosW == Ray Cast Hit Position(Event Player.PosW, Vector(X Component Of(Event Player.PosW), Global.DetectRange,
+			Z Component Of(Event Player.PosW)), All Players(All Teams), Null, True) || Is True For Any(Players Within Radius(
+			Event Player.PosW, Global.Radius, All Teams, Off), Is Alive(Current Array Element))) == True;
+	}
+
+	actions
+	{
+		If(Is True For Any(Players Within Radius(Event Player.PosW, Global.Radius, All Teams, Off), Current Array Element == Event Player)
+			&& Global.Damage != 0);
+			Damage(Event Player, Null, Global.Damage);
+		End;
+		Call Subroutine(ParticleAssignW);
+	}
+}
+
+rule("Particle X")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		(Event Player.PosX == Ray Cast Hit Position(Event Player.PosX, Vector(X Component Of(Event Player.PosX), Global.DetectRange,
+			Z Component Of(Event Player.PosX)), All Players(All Teams), Null, True) || Is True For Any(Players Within Radius(
+			Event Player.PosX, Global.Radius, All Teams, Off), Is Alive(Current Array Element))) == True;
+	}
+
+	actions
+	{
+		If(Is True For Any(Players Within Radius(Event Player.PosX, Global.Radius, All Teams, Off), Current Array Element == Event Player)
+			&& Global.Damage != 0);
+			Damage(Event Player, Null, Global.Damage);
+		End;
+		Call Subroutine(ParticleAssignX);
+	}
+}
+
+rule("Particle Y")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		(Event Player.PosY == Ray Cast Hit Position(Event Player.PosY, Vector(X Component Of(Event Player.PosY), Global.DetectRange,
+			Z Component Of(Event Player.PosY)), All Players(All Teams), Null, True) || Is True For Any(Players Within Radius(
+			Event Player.PosY, Global.Radius, All Teams, Off), Is Alive(Current Array Element))) == True;
+	}
+
+	actions
+	{
+		If(Is True For Any(Players Within Radius(Event Player.PosY, Global.Radius, All Teams, Off), Current Array Element == Event Player)
+			&& Global.Damage != 0);
+			Damage(Event Player, Null, Global.Damage);
+		End;
+		Call Subroutine(ParticleAssignY);
+	}
+}
+
+rule("Particle Z")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		(Event Player.PosZ == Ray Cast Hit Position(Event Player.PosZ, Vector(X Component Of(Event Player.PosZ), Global.DetectRange,
+			Z Component Of(Event Player.PosZ)), All Players(All Teams), Null, True) || Is True For Any(Players Within Radius(
+			Event Player.PosZ, Global.Radius, All Teams, Off), Is Alive(Current Array Element))) == True;
+	}
+
+	actions
+	{
+		If(Is True For Any(Players Within Radius(Event Player.PosZ, Global.Radius, All Teams, Off), Current Array Element == Event Player)
+			&& Global.Damage != 0);
+			Damage(Event Player, Null, Global.Damage);
+		End;
+		Call Subroutine(ParticleAssignZ);
+	}
+}
