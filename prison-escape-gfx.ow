@@ -4381,7 +4381,8 @@ rule("Select a global effect & configurate (GE)[SR]")
 			Call Subroutine(BeforeNewBastionBulletUpgrade);
 			Global.TempVar3 = Custom String("Bastions' bullets has been upgraded!");
 			Global.GEName = Custom String("Bastion Bullet Upgrade!");
-			Global.BUChoices[0] = Random Value In Array(Filtered Array(Array(0, 1, 2, 3, 4, 5), Current Array Element != Global.BUChoices[0]));
+			Global.BUChoices[0] = Random Value In Array(Filtered Array(Array(0, 1, 2, 3, 4, 5, 6),
+				Current Array Element != Global.BUChoices[0]));
 			"DEBUGGING only"
 			disabled Global.BUChoices[0] = 0;
 		Else If(Global.TempVar == 35);
@@ -4438,7 +4439,7 @@ rule("Select a global effect & configurate (GE)[SR]")
 		Else If(Global.TempVar == 43);
 			Global.TempVar3 = Custom String("An extra upgrade has been added to Bastion!");
 			Global.GEName = Custom String("Bastion Extra Upgrade!");
-			Global.BUChoices[1] = Random Value In Array(Filtered Array(Array(0, 1, 2, 3, 4, 5), Current Array Element == Global.BUChoices[1]));
+			Global.BUChoices[1] = Random Value In Array(Filtered Array(Array(0, 1, 2, 3, 4), Current Array Element == Global.BUChoices[1]));
 			"DEBUGGING only"
 			disabled Global.BUChoices[1] = 5;
 		Else If(Global.TempVar == 44);
@@ -4534,11 +4535,11 @@ rule("Set HUD recent help text for players(GE)")
 			Create HUD Text(Event Player, Custom String("{0} Bastion Upgrade: {1}{2}", Hero Icon String(Hero(Bastion)),
 				Global.BUChoices[0] == 1 ? Icon String(Arrow: Right) : (Global.BUChoices[0] == 2 ? Icon String(Fire) : (
 				Global.BUChoices[0] == 3 ? Icon String(Spiral) : (Global.BUChoices[0] == 4 ? Ability Icon String(Hero(Bastion), Button(
-				Ultimate)) : (Global.BUChoices[0] == 5 ? Icon String(Dizzy) : String(""))))), Global.BUChoices[1] == 1 ? Ability Icon String(
-				Hero(Sombra), Button(Ability 1)) : (Global.BUChoices[1] == 2 ? Icon String(Arrow: Down) : (
-				Global.BUChoices[1] == 3 ? Icon String(Arrow: Up) : (Global.BUChoices[1] == 4 ? Ability Icon String(Hero(Genji), Button(
-				Ability 1)) : (Global.BUChoices[1] == 5 ? Icon String(Bolt) : String("")))))), Null, Null, Right, -4, Color(Aqua), Color(
-				White), Color(White), Visible To and String, Default Visibility);
+				Ultimate)) : (Global.BUChoices[0] == 5 ? Icon String(Dizzy) : (Global.BUChoices[0] == 6 ? Icon String(Bolt) : String("")))))),
+				Global.BUChoices[1] == 1 ? Ability Icon String(Hero(Sombra), Button(Ability 1)) : (Global.BUChoices[1] == 2 ? Icon String(
+				Arrow: Down) : (Global.BUChoices[1] == 3 ? Icon String(Arrow: Up) : (Global.BUChoices[1] == 4 ? Ability Icon String(Hero(
+				Genji), Button(Ability 1)) : String(""))))), Null, Null, Right, -4, Color(Aqua), Color(White), Color(White),
+				Visible To and String, Default Visibility);
 			Modify Player Variable(Event Player, GEHelpTextIDs, Append To Array, Last Text ID);
 	}
 }
@@ -7613,7 +7614,7 @@ rule("Player took damage (BU)[Bullet]")
 	{
 		Global.IsBastionUpgradableWS == True;
 		Attacker != Event Player;
-		(Global.BUChoices[0] == 2 || Global.BUChoices[0] == 1 || Global.BUChoices[0] == 5) == True;
+		(Global.BUChoices[0] == 2 || Global.BUChoices[0] == 1 || Global.BUChoices[0] == 5 || Global.BUChoices[0] == 6) == True;
 	}
 
 	actions
@@ -7628,6 +7629,20 @@ rule("Player took damage (BU)[Bullet]")
 		"Concussion Bullets"
 		Else If(Global.BUChoices[0] == 5 && Random Integer(0, 10) == 6);
 			Set Status(Event Player, Null, Stunned, 0.500);
+		"Shock Bullets"
+		Else If(Global.BUChoices[0] == 6);
+			Event Player.BUPlayersNearby = Players Within Radius(Event Player, 10, Team 1, Off);
+			For Player Variable(Event Player, BUIndex, 0, Count Of(Event Player.BUPlayersNearby), 1);
+				Damage(Event Player.BUPlayersNearby[Event Player.BUIndex], Closest Player To(Event Player, Team 2), Event Damage * 0.700);
+				Create Beam Effect(All Players(Team 1), Winston Tesla Cannon Beam, Event Player,
+					Event Player.BUPlayersNearby[Event Player.BUIndex], Color(Aqua), Visible To Position and Radius);
+				Event Player.BUEffectIDs[0] = Last Created Entity;
+				Create Effect(All Players(Team 1), Winston Tesla Cannon Target Sound, Color(White),
+					Event Player.BUPlayersNearby[Event Player.BUIndex], 80, Visible To Position and Radius);
+				Event Player.BUEffectIDs[1] = Last Created Entity;
+				Wait(1, Abort When False);
+				Destroy Effect(Event Player.BUEffectIDs);
+			End;
 	}
 }
 
@@ -8390,38 +8405,6 @@ rule("Reset extra Bastion Upgrade (BU)[Extra][SR]")
 		Stop Scaling Player(Global.TempVar4);
 		Enable Movement Collision With Environment(Global.TempVar4);
 		Global.BastionDamages[2] = 0;
-	}
-}
-
-rule("Player took damage (BU)[Extra]")
-{
-	event
-	{
-		Player Took Damage;
-		Team 1;
-		All;
-	}
-
-	conditions
-	{
-		Event Player.IsWinner == False;
-		Global.BUChoices[1] == 5;
-	}
-
-	actions
-	{
-		Event Player.BUPlayersNearby = Players Within Radius(Event Player, 10, Team 1, Off);
-		For Player Variable(Event Player, BUIndex, 0, Count Of(Event Player.BUPlayersNearby), 1);
-			Damage(Event Player.BUPlayersNearby[Event Player.BUIndex], Closest Player To(Event Player, Team 2), Event Damage * 0.700);
-			Create Beam Effect(All Players(Team 1), Winston Tesla Cannon Beam, Event Player,
-				Event Player.BUPlayersNearby[Event Player.BUIndex], Color(Aqua), Visible To Position and Radius);
-			Event Player.BUEffectIDs[0] = Last Created Entity;
-			Create Effect(All Players(Team 1), Winston Tesla Cannon Target Sound, Color(White),
-				Event Player.BUPlayersNearby[Event Player.BUIndex], 80, Visible To Position and Radius);
-			Event Player.BUEffectIDs[1] = Last Created Entity;
-			Wait(1, Abort When False);
-			Destroy Effect(Event Player.BUEffectIDs);
-		End;
 	}
 }
 
