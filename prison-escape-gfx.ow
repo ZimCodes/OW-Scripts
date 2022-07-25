@@ -167,6 +167,8 @@ settings
 
 	extensions
 	{
+		Beam Effects
+		Beam Sounds
 		Buff and Debuff Sounds
 		Explosion Sounds
 		Play More Effects
@@ -184,7 +186,7 @@ variables
 		4: GEChoice
 		5: IsDVADebug
 		6: IsDebugMode
-		7: kills
+		7: BastionDamages
 		8: GEText
 		9: JumpPadLocList
 		10: JumpPadPowerList
@@ -241,7 +243,6 @@ variables
 		63: WinnerResetRingStats
 		64: GECameraChoice
 		65: IsBastionUpgradableWS
-		66: BUBulletChoice
 		67: BastionPosLocType
 		68: BastionPosDistance
 		69: BastionPosIntervalMinMaxWS
@@ -254,16 +255,17 @@ variables
 		76: CurWinnerCount
 		77: GameOptTextVec
 		78: GameOptTextSpacing
-		79: BUExtraChoice
 		80: GEPatrolChoice
 		81: GETempVar5
 		82: GEToggles
+		83: BUChoices
 
 	player:
 		0: IsWinner
 		1: GECameraStats
 		2: temp
 		3: CurrentHero
+		4: BUPlayersNearby
 		5: Deaths
 		6: DVADebugStates
 		8: BacktrackDeaths
@@ -307,6 +309,8 @@ variables
 		49: BUTeleType
 		50: BUTeleDistance
 		51: WinnerDeathID
+		52: BUIndex
+		53: BUEffectIDs
 }
 
 subroutines
@@ -340,7 +344,6 @@ subroutines
 	26: GEStartTypeJ
 	27: AddBacktrackDeath
 	28: SelectBastionBulletUpgrade
-	29: BastionBulletUpgradeReset
 	30: SetNewBastionPosition
 	31: ApplyWinnerStats
 	32: SetupGameSettingsText
@@ -365,6 +368,7 @@ subroutines
 	51: EnablePlayer
 	52: OneForAllGoal
 	53: NextHero
+	54: SetGEBastionDamage
 }
 
 rule("Workshop Settings")
@@ -536,8 +540,6 @@ rule("Global Stats & inits")
 			Color(White), Visible To and String, Default Visibility);
 		Create HUD Text(All Players(All Teams), Null, Custom String("Code: N0B1R"), Null, Top, 1, Color(White), Color(White), Color(White),
 			Visible To and String, Default Visibility);
-		"Holds kill stats for each bastion"
-		Global.kills = Array(0, 0, 0, 0, 0, 0);
 		Global.SavedWinners = Empty Array;
 		Global.SavedIndex = Empty Array;
 		Global.SavedHero = Empty Array;
@@ -553,6 +555,10 @@ rule("Global Stats & inits")
 			Map(Route 66), Map(Temple of Anubis), Map(Watchpoint: Gibraltar), Map(Volskaya Industries));
 		"0 = I Need Healing"
 		Global.GEToggles = Array(False);
+		"0 = Bullets; 1 = Extra"
+		Global.BUChoices = Array(0, 0);
+		"0 = Initial Damage; 1 = New Base Damage; 2 = Extra Damage; "
+		Global.BastionDamages = Array(150, 150, 0);
 	}
 }
 
@@ -2075,7 +2081,8 @@ rule("bastion enable turret mode")
 		Has Spawned(Event Player) == True;
 		Is Alive(Event Player) == True;
 		Is In Alternate Form(Event Player) == False;
-		Global.BUBulletChoice != 4;
+		"Bastion Bullets"
+		Global.BUChoices[0] != 4;
 	}
 
 	actions
@@ -2109,8 +2116,7 @@ rule("bastion teleport and init (player E, global d)")
 		Wait(0.250, Ignore Condition);
 		Teleport(Event Player, Global.AllBastionPositions[Slot Of(Event Player)]);
 		Set Status(Event Player, Null, Unkillable, 99999);
-		Event Player.E = 0;
-		Set Damage Dealt(Event Player, 150);
+		Set Damage Dealt(Event Player, Global.BastionDamages[0]);
 		Set Knockback Received(Event Player, 1);
 	}
 }
@@ -2138,7 +2144,7 @@ rule("Randomize Bastion positions (RBP)")
 		Global.RBPIndex = 0;
 		While(Global.RBPIndex < Count Of(Global.AllBastionPositions));
 			Call Subroutine(SetNewBastionPosition);
-			Wait(0.300, Ignore Condition);
+			Wait(0.200, Ignore Condition);
 		End;
 		Loop If(Global.BastionPosTypeWS == 1);
 	}
@@ -3095,28 +3101,6 @@ disabled rule("speed trigger on (player t0)(debug)")
 	}
 }
 
-disabled rule("speed triger off (player t0)(debug)")
-{
-	event
-	{
-		Ongoing - Each Player;
-		Team 1;
-		All;
-	}
-
-	conditions
-	{
-		First Of(Event Player.Z) == False;
-		Global.IsDebugMode == True;
-	}
-
-	actions
-	{
-		Set Move Speed(Event Player, 77);
-		Set Projectile Speed(Event Player, 100);
-	}
-}
-
 disabled rule("speed button (debug)")
 {
 	event
@@ -3286,8 +3270,7 @@ rule("Rename Bastion On Join")
 
 	actions
 	{
-		Start Forcing Dummy Bot Name(Event Player, Custom String("BASTION {0} | KILLS: {1}", Slot Of(Event Player) + 1,
-			Global.kills[Slot Of(Event Player)]));
+		Start Forcing Dummy Bot Name(Event Player, Custom String("BASTION {0}", Slot Of(Event Player) + 1));
 	}
 }
 
@@ -3787,9 +3770,7 @@ rule("Show Bastions Position")
 
 	actions
 	{
-		Global.kills[Slot Of(Event Player)] += 1;
-		Start Forcing Dummy Bot Name(Event Player, Custom String("BASTION {0} | KILLS: {1}", Slot Of(Event Player) + 1,
-			Global.kills[Slot Of(Event Player)]));
+		Start Forcing Dummy Bot Name(Event Player, Custom String("BASTION {0}", Slot Of(Event Player) + 1));
 		Start Forcing Player Outlines(Attacker, Victim, True, Color(Red), Always);
 		Wait(12, Ignore Condition);
 		Stop Forcing Player Outlines(Attacker, Victim);
@@ -4148,7 +4129,7 @@ rule("Select a global effect & configurate (GE)[SR]")
 		"Current NUMBER of players currently around. Used if global effect requires more than 1 player"
 		Global.TempVar2 = 1;
 		"DEBUG: Chose a specific global effect"
-		disabled Global.TempVar = 44;
+		disabled Global.TempVar = 43;
 		If(Global.TempVar == 1);
 			"The Patrol Guard to use"
 			Global.GEPatrolChoice = Random Integer(0, 2);
@@ -4400,10 +4381,9 @@ rule("Select a global effect & configurate (GE)[SR]")
 			Call Subroutine(BeforeNewBastionBulletUpgrade);
 			Global.TempVar3 = Custom String("Bastions' bullets has been upgraded!");
 			Global.GEName = Custom String("Bastion Bullet Upgrade!");
-			Global.BUBulletChoice = Random Value In Array(Filtered Array(Array(0, 1, 2, 3, 4, 5, 6),
-				Current Array Element != Global.BUBulletChoice));
+			Global.BUChoices[0] = Random Value In Array(Filtered Array(Array(0, 1, 2, 3, 4, 5), Current Array Element != Global.BUChoices[0]));
 			"DEBUGGING only"
-			disabled Global.BUBulletChoice = 6;
+			disabled Global.BUChoices[0] = 0;
 		Else If(Global.TempVar == 35);
 			Global.TempVar3 = Custom String("Incremental value for backtrack deaths has changed.");
 			Global.GEName = Custom String("Blood Sacrifice!");
@@ -4429,7 +4409,7 @@ rule("Select a global effect & configurate (GE)[SR]")
 			Global.GEBallSpeed = 2.560;
 			Global.TempVar2 = Count Of(Filtered Array(All Players(Team 1), !Current Array Element.IsWinner));
 			Global.GEName = Custom String("Spotlight!");
-			Global.GERadius = 6.400;
+			Global.GERadius = 6.600;
 		Else If(Global.TempVar == 39);
 			Global.TempVar3 = Custom String("The winds are blowing strong!");
 			Global.GEName = Custom String("Strong Winds!");
@@ -4458,13 +4438,13 @@ rule("Select a global effect & configurate (GE)[SR]")
 		Else If(Global.TempVar == 43);
 			Global.TempVar3 = Custom String("An extra upgrade has been added to Bastion!");
 			Global.GEName = Custom String("Bastion Extra Upgrade!");
-			Global.BUExtraChoice = Random Value In Array(Filtered Array(Array(0, 1, 2, 3), Current Array Element != Global.BUExtraChoice));
+			Global.BUChoices[1] = Random Value In Array(Filtered Array(Array(0, 1, 2, 3, 4, 5), Current Array Element == Global.BUChoices[1]));
 			"DEBUGGING only"
-			disabled Global.BUExtraChoice = 1;
+			disabled Global.BUChoices[1] = 5;
 		Else If(Global.TempVar == 44);
 			Global.GEMinPlayerReq = 3;
 			Global.TempVar3 = Custom String(
-				"Players randomly take turns controlling one body. \nIf the body dies or escapes, it affects everyone..");
+				"Players randomly take turns controlling one body. \nIf the body dies or escapes, it affects everyone.");
 			"Switcharoo"
 			Global.TempVar2 = Count Of(Filtered Array(All Players(Team 1), !Current Array Element.IsWinner));
 			Global.GEName = Custom String("One-For-All!");
@@ -4552,13 +4532,13 @@ rule("Set HUD recent help text for players(GE)")
 		Modify Player Variable(Event Player, GEHelpTextIDs, Append To Array, Last Text ID);
 		If(Global.IsBastionUpgradableWS);
 			Create HUD Text(Event Player, Custom String("{0} Bastion Upgrade: {1}{2}", Hero Icon String(Hero(Bastion)),
-				Global.BUBulletChoice == 1 ? Icon String(Arrow: Right) : (Global.BUBulletChoice == 2 ? Icon String(Fire) : (
-				Global.BUBulletChoice == 3 ? Icon String(Spiral) : (Global.BUBulletChoice == 4 ? Ability Icon String(Hero(Bastion), Button(
-				Ultimate)) : (Global.BUBulletChoice == 5 ? Ability Icon String(Hero(Genji), Button(Ability 1)) : (
-				Global.BUBulletChoice == 6 ? Icon String(Dizzy) : String("")))))), Global.BUExtraChoice == 1 ? Ability Icon String(Hero(
-				Sombra), Button(Ability 1)) : (Global.BUExtraChoice == 2 ? Icon String(Arrow: Down) : (Global.BUExtraChoice == 3 ? Icon String(
-				Arrow: Up) : String("")))), Null, Null, Right, -4, Color(Aqua), Color(White), Color(White), Visible To and String,
-				Default Visibility);
+				Global.BUChoices[0] == 1 ? Icon String(Arrow: Right) : (Global.BUChoices[0] == 2 ? Icon String(Fire) : (
+				Global.BUChoices[0] == 3 ? Icon String(Spiral) : (Global.BUChoices[0] == 4 ? Ability Icon String(Hero(Bastion), Button(
+				Ultimate)) : (Global.BUChoices[0] == 5 ? Icon String(Dizzy) : String(""))))), Global.BUChoices[1] == 1 ? Ability Icon String(
+				Hero(Sombra), Button(Ability 1)) : (Global.BUChoices[1] == 2 ? Icon String(Arrow: Down) : (
+				Global.BUChoices[1] == 3 ? Icon String(Arrow: Up) : (Global.BUChoices[1] == 4 ? Ability Icon String(Hero(Genji), Button(
+				Ability 1)) : (Global.BUChoices[1] == 5 ? Icon String(Bolt) : String("")))))), Null, Null, Right, -4, Color(Aqua), Color(
+				White), Color(White), Visible To and String, Default Visibility);
 			Modify Player Variable(Event Player, GEHelpTextIDs, Append To Array, Last Text ID);
 	}
 }
@@ -7583,7 +7563,7 @@ rule("Lag player (I'm Lagging)(GE)")
 	}
 }
 
-rule("Select a Bastion Bullet Upgrade (BU)[SR]")
+rule("Select a Bastion Bullet Upgrade (BU)[Bullet][SR]")
 {
 	event
 	{
@@ -7593,47 +7573,34 @@ rule("Select a Bastion Bullet Upgrade (BU)[SR]")
 
 	actions
 	{
-		Call Subroutine(BastionBulletUpgradeReset);
+		Global.TempVar4 = Filtered Array(All Players(Team 2), Hero Of(Current Array Element) == Hero(Bastion));
 		"Knockback Bullets"
-		If(Global.BUBulletChoice == 1);
-			Set Damage Dealt(Global.TempVar4, 50);
+		If(Global.BUChoices[0] == 1);
+			Global.BastionDamages[1] = 50;
 		"Flaming Bullets"
-		Else If(Global.BUBulletChoice == 2);
-			Set Damage Dealt(Global.TempVar4, 0.500);
+		Else If(Global.BUChoices[0] == 2);
+			Global.BastionDamages[1] = 0.500;
 		"Tank Mode"
-		Else If(Global.BUBulletChoice == 4);
-			Global.TempVar4 = Filtered Array(All Players(Team 2), Hero Of(Current Array Element) == Hero(Bastion));
+		Else If(Global.BUChoices[0] == 4);
 			Allow Button(Global.TempVar4, Button(Ultimate));
 			Set Ultimate Ability Enabled(Global.TempVar4, True);
 			Set Ultimate Charge(Global.TempVar4, 100);
 			Press Button(Global.TempVar4, Button(Ultimate));
 			Disallow Button(Global.TempVar4, Button(Ultimate));
 			Set Ultimate Ability Enabled(Global.TempVar4, False);
-		"Damage Boost"
-		Else If(Global.BUBulletChoice == 5);
-			Set Damage Dealt(Global.TempVar4, 200);
+			Global.BastionDamages[1] = Global.BastionDamages[0];
 		"Concussion Bullets"
-		Else If(Global.BUBulletChoice == 6);
-			Set Damage Dealt(Event Player, 100);
+		Else If(Global.BUChoices[0] == 5);
+			Global.BastionDamages[1] = 100;
+		"None"
+		Else;
+			Global.BastionDamages[1] = Global.BastionDamages[0];
+		End;
+		Call Subroutine(SetGEBastionDamage);
 	}
 }
 
-rule("Reset Bastion Bullet Upgrade (BU)[SR]")
-{
-	event
-	{
-		Subroutine;
-		BastionBulletUpgradeReset;
-	}
-
-	actions
-	{
-		Global.TempVar4 = Filtered Array(All Players(Team 2), Hero Of(Current Array Element) == Hero(Bastion));
-		Set Damage Dealt(Global.TempVar4, 150);
-	}
-}
-
-rule("Player took damage during Bastion Bullet Upgrades (BU)")
+rule("Player took damage (BU)[Bullet]")
 {
 	event
 	{
@@ -7646,25 +7613,25 @@ rule("Player took damage during Bastion Bullet Upgrades (BU)")
 	{
 		Global.IsBastionUpgradableWS == True;
 		Attacker != Event Player;
-		(Global.BUBulletChoice == 2 || Global.BUBulletChoice == 1 || Global.BUBulletChoice == 6) == True;
+		(Global.BUChoices[0] == 2 || Global.BUChoices[0] == 1 || Global.BUChoices[0] == 5) == True;
 	}
 
 	actions
 	{
 		"Flame Bullets"
-		If(Global.BUBulletChoice == 2);
+		If(Global.BUChoices[0] == 2);
 			Set Status(Event Player, Null, Burning, 10);
 			Start Damage Over Time(Event Player, Null, 10, Random Real(0.500, 5.100));
 		"Knockback Bullets"
-		Else If(Global.BUBulletChoice == 1);
+		Else If(Global.BUChoices[0] == 1);
 			Apply Impulse(Event Player, Event Direction, Random Real(5, 8.300), To World, Cancel Contrary Motion);
 		"Concussion Bullets"
-		Else If(Global.BUBulletChoice == 6 && Random Integer(0, 9) == 6);
+		Else If(Global.BUChoices[0] == 5 && Random Integer(0, 10) == 6);
 			Set Status(Event Player, Null, Stunned, 0.500);
 	}
 }
 
-rule("Bastion kills player during Bastion Bullet Upgrades (BU)")
+rule("Bastion kills player (BU)[Bullet]")
 {
 	event
 	{
@@ -7676,13 +7643,13 @@ rule("Bastion kills player during Bastion Bullet Upgrades (BU)")
 	conditions
 	{
 		Global.IsBastionUpgradableWS == True;
-		Global.BUBulletChoice == 3;
+		Global.BUChoices[0] == 3;
 	}
 
 	actions
 	{
 		"Teleport Bullets"
-		If(Global.BUBulletChoice == 3);
+		If(Global.BUChoices[0] == 3);
 			Victim.BUTelePos = Position Of(Victim);
 			Wait(0.150, Ignore Condition);
 			Victim.BUTeleType = Random Integer(0, 24);
@@ -7745,7 +7712,7 @@ rule("Bastion kills player during Bastion Bullet Upgrades (BU)")
 	}
 }
 
-rule("Before New Bastion Upgrade Choice (BU)[SR]")
+rule("Before New Bastion Upgrade Choice (BU)[Bullet][SR]")
 {
 	event
 	{
@@ -7756,7 +7723,7 @@ rule("Before New Bastion Upgrade Choice (BU)[SR]")
 	actions
 	{
 		Global.TempVar4 = Filtered Array(All Players(Team 2), Hero Of(Current Array Element) == Hero(Bastion));
-		If(Global.BUBulletChoice == 4);
+		If(Global.BUChoices[0] == 4);
 			Clear Status(Global.TempVar4, Unkillable);
 			Kill(Global.TempVar4, Null);
 			Set Status(Global.TempVar4, Null, Unkillable, 999999);
@@ -7775,7 +7742,7 @@ rule("Player Dies during Bastion Upgrade (BU)")
 	conditions
 	{
 		Global.IsBastionUpgradableWS == True;
-		Global.BUBulletChoice == 2;
+		Global.BUChoices[0] == 2;
 	}
 
 	actions
@@ -8213,10 +8180,10 @@ rule("Set camera view (Wacky Camera)(GE)[SR]")
 		"Top-down view"
 		Else If(Global.GECameraChoice == 1);
 			"Camera Distance"
-			Event Player.GECameraStats = 20;
+			Event Player.GECameraStats = Vector(0, 20, Facing Direction Of(Event Player) * 100);
 			Start Camera(Event Player, Ray Cast Hit Position(Eye Position(Event Player), Eye Position(Event Player) + Facing Direction Of(
-				Event Player) * -1 + Vector(0, Event Player.GECameraStats, 0), All Players(All Teams), Event Player, False), Eye Position(
-				Event Player), 15);
+				Event Player) * -1 + Event Player.GECameraStats, All Players(All Teams), Event Player, False), Eye Position(Event Player)
+				+ Facing Direction Of(Event Player), 15);
 		"Selfie view"
 		Else If(Global.GECameraChoice == 2);
 			"0 = Camera Distance; 1 = Camera Origin Y-Axis"
@@ -8364,7 +8331,21 @@ rule("Widowmaker communicates (Reveal)(GE)")
 	}
 }
 
-rule("Select extra Bastion Upgrade (BU)[SR]")
+rule("Set Bastion Upgrade Damage (BU)[SR]")
+{
+	event
+	{
+		Subroutine;
+		SetGEBastionDamage;
+	}
+
+	actions
+	{
+		Set Damage Dealt(Global.TempVar4, Global.BastionDamages[1] + Global.BastionDamages[2]);
+	}
+}
+
+rule("Select extra Bastion Upgrade (BU)[Extra][SR]")
 {
 	event
 	{
@@ -8376,19 +8357,24 @@ rule("Select extra Bastion Upgrade (BU)[SR]")
 	{
 		Call Subroutine(BastionExtraUpgradeReset);
 		"Camo"
-		If(Global.BUExtraChoice == 1);
+		If(Global.BUChoices[1] == 1);
 			Set Invisible(Global.TempVar4, All);
 		"Bastion Jr."
-		Else If(Global.BUExtraChoice == 2);
+		Else If(Global.BUChoices[1] == 2);
 			Start Scaling Player(Global.TempVar4, 0.300, False);
 		"Bastion Sr."
-		Else If(Global.BUExtraChoice == 3);
+		Else If(Global.BUChoices[1] == 3);
 			Start Scaling Player(Global.TempVar4, Random Real(2, 2.500), False);
 			Disable Movement Collision With Environment(Global.TempVar4, False);
+		"Damage Boost"
+		Else If(Global.BUChoices[1] == 4);
+			Global.BastionDamages[2] = 50;
+		End;
+		Call Subroutine(SetGEBastionDamage);
 	}
 }
 
-rule("Reset extra Bastion Upgrade (BU)[SR]")
+rule("Reset extra Bastion Upgrade (BU)[Extra][SR]")
 {
 	event
 	{
@@ -8403,10 +8389,43 @@ rule("Reset extra Bastion Upgrade (BU)[SR]")
 		Stop Forcing Player Outlines(Global.TempVar4, All Players(Team 1));
 		Stop Scaling Player(Global.TempVar4);
 		Enable Movement Collision With Environment(Global.TempVar4);
+		Global.BastionDamages[2] = 0;
 	}
 }
 
-rule("Bastion is shooting (Camo)(GE)(BU)")
+rule("Player took damage (BU)[Extra]")
+{
+	event
+	{
+		Player Took Damage;
+		Team 1;
+		All;
+	}
+
+	conditions
+	{
+		Event Player.IsWinner == False;
+		Global.BUChoices[1] == 5;
+	}
+
+	actions
+	{
+		Event Player.BUPlayersNearby = Players Within Radius(Event Player, 10, Team 1, Off);
+		For Player Variable(Event Player, BUIndex, 0, Count Of(Event Player.BUPlayersNearby), 1);
+			Damage(Event Player.BUPlayersNearby[Event Player.BUIndex], Closest Player To(Event Player, Team 2), Event Damage * 0.700);
+			Create Beam Effect(All Players(Team 1), Winston Tesla Cannon Beam, Event Player,
+				Event Player.BUPlayersNearby[Event Player.BUIndex], Color(Aqua), Visible To Position and Radius);
+			Event Player.BUEffectIDs[0] = Last Created Entity;
+			Create Effect(All Players(Team 1), Winston Tesla Cannon Target Sound, Color(White),
+				Event Player.BUPlayersNearby[Event Player.BUIndex], 80, Visible To Position and Radius);
+			Event Player.BUEffectIDs[1] = Last Created Entity;
+			Wait(1, Abort When False);
+			Destroy Effect(Event Player.BUEffectIDs);
+		End;
+	}
+}
+
+rule("Bastion is shooting (Camo)(GE)(BU)[Extra]")
 {
 	event
 	{
@@ -8418,7 +8437,7 @@ rule("Bastion is shooting (Camo)(GE)(BU)")
 	conditions
 	{
 		"Clandestine Toggle"
-		Global.BUExtraChoice == 1;
+		Global.BUChoices[1] == 1;
 		Is Firing Primary(Event Player) == True;
 	}
 
@@ -8430,7 +8449,7 @@ rule("Bastion is shooting (Camo)(GE)(BU)")
 	}
 }
 
-rule("Bastion is hiding (Camo)(GE)(BU)")
+rule("Bastion is hiding (Camo)(GE)(BU)[Extra]")
 {
 	event
 	{
@@ -8442,7 +8461,7 @@ rule("Bastion is hiding (Camo)(GE)(BU)")
 	conditions
 	{
 		"Clandestine Toggle"
-		Global.BUExtraChoice == 1;
+		Global.BUChoices[1] == 1;
 		Is Firing Primary(Event Player) == False;
 	}
 
@@ -8481,6 +8500,8 @@ rule("Assign new body (One-For-All)(GE)")
 				Teleport(Global.GETarget, Global.BlizzWorldSpawnLoc);
 			Else If(Current Map == Map(Hollywood) || Current Map == Map(Hollywood Halloween));
 				Teleport(Global.GETarget, Global.HollywoodSpawns[0]);
+			Else If(Hero Of(Global.GETarget) == Hero(D.Va));
+				Teleport(Global.GETarget, Position Of(Random Value In Array(Spawn Points(Team 1))));
 			End;
 			Play Effect(All Players(Team 1), Buff Impact Sound, Color(White), Global.GETarget, 80);
 			Play Effect(All Players(Team 1), Good Pickup Effect, Color(Yellow), Global.GETarget, 8);
