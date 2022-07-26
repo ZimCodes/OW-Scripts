@@ -167,9 +167,6 @@ settings
 
 	extensions
 	{
-		Beam Effects
-		Beam Sounds
-		Buff and Debuff Sounds
 		Explosion Sounds
 		Play More Effects
 		Spawn More Dummy Bots
@@ -4129,7 +4126,7 @@ rule("Select a global effect & configurate (GE)[SR]")
 		"Current NUMBER of players currently around. Used if global effect requires more than 1 player"
 		Global.TempVar2 = 1;
 		"DEBUG: Chose a specific global effect"
-		disabled Global.TempVar = 43;
+		disabled Global.TempVar = 1;
 		If(Global.TempVar == 1);
 			"The Patrol Guard to use"
 			Global.GEPatrolChoice = Random Integer(0, 2);
@@ -4439,7 +4436,7 @@ rule("Select a global effect & configurate (GE)[SR]")
 		Else If(Global.TempVar == 43);
 			Global.TempVar3 = Custom String("An extra upgrade has been added to Bastion!");
 			Global.GEName = Custom String("Bastion Extra Upgrade!");
-			Global.BUChoices[1] = Random Value In Array(Filtered Array(Array(0, 1, 2, 3, 4), Current Array Element == Global.BUChoices[1]));
+			Global.BUChoices[1] = Random Value In Array(Filtered Array(Array(0, 1, 2, 3, 4), Current Array Element != Global.BUChoices[1]));
 			"DEBUGGING only"
 			disabled Global.BUChoices[1] = 5;
 		Else If(Global.TempVar == 44);
@@ -6217,12 +6214,11 @@ rule("Notify players who ARE (Invincible) (GE)")
 
 	actions
 	{
-		Create Effect(All Players(Team 1), Ana Nano Boosted Sound, Color(Yellow), Position Of(Event Player), 80,
-			Visible To Position and Radius);
-		Event Player.GEID = Last Created Entity;
 		Create HUD Text(Event Player, Custom String("You are Invincible!"), Null, Null, Right, 0, Color(Yellow), Color(White), Color(
 			White), Visible To, Default Visibility);
 		Event Player.GEHUDID = Last Text ID;
+		Create Effect(All Players(Team 1), Orisa Amplifier Sound, Color(White), Event Player, 80, Visible To Position and Radius);
+		Event Player.GEID = Last Created Entity;
 	}
 }
 
@@ -7634,11 +7630,11 @@ rule("Player took damage (BU)[Bullet]")
 			Event Player.BUPlayersNearby = Players Within Radius(Event Player, 10, Team 1, Off);
 			For Player Variable(Event Player, BUIndex, 0, Count Of(Event Player.BUPlayersNearby), 1);
 				Damage(Event Player.BUPlayersNearby[Event Player.BUIndex], Closest Player To(Event Player, Team 2), Event Damage * 0.700);
-				Create Beam Effect(All Players(Team 1), Winston Tesla Cannon Beam, Event Player,
-					Event Player.BUPlayersNearby[Event Player.BUIndex], Color(Aqua), Visible To Position and Radius);
+				Create Beam Effect(All Players(Team 1), Bad Beam, Event Player, Event Player.BUPlayersNearby[Event Player.BUIndex], Color(Aqua),
+					Visible To Position and Radius);
 				Event Player.BUEffectIDs[0] = Last Created Entity;
-				Create Effect(All Players(Team 1), Winston Tesla Cannon Target Sound, Color(White),
-					Event Player.BUPlayersNearby[Event Player.BUIndex], 80, Visible To Position and Radius);
+				Create Effect(All Players(Team 1), Energy Sound, Color(White), Event Player.BUPlayersNearby[Event Player.BUIndex], 80,
+					Visible To Position and Radius);
 				Event Player.BUEffectIDs[1] = Last Created Entity;
 				Wait(1, Abort When False);
 				Destroy Effect(Event Player.BUEffectIDs);
