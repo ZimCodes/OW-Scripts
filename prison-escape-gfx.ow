@@ -4128,7 +4128,7 @@ rule("Select a global effect & configurate (GE)[SR]")
 		"Current NUMBER of players currently around. Used if global effect requires more than 1 player"
 		Global.TempVar2 = 1;
 		"DEBUG: Chose a specific global effect"
-		disabled Global.TempVar = 43;
+		disabled Global.TempVar = 26;
 		If(Global.TempVar == 1);
 			"The Patrol Guard to use"
 			Global.GEPatrolChoice = Random Integer(0, 2);
@@ -4389,7 +4389,7 @@ rule("Select a global effect & configurate (GE)[SR]")
 			Global.GEName = Custom String("Blood Sacrifice!");
 		Else If(Global.TempVar == 36);
 			Global.GEMinPlayerReq = 3;
-			Global.TempVar3 = Custom String("The exit is locked! Find the key (blue orb)! ");
+			Global.TempVar3 = Custom String("The exit is locked! Find the key (blue orb)! It emits sound.");
 			"Set the timer for the Global Effect"
 			Global.GEWaitTime = 100000000;
 			Global.TempVar2 = Count Of(Filtered Array(All Players(Team 1), !Current Array Element.IsWinner));
@@ -4679,9 +4679,6 @@ rule("Player left during a *SPECIFIC* Global Effect (GE)")
 			Wait(2.500, Ignore Condition);
 			Chase Global Variable At Rate(GEBallPosition, Eye Position(Global.GETarget) - Vector(0, 0.500, 0), Global.GEBallSpeed,
 				Destination and Rate);
-		"Lockdown"
-		Else If(Global.GEChoice == 36);
-			Call Subroutine(SetKeyLocation);
 		"Spotlight"
 		Else If(Global.GEChoice == 38);
 			Global.GETarget = Random Value In Array(Filtered Array(All Players(Team 1),
@@ -5780,12 +5777,9 @@ rule("Set the timer for (Patrol Guards)[SR]")
 		If(Global.GEPatrolChoice == 0);
 			"Set the timer for the Global Effect"
 			Global.GEWaitTime = Random Integer(7, 11);
-		"Winston"
-		Else If(Global.GEPatrolChoice == 1);
+		Else;
 			"Set the timer for the Global Effect"
 			Global.GEWaitTime = Random Integer(60, 120);
-		Else;
-			Global.GEWaitTime = Random Integer(30, 100);
 	}
 }
 
@@ -7909,6 +7903,27 @@ rule("Relocate key (Lockdown)(GE)")
 		End;
 		Call Subroutine(SetKeyLocation);
 		Loop If Condition Is True;
+	}
+}
+
+rule("Player with the key is no longer in the game (Lockdown)(GE)")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		Global.GEChoice == 36;
+		Global.IsGETimerStart == True;
+		Global.GEAffectedPlayer != Null;
+		Is True For Any(All Players(Team 1), Current Array Element == Global.GEAffectedPlayer) == False;
+	}
+
+	actions
+	{
+		Call Subroutine(SetKeyLocation);
 	}
 }
 
