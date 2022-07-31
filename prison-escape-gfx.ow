@@ -4128,7 +4128,7 @@ rule("Select a global effect & configurate (GE)[SR]")
 		"Current NUMBER of players currently around. Used if global effect requires more than 1 player"
 		Global.TempVar2 = 1;
 		"DEBUG: Chose a specific global effect"
-		disabled Global.TempVar = 26;
+		disabled Global.TempVar = 46;
 		If(Global.TempVar == 1);
 			"The Patrol Guard to use"
 			Global.GEPatrolChoice = Random Integer(0, 2);
@@ -4333,7 +4333,7 @@ rule("Select a global effect & configurate (GE)[SR]")
 			Global.GEName = Custom String("Bugs!");
 			"Set the timer for the Global Effect"
 			Global.GEWaitTime = Random Integer(30, 90);
-			Global.GERadius = 1;
+			Global.GERadius = 2;
 		Else If(Global.TempVar == 28);
 			Global.TempVar3 = Custom String("Players jump high & fall slowly.");
 			Global.GEName = Custom String("Leap Frog!");
@@ -4455,6 +4455,12 @@ rule("Select a global effect & configurate (GE)[SR]")
 			Global.GEName = Custom String("Forward March!");
 			"Set the timer for the Global Effect"
 			Global.GEWaitTime = Random Integer(30, 90);
+		Else If(Global.TempVar == 46);
+			Global.TempVar3 = Custom String("Some players are taller! Don't squish your smaller allies!");
+			Global.GEName = Custom String("Growth Spurt!");
+			"Set the timer for the Global Effect"
+			Global.GEWaitTime = Random Integer(30, 90);
+			Global.GERadius = 3;
 		End;
 		Wait(0.300, Ignore Condition);
 		"DEBUGGING ONLY: bypass minimum player req."
@@ -5102,7 +5108,7 @@ rule("Start Global Effect -- [Type H] (GE)")
 	{
 		Global.IsGEEnabledWS == True;
 		Global.CanStartGE == 1;
-		Global.GEChoice == 22;
+		(Global.GEChoice == 22 || Global.GEChoice == 46) == True;
 	}
 
 	actions
@@ -5136,6 +5142,18 @@ rule("Init Type H (CHOICE:Some or Single)(NOT:Winners) (GE)[SR]")
 			For Global Variable(TempVar2, 0, Count Of(Global.TempVar), 1);
 				Global.TempVar[Global.TempVar2].GEIsHeroCarrier = True;
 			End;
+		"Growth Spurt"
+		Else If(Global.GEChoice == 46);
+			Start Scaling Player(Global.TempVar, 3, False);
+			Set Move Speed(Global.TempVar, 80);
+			Set Max Health(Global.TempVar, 250);
+			"Enter logic below"
+			For Global Variable(TempVar2, 0, Count Of(Global.TempVar), 1);
+				"Is a bug"
+				Global.TempVar[Global.TempVar2].GEIsAffectedPlayer = True;
+			End;
+			Disable Movement Collision With Environment(Global.TempVar, False);
+			Disable Nameplates(All Players(Team 1), All Players(Team 1));
 	}
 }
 
@@ -5399,11 +5417,13 @@ rule("Clean up specific Global Effect at the end (GE)[SR]")
 				Global.TempVar[Global.TempVar2].GEIsTagger = False;
 				Global.TempVar[Global.TempVar2].GEIsTagged = False;
 			End;
-		"Bugs"
-		Else If(Global.GEChoice == 27);
+		"Bugs & Growth Spurt"
+		Else If(Global.GEChoice == 27 || Global.GEChoice == 46);
 			Enable Nameplates(All Players(Team 1), All Players(Team 1));
 			Set Max Health(All Players(Team 1), 100);
 			Stop Scaling Player(All Players(Team 1));
+			Set Move Speed(All Players(Team 1), 100);
+			Enable Movement Collision With Environment(All Players(Team 1));
 		"Leap Frog"
 		Else If(Global.GEChoice == 28);
 			Set Jump Vertical Speed(All Players(Team 1), 100);
@@ -7283,7 +7303,7 @@ rule("Tagger tags a player (World Tag)(GE)")
 	}
 }
 
-rule("Bug is going to be squished (Bugs!)(GE)")
+rule("Bug is going to be squished (Bugs)(GE)")
 {
 	event
 	{
@@ -7295,11 +7315,11 @@ rule("Bug is going to be squished (Bugs!)(GE)")
 	conditions
 	{
 		"Change the ID # from -1 to a positive number"
-		Global.GEChoice == 27;
+		(Global.GEChoice == 27 || Global.GEChoice == 46) == True;
 		Global.IsGETimerStart == True;
-		Is In Spawn Room(Event Player) == False;
-		Event Player.IsWinner == False;
 		Event Player.GEIsAffectedPlayer == True;
+		Event Player.IsWinner == False;
+		Is In Spawn Room(Event Player) == False;
 		Is True For Any(Players Within Radius(Position Of(Event Player), Global.GERadius, Team 1, Surfaces),
 			!Current Array Element.GEIsAffectedPlayer) == True;
 	}
@@ -7307,16 +7327,29 @@ rule("Bug is going to be squished (Bugs!)(GE)")
 	actions
 	{
 		Play Effect(All Players(Team 1), Brigitte Repair Pack Armor Sound, Color(White), Event Player, 90);
-		If(Hero Of(Event Player) == Hero(D.Va) && !Is In Alternate Form(Event Player));
-			Kill(Event Player, Closest Player To(Position Of(Event Player), Team 2));
-			Wait(1, Ignore Condition);
-			Kill(Event Player, Closest Player To(Position Of(Event Player), Team 2));
+		If(Global.GEChoice == 27);
+			If(Hero Of(Event Player) == Hero(D.Va) && !Is In Alternate Form(Event Player));
+				Kill(Event Player, Closest Player To(Position Of(Event Player), Team 2));
+				Wait(1, Ignore Condition);
+				Kill(Event Player, Closest Player To(Position Of(Event Player), Team 2));
+			Else;
+				Kill(Event Player, Closest Player To(Position Of(Event Player), Team 2));
+			End;
+			Communicate(Event Player, Thanks);
+			Communicate(First Of(Filtered Array(Players Within Radius(Position Of(Event Player), Global.GERadius, Team 1, Surfaces),
+				!Current Array Element.GEIsAffectedPlayer)), Sorry);
 		Else;
-			Kill(Event Player, Closest Player To(Position Of(Event Player), Team 2));
+			If(Hero Of(Event Player) == Hero(D.Va) && !Is In Alternate Form(Event Player));
+				Kill(Closest Player To(Event Player, Team 1), Closest Player To(Position Of(Event Player), Team 2));
+				Wait(1, Ignore Condition);
+				Kill(Closest Player To(Event Player, Team 1), Closest Player To(Position Of(Event Player), Team 2));
+			Else;
+				Kill(Closest Player To(Event Player, Team 1), Closest Player To(Position Of(Event Player), Team 2));
+			End;
+			Communicate(First Of(Filtered Array(Players Within Radius(Position Of(Event Player), Global.GERadius, Team 1, Surfaces),
+				!Current Array Element.GEIsAffectedPlayer)), Thanks);
+			Communicate(Event Player, Sorry);
 		End;
-		Communicate(Event Player, Thanks);
-		Communicate(First Of(Filtered Array(Players Within Radius(Position Of(Event Player), Global.GERadius, Team 1, Surfaces),
-			!Current Array Element.GEIsAffectedPlayer)), Sorry);
 	}
 }
 
@@ -8288,6 +8321,9 @@ rule("Player touches ground (Bad Jet Boots)(GE)")
 
 	actions
 	{
+		If(Hero Of(Event Player) == Hero(D.Va));
+			Wait(0.096, Abort When False);
+		End;
 		Kill(Event Player, Closest Player To(Event Player, Team 2));
 		Play Effect(All Players(Team 1), Junkrat Frag Launcher Explosion Sound, Color(White), Event Player, 90);
 		If(Event Player.GEID != Null);
@@ -8565,7 +8601,7 @@ rule("Assign new body (One-For-All)(GE)")
 
 	actions
 	{
-		Wait Until(Global.GEAffectedPlayer == Null, Random Integer(15, 40));
+		Wait Until(Global.GEAffectedPlayer == Null, Random Real(10, 40));
 		Abort If Condition Is False;
 		Global.GETarget = Global.GEAffectedPlayer;
 		Global.GEAffectedPlayer = Random Value In Array(Filtered Array(All Players(Team 1),
@@ -8683,7 +8719,7 @@ rule("Body reaches goal (One-For-All)(GE)[SR]")
 				If((Global.HeroListTypeWS != 2 && Global.TempVar[Global.TempVar2].CurrentHero == Count Of(Global.HeroList) - 1) || (
 					Global.HeroListTypeWS == 2 && Global.TempVar[Global.TempVar2].CurrentHero == Count Of(
 					Global.TempVar[Global.TempVar2].IndieHeroList) - 1));
-					Teleport(Global.TempVar[Global.TempVar2], Global.EndPosition + Vector(0, 1.500, 0));
+					Teleport(Global.TempVar[Global.TempVar2], Global.EndPosition + Vector(0, 5, 0));
 				Else;
 					Global.TempVar[Global.TempVar2].CurrentHero += 1;
 					Global.TempVar[Global.TempVar2].TargetHero = Global.TempVar[Global.TempVar2].CurrentHero;
