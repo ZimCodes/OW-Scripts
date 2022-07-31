@@ -4123,7 +4123,7 @@ rule("Select a global effect & configurate (GE)[SR]")
 
 	actions
 	{
-		Global.TempVar = Random Integer(1, 45);
+		Global.TempVar = Random Integer(1, 46);
 		Global.GEMinPlayerReq = 1;
 		"Current NUMBER of players currently around. Used if global effect requires more than 1 player"
 		Global.TempVar2 = 1;
