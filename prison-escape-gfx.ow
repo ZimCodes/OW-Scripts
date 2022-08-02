@@ -309,6 +309,7 @@ variables
 		52: BUIndex
 		53: BUBulletEffectIDs
 		54: BUExtraEffectIDs
+		55: GETempVar2
 }
 
 subroutines
@@ -342,6 +343,7 @@ subroutines
 	26: GEStartTypeJ
 	27: AddBacktrackDeath
 	28: SelectBastionBulletUpgrade
+	29: SetKillSphereLoc
 	30: SetNewBastionPosition
 	31: ApplyWinnerStats
 	32: SetupGameSettingsText
@@ -367,6 +369,8 @@ subroutines
 	52: OneForAllGoal
 	53: NextHero
 	54: SetGEBastionDamage
+	55: SetBoopDirection
+	56: SetCloudLoc
 }
 
 rule("Workshop Settings")
@@ -3255,6 +3259,7 @@ rule("No Hud")
 	{
 		Disable Game Mode HUD(Event Player);
 		Disable Kill Feed(Event Player);
+		Disable Scoreboard(Event Player);
 	}
 }
 
@@ -4123,12 +4128,12 @@ rule("Select a global effect & configurate (GE)[SR]")
 
 	actions
 	{
-		Global.TempVar = Random Integer(1, 46);
+		Global.TempVar = Random Integer(1, 49);
 		Global.GEMinPlayerReq = 1;
 		"Current NUMBER of players currently around. Used if global effect requires more than 1 player"
 		Global.TempVar2 = 1;
 		"DEBUG: Chose a specific global effect"
-		disabled Global.TempVar = 46;
+		disabled Global.TempVar = 49;
 		If(Global.TempVar == 1);
 			"The Patrol Guard to use"
 			Global.GEPatrolChoice = Random Integer(0, 2);
@@ -4461,6 +4466,22 @@ rule("Select a global effect & configurate (GE)[SR]")
 			"Set the timer for the Global Effect"
 			Global.GEWaitTime = Random Integer(30, 90);
 			Global.GERadius = 3;
+		Else If(Global.TempVar == 47);
+			Global.TempVar3 = Custom String("Avoid the expanding sphere!");
+			Global.GEName = Custom String("Kill Sphere!");
+			Global.GEMaxNum = Random Integer(25, 50);
+			"Set the timer for the Global Effect"
+			Global.GEWaitTime = Global.GEMaxNum + 15;
+			Global.GERadius = 1;
+		Else If(Global.TempVar == 48);
+			Global.TempVar3 = Custom String("All players get booped!");
+			Global.GEName = Custom String("Boop!");
+		Else If(Global.TempVar == 49);
+			Global.TempVar3 = Custom String("Toxic clouds are spread throughout the lands!");
+			Global.GEName = Custom String("Toxic Clouds!");
+			"Set the timer for the Global Effect"
+			Global.GEWaitTime = Random Integer(60, 120);
+			Global.GERadius = Random Real(4, 10);
 		End;
 		Wait(0.300, Ignore Condition);
 		"DEBUGGING ONLY: bypass minimum player req."
@@ -4706,7 +4727,7 @@ rule("Start Global Effect -- [Type A] (GE)")
 	conditions
 	{
 		Global.IsGEEnabledWS == True;
-		Global.GEChoice == 1;
+		(Global.GEChoice == 1 || Global.GEChoice == 49) == True;
 		Global.CanStartGE == 1;
 	}
 
@@ -4828,7 +4849,7 @@ rule("Start Global Effect -- [Type C] (GE)")
 		Global.IsGEEnabledWS == True;
 		Global.CanStartGE == 1;
 		(
-			Global.GEChoice == 4 || Global.GEChoice == 32 || Global.GEChoice == 33 || Global.GEChoice == 34 || Global.GEChoice == 35 || Global.GEChoice == 43)
+			Global.GEChoice == 4 || Global.GEChoice == 32 || Global.GEChoice == 33 || Global.GEChoice == 34 || Global.GEChoice == 35 || Global.GEChoice == 43 || Global.GEChoice == 48)
 			== True;
 	}
 
@@ -4881,6 +4902,15 @@ rule("Init Type C (CHOICE:All)(NOT:Timer) (GE)[SR]")
 		"Bastion Extra Upgrade"
 		Else If(Global.GEChoice == 43);
 			Call Subroutine(SelectBastionExtraUpgrade);
+		"Boop"
+		Else If(Global.GEChoice == 48);
+			Call Subroutine(SetBoopDirection);
+			Global.TempVar = All Players(Team 1);
+			Apply Impulse(Global.TempVar, Global.GEBallPosition, Random Real(6000, 9000), To World, Cancel Contrary Motion);
+			For Global Variable(TempVar2, 0, Count Of(Global.TempVar), 1);
+				Play Effect(All Players(Team 1), Buff Impact Sound, Color(White), Global.TempVar[Global.TempVar2], 80);
+				Wait(0.400, Ignore Condition);
+			End;
 	}
 }
 
@@ -5169,7 +5199,7 @@ rule("Start Global Effect -- [Type I] (GE)")
 		Global.IsGEEnabledWS == True;
 		Global.CanStartGE == 1;
 		(
-			Global.GEChoice == 26 || Global.GEChoice == 29 || Global.GEChoice == 36 || Global.GEChoice == 37 || Global.GEChoice == 38 || Global.GEChoice == 44)
+			Global.GEChoice == 26 || Global.GEChoice == 29 || Global.GEChoice == 36 || Global.GEChoice == 37 || Global.GEChoice == 38 || Global.GEChoice == 44 || Global.GEChoice == 47)
 			== True;
 	}
 
@@ -5215,6 +5245,14 @@ rule("Init Type I (CHOICE:Single)(NOT:Winners) (GE)[SR]")
 		Else If(Global.GEChoice == 44);
 			Respawn(All Players(Team 1));
 			Call Subroutine(SpawnAllAtAltLoc);
+		"Kill Sphere"
+		Else If(Global.GEChoice == 47);
+			Call Subroutine(SetKillSphereLoc);
+			Create Effect(All Players(Team 1), Sphere, Color(Red), Global.GEBallPosition, Global.GERadius, Visible To Position and Radius);
+			Global.GEBallID[0] = Last Created Entity;
+			Create Effect(All Players(Team 1), Energy Sound, Color(White), Global.GEBallPosition, 100, Visible To);
+			Global.GEBallID[1] = Last Created Entity;
+			Chase Global Variable Over Time(GERadius, Global.GEMaxNum, Global.GEWaitTime, None);
 	}
 }
 
@@ -5432,8 +5470,7 @@ rule("Clean up specific Global Effect at the end (GE)[SR]")
 			Set Max Health(All Players(Team 1), 100);
 		"Lockdown"
 		Else If(Global.GEChoice == 36);
-			Destroy Effect(Global.GEBallID[0]);
-			Destroy Effect(Global.GEBallID[1]);
+			Destroy Effect(Global.GEBallID);
 			Stop Forcing Player Outlines(Global.GEAffectedPlayer, All Players(Team 1));
 			Global.GEBallID = Null;
 		"Warped Slo-mo"
@@ -5442,8 +5479,7 @@ rule("Clean up specific Global Effect at the end (GE)[SR]")
 			Set Move Speed(All Players(Team 1), 100);
 		"Spotlight & Extreme Pong"
 		Else If(Global.GEChoice == 38 || Global.GEChoice == 30);
-			Destroy Effect(Global.GEBallID[0]);
-			Destroy Effect(Global.GEBallID[1]);
+			Destroy Effect(Global.GEBallID);
 			Global.GEBallID = Null;
 		"Strong Winds"
 		Else If(Global.GEChoice == 39);
@@ -5464,6 +5500,18 @@ rule("Clean up specific Global Effect at the end (GE)[SR]")
 		Else If(Global.GEChoice == 45);
 			Set Move Speed(All Players(Team 1), 100);
 			Stop Throttle In Direction(All Players(Team 1));
+		"Kill Sphere"
+		Else If(Global.GEChoice == 47);
+			Destroy Effect(Global.GEBallID);
+			Global.GEBallID = Null;
+			Stop Chasing Global Variable(GERadius);
+		"Toxic Clouds"
+		Else If(Global.GEChoice == 49);
+			Global.TempVar = All Players(Team 2);
+			For Global Variable(TempVar2, 0, Count Of(Global.TempVar), 1);
+				Destroy Effect(Global.TempVar[Global.TempVar2].GEID);
+				Global.TempVar[Global.TempVar2].GEID = Null;
+			End;
 	}
 }
 
@@ -7373,6 +7421,8 @@ rule("Bodyguard near the President (President)(GE)")
 	{
 		Set Max Health(Filtered Array(Players Within Radius(Position Of(Global.GEAffectedPlayer), Global.GERadius, Team 1, Off),
 			Current Array Element != Global.GEAffectedPlayer), 250);
+		Heal(Filtered Array(Players Within Radius(Position Of(Global.GEAffectedPlayer), Global.GERadius, Team 1, Off),
+			Current Array Element != Global.GEAffectedPlayer), Null, 9999);
 	}
 }
 
@@ -7869,7 +7919,7 @@ rule("Set new key location (Lockdown)(GE)[SR]")
 		Else If(Global.TempVar2 == 25);
 			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + Down * Global.GESpawnDistance);
 		End;
-		Global.GEBallPosition += Vector(0, Random Real(0, 4), 0);
+		Global.GEBallPosition += Vector(0, Random Real(0, 5), 0);
 	}
 }
 
@@ -8771,5 +8821,268 @@ rule("Player emotes (Forward March)(GE)")
 	actions
 	{
 		Kill(Event Player, Closest Player To(Event Player, Team 2));
+	}
+}
+
+rule("Set sphere location (Kill Sphere)(GE)[SR]")
+{
+	event
+	{
+		Subroutine;
+		SetKillSphereLoc;
+	}
+
+	actions
+	{
+		Global.TempVar = Random Value In Array(All Players(Team 2));
+		Global.TempVar2 = Random Integer(0, 25);
+		Global.GESpawnDistance = Random Real(0, 60);
+		If(Global.TempVar2 == 0);
+			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + Forward * Global.GESpawnDistance);
+		Else If(Global.TempVar2 == 1);
+			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Forward + Right) * Global.GESpawnDistance);
+		Else If(Global.TempVar2 == 2);
+			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + Right * Global.GESpawnDistance);
+		Else If(Global.TempVar2 == 3);
+			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Backward + Right) * Global.GESpawnDistance);
+		Else If(Global.TempVar2 == 4);
+			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + Backward * Global.GESpawnDistance);
+		Else If(Global.TempVar2 == 5);
+			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Backward + Left) * Global.GESpawnDistance);
+		Else If(Global.TempVar2 == 6);
+			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + Left * Global.GESpawnDistance);
+		Else If(Global.TempVar2 == 7);
+			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Forward + Left) * Global.GESpawnDistance);
+		Else If(Global.TempVar2 == 8);
+			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Forward + Down) * Global.GESpawnDistance);
+		Else If(Global.TempVar2 == 9);
+			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Forward + Up) * Global.GESpawnDistance);
+		Else If(Global.TempVar2 == 10);
+			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Right + Up) * Global.GESpawnDistance);
+		Else If(Global.TempVar2 == 11);
+			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Right + Down) * Global.GESpawnDistance);
+		Else If(Global.TempVar2 == 12);
+			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Backward + Down) * Global.GESpawnDistance);
+		Else If(Global.TempVar2 == 13);
+			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Backward + Up) * Global.GESpawnDistance);
+		Else If(Global.TempVar2 == 14);
+			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Left + Up) * Global.GESpawnDistance);
+		Else If(Global.TempVar2 == 15);
+			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Left + Down) * Global.GESpawnDistance);
+		Else If(Global.TempVar2 == 16);
+			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Forward + Right + Up) * Global.GESpawnDistance);
+		Else If(Global.TempVar2 == 17);
+			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Forward + Right + Down) * Global.GESpawnDistance);
+		Else If(Global.TempVar2 == 18);
+			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Backward + Right + Down)
+				* Global.GESpawnDistance);
+		Else If(Global.TempVar2 == 19);
+			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Backward + Right + Up) * Global.GESpawnDistance);
+		Else If(Global.TempVar2 == 20);
+			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Forward + Left + Up) * Global.GESpawnDistance);
+		Else If(Global.TempVar2 == 21);
+			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Forward + Left + Down) * Global.GESpawnDistance);
+		Else If(Global.TempVar2 == 22);
+			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Backward + Left + Down) * Global.GESpawnDistance);
+		Else If(Global.TempVar2 == 23);
+			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Backward + Left + Up) * Global.GESpawnDistance);
+		Else If(Global.TempVar2 == 24);
+			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + Up * Global.GESpawnDistance);
+		Else If(Global.TempVar2 == 25);
+			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + Down * Global.GESpawnDistance);
+		End;
+		Global.GEBallPosition += Vector(0, Random Real(0, 10), 0);
+	}
+}
+
+rule("Player touches sphere (Kill Sphere)(GE)")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		Global.GEChoice == 47;
+		Global.IsGETimerStart == True;
+		Is True For Any(Players Within Radius(Global.GEBallPosition, Global.GERadius, Team 1, Off), !Is In Spawn Room(
+			Current Array Element) && !Current Array Element.IsWinner) == True;
+	}
+
+	actions
+	{
+		Kill(Filtered Array(Players Within Radius(Global.GEBallPosition, Global.GERadius, All Teams, Off), !Is In Spawn Room(
+			Current Array Element) && !Current Array Element.IsWinner), Closest Player To(Global.GEBallPosition, Team 2));
+	}
+}
+
+rule("Set boop direction (Boop)(GE)[SR]")
+{
+	event
+	{
+		Subroutine;
+		SetBoopDirection;
+	}
+
+	actions
+	{
+		Global.TempVar2 = Random Integer(0, 16);
+		If(Global.TempVar2 == 0);
+			Global.GEBallPosition = Forward;
+		Else If(Global.TempVar2 == 1);
+			Global.GEBallPosition = Forward + Right;
+		Else If(Global.TempVar2 == 2);
+			Global.GEBallPosition = Right;
+		Else If(Global.TempVar2 == 3);
+			Global.GEBallPosition = Backward + Right;
+		Else If(Global.TempVar2 == 4);
+			Global.GEBallPosition = Backward;
+		Else If(Global.TempVar2 == 5);
+			Global.GEBallPosition = Backward + Left;
+		Else If(Global.TempVar2 == 6);
+			Global.GEBallPosition = Left;
+		Else If(Global.TempVar2 == 7);
+			Global.GEBallPosition = Forward + Left;
+		Else If(Global.TempVar2 == 8);
+			Global.GEBallPosition = Forward + Up;
+		Else If(Global.TempVar2 == 9);
+			Global.GEBallPosition = Right + Up;
+		Else If(Global.TempVar2 == 10);
+			Global.GEBallPosition = Backward + Up;
+		Else If(Global.TempVar2 == 11);
+			Global.GEBallPosition = Left + Up;
+		Else If(Global.TempVar2 == 12);
+			Global.GEBallPosition = Forward + Right + Up;
+		Else If(Global.TempVar2 == 13);
+			Global.GEBallPosition = Backward + Right + Up;
+		Else If(Global.TempVar2 == 14);
+			Global.GEBallPosition = Forward + Left + Up;
+		Else If(Global.TempVar2 == 15);
+			Global.GEBallPosition = Backward + Left + Up;
+		Else If(Global.TempVar2 == 16);
+			Global.GEBallPosition = Up;
+		End;
+	}
+}
+
+rule("Set cloud location (Toxic Clouds)(GE)[SR]")
+{
+	event
+	{
+		Subroutine;
+		SetCloudLoc;
+	}
+
+	actions
+	{
+		Event Player.GETempVar = Random Integer(0, 25);
+		Event Player.GETempVar2 = Random Real(15, 70);
+		If(Event Player.GETempVar == 0);
+			Event Player.GETempVar = Nearest Walkable Position(Position Of(Event Player) + Forward * Event Player.GETempVar2);
+		Else If(Event Player.GETempVar == 1);
+			Event Player.GETempVar = Nearest Walkable Position(Position Of(Event Player) + (Forward + Right) * Event Player.GETempVar2);
+		Else If(Event Player.GETempVar == 2);
+			Event Player.GETempVar = Nearest Walkable Position(Position Of(Event Player) + Right * Event Player.GETempVar2);
+		Else If(Event Player.GETempVar == 3);
+			Event Player.GETempVar = Nearest Walkable Position(Position Of(Event Player) + (Backward + Right) * Event Player.GETempVar2);
+		Else If(Event Player.GETempVar == 4);
+			Event Player.GETempVar = Nearest Walkable Position(Position Of(Event Player) + Backward * Event Player.GETempVar2);
+		Else If(Event Player.GETempVar == 5);
+			Event Player.GETempVar = Nearest Walkable Position(Position Of(Event Player) + (Backward + Left) * Event Player.GETempVar2);
+		Else If(Event Player.GETempVar == 6);
+			Event Player.GETempVar = Nearest Walkable Position(Position Of(Event Player) + Left * Event Player.GETempVar2);
+		Else If(Event Player.GETempVar == 7);
+			Event Player.GETempVar = Nearest Walkable Position(Position Of(Event Player) + (Forward + Left) * Event Player.GETempVar2);
+		Else If(Event Player.GETempVar == 8);
+			Event Player.GETempVar = Nearest Walkable Position(Position Of(Event Player) + (Forward + Down) * Event Player.GETempVar2);
+		Else If(Event Player.GETempVar == 9);
+			Event Player.GETempVar = Nearest Walkable Position(Position Of(Event Player) + (Forward + Up) * Event Player.GETempVar2);
+		Else If(Event Player.GETempVar == 10);
+			Event Player.GETempVar = Nearest Walkable Position(Position Of(Event Player) + (Right + Up) * Event Player.GETempVar2);
+		Else If(Event Player.GETempVar == 11);
+			Event Player.GETempVar = Nearest Walkable Position(Position Of(Event Player) + (Right + Down) * Event Player.GETempVar2);
+		Else If(Event Player.GETempVar == 12);
+			Event Player.GETempVar = Nearest Walkable Position(Position Of(Event Player) + (Backward + Down) * Event Player.GETempVar2);
+		Else If(Event Player.GETempVar == 13);
+			Event Player.GETempVar = Nearest Walkable Position(Position Of(Event Player) + (Backward + Up) * Event Player.GETempVar2);
+		Else If(Event Player.GETempVar == 14);
+			Event Player.GETempVar = Nearest Walkable Position(Position Of(Event Player) + (Left + Up) * Event Player.GETempVar2);
+		Else If(Event Player.GETempVar == 15);
+			Event Player.GETempVar = Nearest Walkable Position(Position Of(Event Player) + (Left + Down) * Event Player.GETempVar2);
+		Else If(Event Player.GETempVar == 16);
+			Event Player.GETempVar = Nearest Walkable Position(Position Of(Event Player) + (Forward + Right + Up) * Event Player.GETempVar2);
+		Else If(Event Player.GETempVar == 17);
+			Event Player.GETempVar = Nearest Walkable Position(Position Of(Event Player) + (Forward + Right + Down) * Event Player.GETempVar2);
+		Else If(Event Player.GETempVar == 18);
+			Event Player.GETempVar = Nearest Walkable Position(Position Of(Event Player) + (Backward + Right + Down)
+				* Event Player.GETempVar2);
+		Else If(Event Player.GETempVar == 19);
+			Event Player.GETempVar = Nearest Walkable Position(Position Of(Event Player) + (Backward + Right + Up) * Event Player.GETempVar2);
+		Else If(Event Player.GETempVar == 20);
+			Event Player.GETempVar = Nearest Walkable Position(Position Of(Event Player) + (Forward + Left + Up) * Event Player.GETempVar2);
+		Else If(Event Player.GETempVar == 21);
+			Event Player.GETempVar = Nearest Walkable Position(Position Of(Event Player) + (Forward + Left + Down) * Event Player.GETempVar2);
+		Else If(Event Player.GETempVar == 22);
+			Event Player.GETempVar = Nearest Walkable Position(Position Of(Event Player) + (Backward + Left + Down) * Event Player.GETempVar2);
+		Else If(Event Player.GETempVar == 23);
+			Event Player.GETempVar = Nearest Walkable Position(Position Of(Event Player) + (Backward + Left + Up) * Event Player.GETempVar2);
+		Else If(Event Player.GETempVar == 24);
+			Event Player.GETempVar = Nearest Walkable Position(Position Of(Event Player) + Up * Event Player.GETempVar2);
+		Else If(Event Player.GETempVar == 25);
+			Event Player.GETempVar = Nearest Walkable Position(Position Of(Event Player) + Down * Event Player.GETempVar2);
+		End;
+	}
+}
+
+rule("Init clouds (Toxic Clouds)(GE)")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 2;
+		Bastion;
+	}
+
+	conditions
+	{
+		Global.GEChoice == 49;
+		Global.IsGETimerStart == True;
+		Event Player.GEID == Null;
+	}
+
+	actions
+	{
+		Call Subroutine(SetCloudLoc);
+		Create Effect(All Players(Team 1), Cloud, Color(Green), Event Player.GETempVar + Vector(0, 1, 0), Global.GERadius, Visible To);
+		Event Player.GEID = Last Created Entity;
+	}
+}
+
+rule("Player touches cloud (Toxic Clouds)(GE)")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 2;
+		Bastion;
+	}
+
+	conditions
+	{
+		Global.GEChoice == 49;
+		Global.IsGETimerStart == True;
+		Event Player.GEID != Null;
+		Is True For Any(Players Within Radius(Event Player.GETempVar, Global.GERadius, Team 1, Off),
+			!Current Array Element.IsWinner && !Is In Spawn Room(Current Array Element)) == True;
+	}
+
+	actions
+	{
+		Event Player.GETempVar2 = Filtered Array(All Players(Team 1), !Current Array Element.IsWinner && !Is In Spawn Room(
+			Current Array Element));
+		Start Damage Over Time(Event Player.GETempVar2, Event Player, 5, Random Real(15, 30));
+		Wait(5, Abort When False);
+		Loop If Condition Is True;
 	}
 }
