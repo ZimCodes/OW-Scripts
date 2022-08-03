@@ -240,6 +240,7 @@ variables
 		63: WinnerResetRingStats
 		64: GECameraChoice
 		65: IsBastionUpgradableWS
+		66: BUExtraScale
 		67: BastionPosLocType
 		68: BastionPosDistance
 		69: BastionPosIntervalMinMaxWS
@@ -4469,7 +4470,7 @@ rule("Select a global effect & configurate (GE)[SR]")
 		Else If(Global.TempVar == 47);
 			Global.TempVar3 = Custom String("Avoid the expanding sphere!");
 			Global.GEName = Custom String("Kill Sphere!");
-			Global.GEMaxNum = Random Integer(25, 50);
+			Global.GEMaxNum = Random Integer(25, 60);
 			"Set the timer for the Global Effect"
 			Global.GEWaitTime = Global.GEMaxNum + 15;
 			Global.GERadius = 1;
@@ -8493,10 +8494,12 @@ rule("Select extra Bastion Upgrade (BU)[Extra][SR]")
 			Set Invisible(Global.TempVar4, All);
 		"Bastion Jr."
 		Else If(Global.BUChoices[1] == 2);
-			Start Scaling Player(Global.TempVar4, 0.300, False);
+			Global.BUExtraScale = 0.300;
+			Start Scaling Player(Global.TempVar4, Global.BUExtraScale, False);
 		"Bastion Sr."
 		Else If(Global.BUChoices[1] == 3);
-			Start Scaling Player(Global.TempVar4, Random Real(2, 2.500), False);
+			Global.BUExtraScale = Random Real(2, 2.500);
+			Start Scaling Player(Global.TempVar4, Global.BUExtraScale, False);
 			Disable Movement Collision With Environment(Global.TempVar4, False);
 		"Damage Boost"
 		Else If(Global.BUChoices[1] == 4);
@@ -8522,11 +8525,32 @@ rule("Reset extra Bastion Upgrade (BU)[Extra][SR]")
 		Stop Scaling Player(Global.TempVar4);
 		Enable Movement Collision With Environment(Global.TempVar4);
 		Global.BastionDamages[2] = 0;
+		Global.TempVar4 = All Players(Team 1);
 		For Global Variable(TempVar2, 0, Count Of(Global.TempVar4), 1);
-			Destroy Effect(Global.TempVar4[Global.TempVar2].BUExtraEffectIDs[0]);
-			Destroy Effect(Global.TempVar4[Global.TempVar2].BUExtraEffectIDs[1]);
+			Destroy Effect(Global.TempVar4[Global.TempVar2].BUExtraEffectIDs);
 			Global.TempVar4[Global.TempVar2].BUExtraEffectIDs = Null;
 		End;
+	}
+}
+
+rule("Bastion passives (GE)(BU)[Extra]")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		(Global.BUChoices[1] == 2 || Global.BUChoices[1] == 3) == True;
+	}
+
+	actions
+	{
+		Wait(20, Abort When False);
+		Stop Scaling Player(Filtered Array(All Players(Team 2), Hero Of(Current Array Element) == Hero(Bastion)));
+		Start Scaling Player(Global.TempVar4, Global.BUExtraScale, False);
+		Loop If Condition Is True;
 	}
 }
 
@@ -8599,7 +8623,7 @@ rule("Player is looking at Bastion (Shining Armor)(GE)(BU)[Extra]")
 		Global.BUChoices[1] == 5;
 		Event Player.BUExtraEffectIDs == Null;
 		Is True For Any(Players in View Angle(Event Player, Team 2, 50), Is In Line of Sight(Position Of(Event Player), Position Of(
-			Current Array Element), Barriers Do Not Block LOS)) == True;
+			Current Array Element), All Barriers Block LOS)) == True;
 	}
 
 	actions
@@ -8624,8 +8648,9 @@ rule("Player is not looking at Bastion (Shining Armor)(GE)(BU)[Extra]")
 	{
 		"Clandestine Toggle"
 		Global.BUChoices[1] == 5;
+		Event Player.BUExtraEffectIDs != Null;
 		Is True For Any(Players in View Angle(Event Player, Team 2, 50), Is In Line of Sight(Position Of(Event Player), Position Of(
-			Current Array Element), Barriers Do Not Block LOS)) == False;
+			Current Array Element), All Barriers Block LOS)) == False;
 	}
 
 	actions
@@ -8633,6 +8658,7 @@ rule("Player is not looking at Bastion (Shining Armor)(GE)(BU)[Extra]")
 		Wait(5, Abort When False);
 		Destroy Effect(Event Player.BUExtraEffectIDs);
 		Event Player.BUExtraEffectIDs = Null;
+		Loop If Condition Is True;
 	}
 }
 
@@ -8907,13 +8933,19 @@ rule("Player touches sphere (Kill Sphere)(GE)")
 		Global.GEChoice == 47;
 		Global.IsGETimerStart == True;
 		Is True For Any(Players Within Radius(Global.GEBallPosition, Global.GERadius, Team 1, Off), !Is In Spawn Room(
-			Current Array Element) && !Current Array Element.IsWinner) == True;
+			Current Array Element) && !Current Array Element.IsWinner && (Current Map == Map(Hollywood) || Current Map == Map(
+			Hollywood Halloween)) && Distance Between(Position Of(Current Array Element), Global.HollywoodSpawns[0]) > 26 && (
+			Current Map == Map(Blizzard World) || Current Map == Map(Blizzard World Winter)) && Distance Between(Position Of(
+			Current Array Element), Global.BlizzWorldSpawnLoc) > 30) == True;
 	}
 
 	actions
 	{
 		Kill(Filtered Array(Players Within Radius(Global.GEBallPosition, Global.GERadius, All Teams, Off), !Is In Spawn Room(
-			Current Array Element) && !Current Array Element.IsWinner), Closest Player To(Global.GEBallPosition, Team 2));
+			Current Array Element) && !Current Array Element.IsWinner && (Current Map == Map(Hollywood) || Current Map == Map(
+			Hollywood Halloween)) && Distance Between(Position Of(Current Array Element), Global.HollywoodSpawns[0]) > 26 && (
+			Current Map == Map(Blizzard World) || Current Map == Map(Blizzard World Winter)) && Distance Between(Position Of(
+			Current Array Element), Global.BlizzWorldSpawnLoc) > 30), Closest Player To(Global.GEBallPosition, Team 2));
 	}
 }
 
@@ -9054,7 +9086,7 @@ rule("Init clouds (Toxic Clouds)(GE)")
 	actions
 	{
 		Call Subroutine(SetCloudLoc);
-		Create Effect(All Players(Team 1), Cloud, Color(Green), Event Player.GETempVar + Vector(0, 1, 0), Global.GERadius, Visible To);
+		Create Effect(All Players(Team 1), Cloud, Color(Green), Event Player.GETempVar + Vector(0, 2, 0), Global.GERadius, Visible To);
 		Event Player.GEID = Last Created Entity;
 	}
 }
@@ -9073,14 +9105,13 @@ rule("Player touches cloud (Toxic Clouds)(GE)")
 		Global.GEChoice == 49;
 		Global.IsGETimerStart == True;
 		Event Player.GEID != Null;
-		Is True For Any(Players Within Radius(Event Player.GETempVar, Global.GERadius, Team 1, Off),
+		Is True For Any(Players Within Radius(Event Player.GETempVar, Global.GERadius - 0.500, Team 1, Off),
 			!Current Array Element.IsWinner && !Is In Spawn Room(Current Array Element)) == True;
 	}
 
 	actions
 	{
-		Event Player.GETempVar2 = Filtered Array(All Players(Team 1), !Current Array Element.IsWinner && !Is In Spawn Room(
-			Current Array Element));
+		Event Player.GETempVar2 = Players Within Radius(Event Player.GETempVar, Global.GERadius - 0.500, Team 1, Off);
 		Start Damage Over Time(Event Player.GETempVar2, Event Player, 5, Random Real(15, 30));
 		Wait(5, Abort When False);
 		Loop If Condition Is True;
