@@ -259,7 +259,7 @@ rule("Workshop Settings")
 		Global.HeroListTypeWS = Workshop Setting Combo(Custom String("Hero Ordering"), Custom String("Hero order to use"), 2, Array(
 			Custom String("Normal"), Custom String("Random"), Custom String("Independent"), Custom String("Custom")), 0);
 		Global.HeroDataSaveIndexWS = Workshop Setting Integer(Custom String("Game"), Custom String(
-			"Unlock Save feature At Hero Number (0=disable)"), 5, 0, 32, 0) - 1;
+			"Unlock Save feature At Hero Number (0=disabled)"), 5, 0, 32, 0) - 1;
 		Global.BacktrackMinMaxListWS = Empty Array;
 		Global.BacktrackMinMaxListWS[0] = Workshop Setting Integer(Custom String("Backtracking"), Custom String(
 			"Minimum random number to backtrack by"), 1, 1, 31, 0);
@@ -534,13 +534,13 @@ rule("Map Cycling")
 	actions
 	{
 		Big Message(All Players(Team 1), Custom String("     Winner Limit Reached!\n\nMap will cycle in 60 seconds!"));
-		Wait(3, Ignore Condition);
-		Wait(45, Ignore Condition);
+		Wait(3, Abort When False);
+		Wait(45, Abort When False);
 		Big Message(All Players(Team 1), Custom String("Map will cycle in 15 seconds!"));
-		Wait(2, Ignore Condition);
-		Wait(12, Ignore Condition);
+		Wait(2, Abort When False);
+		Wait(12, Abort When False);
 		Big Message(All Players(Team 1), Custom String("Cycling Map!"));
-		Wait(3, Ignore Condition);
+		Wait(3, Abort When False);
 		Restart Match;
 	}
 }
@@ -948,3 +948,2789 @@ rule("map setting (global arr p, global b, global d, global c) - volskaya indust
 
 	conditions
 	{
+		Current Map == Map(Volskaya Industries);
+	}
+
+	actions
+	{
+		Global.AllBastionPositions = Array(Vector(-87.972, 2.020, 38.919), Vector(-67.835, 10.390, 49.479), Vector(-63.809, -0.410,
+			77.730), Vector(-11.250, 1.270, 76.356), Vector(-16.279, 2.200, 41.017), Vector(-6.364, 8.240, 35.514));
+		Global.EndPosition = Vector(-11.477, -6, 19.868);
+		Start Forcing Spawn Room(Team 1, 0);
+		"Base coordinates for world game settings HUD"
+		Global.GameSettingTextVec = Vector(-112.517, -1.680, 32.352);
+		"Total amount of Bastion Bots to spawn"
+		Global.BastionBotCount = 6;
+		"Location of winners end game rings"
+		Global.WinnerHeroesRingStats[0] = Vector(-108.629, -0.680, 27.504);
+		Global.WinnerResetRingStats[0] = Vector(-117.908, -0.680, 36.678);
+	}
+}
+
+rule("map setting (global arr p, global b, global d, global c) - route 66")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		Current Map == Map(Route 66);
+	}
+
+	actions
+	{
+		Global.AllBastionPositions = Array(Vector(-95.624, 12.660, -5.541), Vector(-38.680, 12.750, -22.136), Vector(-15.784, 8.540,
+			-12.685), Vector(36.467, 2.140, -4.003), Vector(48.707, 10.110, 25.063), Vector(26.871, 7.010, 2.468));
+		Global.EndPosition = Vector(47.956, 5.200, 47.318);
+		Start Forcing Spawn Room(Team 1, 1);
+		"Base coordinates for world game settings HUD"
+		Global.GameSettingTextVec = Vector(-108.281, 5.812, -50.656);
+		"Total amount of Bastion Bots to spawn"
+		Global.BastionBotCount = 6;
+		"Location of winners end game rings"
+		Global.WinnerHeroesRingStats[0] = Vector(-106.441, 6, -58.824);
+		Global.WinnerResetRingStats[0] = Vector(-108.447, 6, -62.336);
+		"The text above the endgame rings for winners"
+		Global.WinnerHeroesRingStats[3] = Vector(0, 0, 0);
+		Global.WinnerResetRingStats[3] = Vector(0, 0, 0);
+	}
+}
+
+rule("map setting (global arr p, global b, global d, global c) - rialto")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		Current Map == Map(Rialto);
+	}
+
+	actions
+	{
+		Global.AllBastionPositions = Array(Vector(-64.421, 5.040, -125.927), Vector(-16.976, 1.660, -38.459), Vector(-36.002, 4.750,
+			-77.344), Vector(59.058, 0.070, -8.103), Vector(54.797, 1.740, -59.938), Vector(87.874, -0.370, 0.268));
+		Global.EndPosition = Vector(98.662, -1.500, -21.009);
+		Start Forcing Spawn Room(Team 1, 2);
+		"Base coordinates for world game settings HUD"
+		Global.GameSettingTextVec = Vector(-57, 4.050, -156.838);
+		"Total amount of Bastion Bots to spawn"
+		Global.BastionBotCount = 6;
+		"Location of winners end game rings"
+		Global.WinnerHeroesRingStats[0] = Vector(-49.550, 5.050, -171.124);
+		Global.WinnerResetRingStats[0] = Vector(-63.679, 5.050, -170.880);
+	}
+}
+
+rule("map setting (global arr p, global b, global d, global c) - horizon lunar colony")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		Current Map == Map(Horizon Lunar Colony);
+	}
+
+	actions
+	{
+		Global.AllBastionPositions = Array(Vector(-15.287, 6, -127.244), Vector(16.250, 11.860, -106.756), Vector(70.800, 15, -76.840),
+			Vector(62.340, 6, -34.740), Vector(19.496, 9, -1.439), Vector(66.687, 8.520, -37.241));
+		Global.EndPosition = Vector(34.476, 12, -23.518);
+		Start Forcing Spawn Room(Team 1, 0);
+		"Base coordinates for world game settings HUD"
+		Global.GameSettingTextVec = Vector(-43.492, 5.800, -156.776);
+		"Total amount of Bastion Bots to spawn"
+		Global.BastionBotCount = 6;
+		"Location of winners end game rings"
+		Global.WinnerHeroesRingStats[0] = Vector(-37.170, 6.450, -161.895);
+		Global.WinnerResetRingStats[0] = Vector(-38.639, 6.450, -165.470);
+	}
+}
+
+rule("map setting (global arr p, global b, global d, global c) - havana")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		Current Map == Map(Havana);
+	}
+
+	actions
+	{
+		Global.AllBastionPositions = Array(Vector(117.332, 14.433, -58.091), Vector(140.438, 6.413, -16.667), Vector(31.288, 18.900,
+			-75.331), Vector(-32.514, 7.150, -79.487), Vector(14.787, 7.300, -47.470), Vector(-71.110, 5.846, -72.362));
+		Global.EndPosition = Vector(-71.203, 2, -50.678);
+		Start Forcing Spawn Room(Team 1, 2);
+		"Base coordinates for world game settings HUD"
+		Global.GameSettingTextVec = Vector(158.050, 12.302, -46.921);
+		"Total amount of Bastion Bots to spawn"
+		Global.BastionBotCount = 6;
+		"Location of winners end game rings"
+		Global.WinnerHeroesRingStats[0] = Vector(172.764, 12.300, -51.870);
+		Global.WinnerResetRingStats[0] = Vector(172.695, 12.300, -41.247);
+	}
+}
+
+rule("map setting (global arr p, global b, global d, global c) - dorado")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		Current Map == Map(Dorado);
+	}
+
+	actions
+	{
+		Global.AllBastionPositions = Array(Vector(170.288, 19.100, 45.051), Vector(118.262, 18.250, 1.209), Vector(78.973, 17.480, -6.843),
+			Vector(34.074, 11.080, -17.958), Vector(26.361, 10.650, 20.115), Vector(126.713, 16.300, 17.517));
+		Global.EndPosition = Vector(16.012, Empty Array, 5.874);
+		Start Forcing Spawn Room(Team 1, 1);
+		"Base coordinates for world game settings HUD"
+		Global.GameSettingTextVec = Vector(184.096, 7.840, 40.671);
+		"Total amount of Bastion Bots to spawn"
+		Global.BastionBotCount = 6;
+		"Location of winners end game rings"
+		Global.WinnerHeroesRingStats[0] = Vector(182.148, 8.390, 42.701);
+		Global.WinnerResetRingStats[0] = Vector(183.660, 8.390, 37.902);
+	}
+}
+
+rule("map setting (global arr p, global b, global d, global c) - king's row (winter)")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		(Current Map == Map(King's Row) || Current Map == Map(King's Row Winter)) == True;
+	}
+
+	actions
+	{
+		Global.AllBastionPositions = Array(Vector(-143.900, 7.130, 10.150), Vector(-120.990, 1.070, -12.080), Vector(-91.380, 1.140,
+			-27.900), Vector(-55.460, -0.200, -29.830), Vector(5.980, 6.110, -30.350), Vector(-21.560, 2.580, -8.160));
+		Global.EndPosition = Vector(-1.900, 5, -0.290);
+		Start Forcing Spawn Room(Team 1, 1);
+		"Base coordinates for world game settings HUD"
+		Global.GameSettingTextVec = Vector(-173.483, 0.762, 36.414);
+		"Total amount of Bastion Bots to spawn"
+		Global.BastionBotCount = 6;
+		"Location of winners end game rings"
+		Global.WinnerHeroesRingStats[0] = Vector(-178.034, 1.260, 43.774);
+		Global.WinnerResetRingStats[0] = Vector(-180.556, 1.262, 30.807);
+	}
+}
+
+rule("map setting (global arr p, global b, global d, global c) - blizzworld (winter)")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		(Current Map == Map(Blizzard World) || Current Map == Map(Blizzard World Winter)) == True;
+	}
+
+	actions
+	{
+		Global.AllBastionPositions = Array(Vector(-121.979, 0.148, 110.507), Vector(-93.733, -1.047, 110.100), Vector(-66.733, 7.079,
+			110.571), Vector(-0.165, 7.421, 89.178), Vector(3.082, 3.900, 43.609), Vector(3.049, -4.850, 16.685), Vector(-30.574, 12.966,
+			87.938));
+		Start Forcing Spawn Room(Team 1, 1);
+		Global.EndPosition = Vector(2.772, -6.500, -6.900);
+		"Base coordinates for world game settings HUD"
+		Global.GameSettingTextVec = Vector(-151.769, 1.648, 101.924);
+		Global.BlizzWorldSpawnLoc = Vector(-169.871, 2.948, 96.498);
+		"Total amount of Bastion Bots to spawn"
+		Global.BastionBotCount = 7;
+		"Location of winners end game rings"
+		Global.WinnerHeroesRingStats[0] = Vector(-152.835, 0.500, 106.112);
+		Global.WinnerResetRingStats[0] = Vector(-150.326, 0.500, 98.171);
+		"The text above the endgame rings for winners"
+		Global.WinnerHeroesRingStats[3] = Vector(0, 2, 0);
+		Global.WinnerResetRingStats[3] = Vector(0, 2, 0);
+	}
+}
+
+rule("map setting (global arr p, global b, global d, global c) - eichenwalde (halloween)")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		(Current Map == Map(Eichenwalde) || Current Map == Map(Eichenwalde Halloween)) == True;
+	}
+
+	actions
+	{
+		Global.AllBastionPositions = Array(Vector(123.333, 8.971, -27.303), Vector(89.318, 21.095, -62.697), Vector(38.021, 13.917,
+			-79.821), Vector(23.799, 7.417, -53.839), Vector(-4.858, 6.957, -31.559), Vector(25.587, 6.300, -14.531));
+		Global.EndPosition = Vector(-10.354, -2.149, -12.399);
+		Start Forcing Spawn Room(Team 1, 2);
+		"Base coordinates for world game settings HUD"
+		Global.GameSettingTextVec = Vector(129.339, 12.120, -2.655);
+		"Total amount of Bastion Bots to spawn"
+		Global.BastionBotCount = 6;
+		"Location of winners end game rings"
+		Global.WinnerHeroesRingStats[0] = Vector(135.825, 11.899, -2.692);
+		Global.WinnerResetRingStats[0] = Vector(124.359, 11.898, 0.626);
+	}
+}
+
+rule("map setting (global arr p, global b, global d, global c) - hollywood (halloween)")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		(Current Map == Map(Hollywood) || Current Map == Map(Hollywood Halloween)) == True;
+	}
+
+	actions
+	{
+		Global.AllBastionPositions = Array(Vector(-26.166, 7.503, -134.609), Vector(-2.241, 12.161, -112.505), Vector(11.552, 6.303,
+			-69.943), Vector(-7.480, 7.441, -43.441), Vector(-20.714, 8.050, 9.977), Vector(4.864, 7.147, 38.401));
+		Start Forcing Spawn Room(Team 1, 2);
+		Global.EndPosition = Vector(-12.002, -1.307, 69.489);
+		"Base coordinates for world game settings HUD"
+		Global.GameSettingTextVec = Vector(-32.049, 4.714, -155.052);
+		Global.HollywoodSpawnLoc = Vector(-30.960, 7.254, -172.189);
+		Global.BadHollywoodSpawnLoc = Vector(49.257, 4.050, -56.238);
+		"Total amount of Bastion Bots to spawn"
+		Global.BastionBotCount = 6;
+		"Location of winners end game rings"
+		Global.WinnerHeroesRingStats[0] = Vector(-27.106, 5.414, -157.424);
+		Global.WinnerResetRingStats[0] = Vector(-22.370, 5.416, -158.670);
+	}
+}
+
+rule("map setting (global arr p, global b, global d, global c) - junkertown")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		Current Map == Map(Junkertown);
+	}
+
+	actions
+	{
+		Global.AllBastionPositions = Array(Vector(-96.235, 13.672, -136.725), Vector(-72.380, 7.672, -144.151), Vector(-27.431, 13.780,
+			-100.155), Vector(-32.236, 12.976, -29.143), Vector(-2.080, 11.366, -61.807), Vector(30.116, 13.407, -59.880));
+		Global.EndPosition = Vector(30.248, 5.515, -81.733);
+		Start Forcing Spawn Room(Team 1, 2);
+		"Base coordinates for world game settings HUD"
+		Global.GameSettingTextVec = Vector(-95.486, 12.245, -86.316);
+		"Total amount of Bastion Bots to spawn"
+		Global.BastionBotCount = 6;
+		"Location of winners end game rings"
+		Global.WinnerHeroesRingStats[0] = Vector(-85.345, 11.812, -81.681);
+		Global.WinnerResetRingStats[0] = Vector(-94.717, 11.800, -84.011);
+		Global.WinnerResetRingStats[3] = Vector(0, 0, 0);
+	}
+}
+
+rule("map setting (global arr p, global b, global d, global c) - paris")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		Current Map == Map(Paris);
+	}
+
+	actions
+	{
+		Global.AllBastionPositions = Array(Vector(-95.984, 13.454, -83.535), Vector(-72.132, 11.976, -44.042), Vector(-41.725, 14.240,
+			-2.920), Vector(34.074, 11.080, -17.958), Vector(-14.721, 14.250, -35.219), Vector(0.211, 10.174, -60.874));
+		Global.EndPosition = Vector(9.563, 8.329, -59.980);
+		Start Forcing Spawn Room(Team 1, 1);
+		"Base coordinates for world game settings HUD"
+		Global.GameSettingTextVec = Vector(-108.617, 15.800, -109.835);
+		"Total amount of Bastion Bots to spawn"
+		Global.BastionBotCount = 6;
+		"Location of winners end game rings"
+		Global.WinnerHeroesRingStats[0] = Vector(-110.869, 16, -105.512);
+		Global.WinnerResetRingStats[0] = Vector(-104.076, 16.445, -109.313);
+	}
+}
+
+rule("map setting (global arr p, global b, global d, global c) - anubis")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		Current Map == Map(Temple of Anubis);
+	}
+
+	actions
+	{
+		Global.AllBastionPositions = Array(Vector(-17.188, 11.237, 105.646), Vector(-12.218, 10.667, 52.835), Vector(-58.847, 6.810,
+			41.419), Vector(-8.454, 1.153, 29.868), Vector(8.482, 4.898, 10.299), Vector(-23.218, 2.706, -26.863));
+		Global.EndPosition = Vector(-0.866, -3.781, -10.919);
+		Start Forcing Spawn Room(Team 1, 1);
+		"Base coordinates for world game settings HUD"
+		Global.GameSettingTextVec = Vector(-7.971, 5.570, 135.900);
+		"Total amount of Bastion Bots to spawn"
+		Global.BastionBotCount = 6;
+		"Location of winners end game rings"
+		Global.WinnerHeroesRingStats[0] = Vector(-5.076, 5.576, 140.240);
+		Global.WinnerResetRingStats[0] = Vector(-15.733, 5.585, 137.884);
+	}
+}
+
+rule("Spawn players at alternative locations instead")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		All;
+	}
+
+	conditions
+	{
+		Has Spawned(Event Player) == True;
+		Is Alive(Event Player) == True;
+	}
+
+	actions
+	{
+		Call Subroutine(SpawnAtAltLoc);
+	}
+}
+
+rule("Spawn players at alternate spawn location[SR]")
+{
+	event
+	{
+		Subroutine;
+		SpawnAtAltLoc;
+	}
+
+	actions
+	{
+		If(Current Map == Map(Blizzard World) || Current Map == Map(Blizzard World Winter));
+			Teleport(Event Player, Global.BlizzWorldSpawnLoc);
+			Set Facing(Event Player, Forward + Left, To World);
+		Else If(Current Map == Map(Hollywood) || Current Map == Map(Hollywood Halloween));
+			Teleport(Event Player, Global.HollywoodSpawnLoc);
+			Set Facing(Event Player, Right, To World);
+		End;
+	}
+}
+
+rule("Game settings world HUD")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	actions
+	{
+		Wait Until(Is True For Any(All Players(Team 1), Has Spawned(Current Array Element)), 99999);
+		Call Subroutine(SetupGameSettingsText);
+		For Global Variable(TempVar, Count Of(Global.GameSettingsHUDWT) - 1, -1, -1);
+			Create In-World Text(All Players(Team 1), Global.GameSettingsHUDWT[Global.TempVar], Global.GameOptTextVec, 1.500,
+				Clip Against Surfaces, Visible To, Color(Lime Green), Default Visibility);
+			Call Subroutine(IncrementGameSettingsPos);
+		End;
+		"World game settings HUD"
+		Create In-World Text(All Players(Team 1), Custom String("Game Settings"), Global.GameSettingTextVec, 2.750, Clip Against Surfaces,
+			Visible To, Color(Rose), Default Visibility);
+	}
+}
+
+rule("setup game option settings text for world HUD [SR]")
+{
+	event
+	{
+		Subroutine;
+		SetupGameSettingsText;
+	}
+
+	actions
+	{
+		Global.GameSettingsHUDWT = Empty Array;
+		Modify Global Variable(GameSettingsHUDWT, Append To Array, Custom String("Difficulty: [{0}]",
+			Global.DifficultyWS == 0 ? Custom String("Easy") : (Global.DifficultyWS == 1 ? Custom String("Normal") : (
+			Global.DifficultyWS == 2 ? Custom String("Hard") : (Global.DifficultyWS == 3 ? Custom String("Expert") : Custom String(
+			"Legendary"))))));
+		Modify Global Variable(GameSettingsHUDWT, Append To Array, Custom String("Hero Order: [{0}]",
+			Global.HeroListTypeWS == 0 ? Custom String("Normal") : (Global.HeroListTypeWS == 1 ? Custom String("Random") : (
+			Global.HeroListTypeWS == 2 ? Custom String("Independent") : Custom String("Custom")))));
+		Modify Global Variable(GameSettingsHUDWT, Append To Array, Custom String("Backtracking: [{0}]",
+			Global.BacktrackDeathsWS == 0 ? Custom String("Disabled") : Custom String("Enabled")));
+		If(Global.BacktrackDeathsWS != 0);
+			Modify Global Variable(GameSettingsHUDWT, Append To Array, Custom String("Backtrack Range: [{0}] <-----> [{1}]",
+				Global.BacktrackMinMaxListWS[0], Global.BacktrackMinMaxListWS[1]));
+		End;
+		Global.GameOptTextVec = Global.GameSettingTextVec;
+		"Height of \"Game Setting\" title"
+		Global.GameSettingTextVec += Vector(0, 0.150, 0);
+		"The \"Next Map Cycle Option\""
+		If(Global.WinnerCountToCycleWS != 0);
+			Create In-World Text(All Players(Team 1), Custom String("WInners Until Next Map: [{0}] / [{1}]", Global.CurWinnerCount,
+				Global.WinnerCountToCycleWS), Global.GameOptTextVec, 1.500, Clip Against Surfaces, Visible To and String, Color(Yellow),
+				Default Visibility);
+			Call Subroutine(IncrementGameSettingsPos);
+		End;
+	}
+}
+
+rule("Increment game settings HUD position[SR]")
+{
+	event
+	{
+		Subroutine;
+		IncrementGameSettingsPos;
+	}
+
+	actions
+	{
+		"The spacing between each game setting in the HUD"
+		Global.GameOptTextSpacing = Vector(0, 0.600, 0);
+		Global.GameOptTextVec += Global.GameOptTextSpacing;
+		Global.GameSettingTextVec += Global.GameOptTextSpacing;
+	}
+}
+
+rule("init winners feature rings (END GAME)")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		Global.WinnerHeroesRingStats[2] == Null;
+	}
+
+	actions
+	{
+		Wait Until(Is True For Any(All Players(Team 1), Has Spawned(Current Array Element)), 99999);
+		Create Effect(Filtered Array(All Players(Team 1), Current Array Element.IsWinner), Ring, Color(Rose),
+			Global.WinnerHeroesRingStats[0], Global.WinnerHeroesRingStats[1], Visible To);
+		Global.WinnerHeroesRingStats[2] = Last Created Entity;
+		Create In-World Text(Filtered Array(All Players(Team 1), Current Array Element.IsWinner), Custom String(
+			"[Jump]/[Crouch] to Change Hero"), Global.WinnerHeroesRingStats[0] + Global.WinnerHeroesRingStats[3], 1.300,
+			Clip Against Surfaces, Visible To, Color(White), Default Visibility);
+		Create Effect(Filtered Array(All Players(Team 1), Current Array Element.IsWinner), Ring, Color(Rose),
+			Global.WinnerResetRingStats[0], Global.WinnerResetRingStats[1], Visible To);
+		Global.WinnerResetRingStats[2] = Last Created Entity;
+		Create In-World Text(Filtered Array(All Players(Team 1), Current Array Element.IsWinner), Custom String("[Reload] to Start Over",
+			Input Binding String(Button(Reload))), Global.WinnerResetRingStats[0] + Global.WinnerResetRingStats[3], 1.300,
+			Clip Against Surfaces, Visible To, Color(White), Default Visibility);
+	}
+}
+
+rule("Select the next winner hero using ring (END GAME)")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		All;
+	}
+
+	conditions
+	{
+		Event Player.IsWinner == True;
+		Global.WinnerHeroesRingStats[2] != Null;
+		Is Button Held(Event Player, Button(Jump)) == True;
+		Is True For Any(Players Within Radius(Global.WinnerHeroesRingStats[0], Global.WinnerHeroesRingStats[1], Team 1, Off),
+			Current Array Element == Event Player) == True;
+	}
+
+	actions
+	{
+		If(Event Player.WinnerHeroCursor == Count Of(Global.WinnerHeroesList) - 1);
+			Event Player.WinnerHeroCursor = 0;
+		Else;
+			Event Player.WinnerHeroCursor += 1;
+		End;
+		Start Forcing Player To Be Hero(Event Player, Global.WinnerHeroesList[Event Player.WinnerHeroCursor]);
+		Wait(0.250, Abort When False);
+	}
+}
+
+rule("Select the previous winner hero using ring (END GAME)")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		All;
+	}
+
+	conditions
+	{
+		Event Player.IsWinner == True;
+		Global.WinnerHeroesRingStats[2] != Null;
+		Is Button Held(Event Player, Button(Crouch)) == True;
+		Is True For Any(Players Within Radius(Global.WinnerHeroesRingStats[0], Global.WinnerHeroesRingStats[1], Team 1, Off),
+			Current Array Element == Event Player) == True;
+	}
+
+	actions
+	{
+		If(Event Player.WinnerHeroCursor == 0);
+			Event Player.WinnerHeroCursor = Count Of(Global.WinnerHeroesList) - 1;
+		Else;
+			Event Player.WinnerHeroCursor -= 1;
+		End;
+		Start Forcing Player To Be Hero(Event Player, Global.WinnerHeroesList[Event Player.WinnerHeroCursor]);
+		Wait(0.250, Abort When False);
+	}
+}
+
+rule("Reset winner using ring (END GAME)")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		All;
+	}
+
+	conditions
+	{
+		Event Player.IsWinner == True;
+		Global.WinnerResetRingStats[2] != Null;
+		Is Button Held(Event Player, Button(Reload)) == True;
+		Is True For Any(Players Within Radius(Global.WinnerResetRingStats[0], Global.WinnerResetRingStats[1], Team 1, Off),
+			Current Array Element == Event Player) == True;
+	}
+
+	actions
+	{
+		Event Player.BacktrackDeaths = 0;
+		Event Player.IsWinner = False;
+		Event Player.Deaths = 0;
+		Event Player.WinnerHeroCursor = 0;
+		Event Player.CurrentHero = 0;
+		Event Player.TargetHero = 0;
+		Modify Global Variable(SavedHero, Remove From Array By Index, Index Of Array Value(Global.SavedIndex, Custom String("{0}",
+			Event Player)));
+		Modify Global Variable(SavedDeaths, Remove From Array By Index, Index Of Array Value(Global.SavedIndex, Custom String("{0}",
+			Event Player)));
+		Modify Global Variable(SavedWinners, Remove From Array By Index, Index Of Array Value(Global.SavedIndex, Custom String("{0}",
+			Event Player)));
+		Modify Global Variable(SavedBacktrackDeaths, Remove From Array By Index, Index Of Array Value(Global.SavedIndex, Custom String(
+			"{0}", Event Player)));
+		Modify Global Variable(SavedIndex, Remove From Array By Value, Custom String("{0}", Event Player));
+		Stop Forcing Player Outlines(Event Player, All Players(Team 1));
+		Set Move Speed(Event Player, 100);
+		If(Event Player.WinnerDeathID != Null);
+			Destroy HUD Text(Event Player.WinnerDeathID);
+			Event Player.WinnerDeathID = Null;
+	}
+}
+
+rule("Buff positions (Default) (Global T, Global J)")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	actions
+	{
+		Global.T = Empty Array;
+		Global.JumpPadLocList = Empty Array;
+		Global.JumpPadPowerList = Empty Array;
+		Global.Y = -1;
+	}
+}
+
+rule("Activate teleporters if spawn room doors is inaccessible - hollywood")
+{
+	event
+	{
+		Player Joined Match;
+		Team 1;
+		Slot 0;
+	}
+
+	conditions
+	{
+		(Current Map == Map(Hollywood) || Current Map == Map(Hollywood Halloween)) == True;
+		Distance Between(Event Player, Global.BadHollywoodSpawnLoc) <= 15;
+	}
+
+	actions
+	{
+		"Sometimes, the doors to spawn room 3 would be closed. These actions will force the players inside the room. The teleporters will allow players to leave the room at will."
+		Global.isTeleporterEnabled = True;
+		Call Subroutine(SpawnAtAltLoc);
+	}
+}
+
+rule("Teleporter position init (global T) - king's row")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		Global.T == Empty Array;
+		(Current Map == Map(King's Row) || Current Map == Map(King's Row Winter)) == True;
+	}
+
+	actions
+	{
+		"Even indexes (0, 2, ...)  are portal senders. Odd indexes (1, 3, ...) are portal receivers. Example: 0 index sends players to 1 index position."
+		Modify Global Variable(T, Append To Array, Vector(-13.206, 1.700, 2.599));
+		Modify Global Variable(T, Append To Array, Vector(-26.548, 7.744, 8.545));
+	}
+}
+
+rule("Teleporter position init (global T) - nepal")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		Global.T == Empty Array;
+		Current Map == Map(Nepal);
+	}
+
+	actions
+	{
+		"REQUIRED for control maps (ilios, lijiang tower, nepal, etc)"
+		Wait Until(Is True For Any(All Players(Team 1), Has Spawned(Current Array Element)), 99999);
+		"Village"
+		If(Count Of(Players Within Radius(Vector(-160.389, -94.271, -84.060), 30, Team 1, Off)) != 0);
+			"Even indexes (0, 2, ...)  are portal senders. Odd indexes (1, 3, ...) are portal receivers. Example: 0 index sends players to 1 index position."
+			Modify Global Variable(T, Append To Array, Vector(-220.003, -94.746, -24.949));
+			Modify Global Variable(T, Append To Array, Vector(-220.392, -93.377, -10.542));
+			Modify Global Variable(T, Append To Array, Vector(-220.104, -94.205, 13.117));
+			Modify Global Variable(T, Append To Array, Vector(-220.205, -94.747, 25.866));
+		"Sanctum"
+		Else If(Count Of(Players Within Radius(Vector(82.236, 133.730, -90.834), 30, Team 1, Off)) != 0);
+			Modify Global Variable(T, Append To Array, Vector(96.787, 129.300, -0.132));
+			Modify Global Variable(T, Append To Array, Vector(105.339, 133.942, 32.889));
+	}
+}
+
+rule("Teleporter position init (global T) - hollywood")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		Global.T == Empty Array;
+		Global.isTeleporterEnabled == True;
+		(Current Map == Map(Hollywood) || Current Map == Map(Hollywood Halloween)) == True;
+	}
+
+	actions
+	{
+		Modify Global Variable(T, Append To Array, Vector(-52.836, 5.050, -148.546));
+		Modify Global Variable(T, Append To Array, Vector(-52.562, 5.050, -147.402));
+		Modify Global Variable(T, Append To Array, Vector(-14.796, 5.050, -147.334));
+		Modify Global Variable(T, Append To Array, Vector(-15.813, 5.050, -146.567));
+	}
+}
+
+rule("Teleporter position init (global T) - illios")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		Global.T == Empty Array;
+		Current Map == Map(Ilios);
+	}
+
+	actions
+	{
+		"REQUIRED for control maps (ilios, lijiang tower, nepal, etc)"
+		Wait Until(Is True For Any(All Players(Team 1), Has Spawned(Current Array Element)), 99999);
+		"Well"
+		If(Count Of(Players Within Radius(Vector(-152.014, -1.104, -93.120), 30, Team 1, Off)) != 0);
+			"Even indexes (0, 2, ...)  are portal senders. Odd indexes (1, 3, ...) are portal receivers. Example: 0 index sends players to 1 index position."
+			Modify Global Variable(T, Append To Array, Vector(-219.430, 1.300, -22.312));
+			Modify Global Variable(T, Append To Array, Vector(-199.053, 2.315, -6.979));
+			Modify Global Variable(T, Append To Array, Vector(-196.207, 2.315, -4.372));
+			Modify Global Variable(T, Append To Array, Vector(-214.369, 1.300, -26.572));
+		"Ruins"
+		Else If(Count Of(Players Within Radius(Vector(131.609, 64.254, -159.135), 30, Team 1, Off)) != 0);
+			"Even indexes (0, 2, ...)  are portal senders. Odd indexes (1, 3, ...) are portal receivers. Example: 0 index sends players to 1 index position."
+			Modify Global Variable(T, Append To Array, Vector(59.421, 61.917, -140.094));
+			Modify Global Variable(T, Append To Array, Vector(41.130, 67.671, -144.216));
+			"Even indexes (0, 2, ...)  are portal senders. Odd indexes (1, 3, ...) are portal receivers. Example: 0 index sends players to 1 index position."
+			Modify Global Variable(T, Append To Array, Vector(-1.989, 61.668, -167.644));
+			Modify Global Variable(T, Append To Array, Vector(-0.496, 65.784, -170.078));
+	}
+}
+
+rule("Teleporter position init (global T) - hanamura (winter)")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		Global.T == Empty Array;
+		(Current Map == Map(Hanamura) || Current Map == Map(Hanamura Winter)) == True;
+	}
+
+	actions
+	{
+		Modify Global Variable(T, Append To Array, Vector(-28.532, 2.301, -57.827));
+		Modify Global Variable(T, Append To Array, Vector(-12.406, 2.299, -32.859));
+		Modify Global Variable(T, Append To Array, Vector(26.500, 1.200, 7.857));
+		Modify Global Variable(T, Append To Array, Vector(46.023, 1.768, 38.157));
+	}
+}
+
+rule("Jump pad position init (global J) - havana")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		Global.JumpPadLocList == Empty Array;
+		Current Map == Map(Havana);
+	}
+
+	actions
+	{
+		Modify Global Variable(JumpPadLocList, Append To Array, Vector(103.926, 3.104, -25.884));
+		Modify Global Variable(JumpPadPowerList, Append To Array, 18);
+	}
+}
+
+rule("Jump pad position init (global J)(global K) - nepal")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		Global.JumpPadLocList == Empty Array;
+		Current Map == Map(Nepal);
+	}
+
+	actions
+	{
+		"REQUIRED for control maps (ilios, lijiang tower, nepal, etc)"
+		Wait Until(Is True For Any(All Players(Team 1), Has Spawned(Current Array Element)), 99999);
+		"Shrine"
+		If(Count Of(Players Within Radius(Vector(-41.729, 19.079, -93.923), 30, Team 1, Off)) != 0);
+			"The location of the jump pad"
+			Modify Global Variable(JumpPadLocList, Append To Array, Vector(-27.684, 16.779, -62.910));
+			"The strength of the jump pad. How high to to bounce players upwards?"
+			Modify Global Variable(JumpPadPowerList, Append To Array, 16);
+			"The location of the jump pad"
+			Modify Global Variable(JumpPadLocList, Append To Array, Vector(-45.142, 16.300, -60.279));
+			"The strength of the jump pad. How high to to bounce players upwards?"
+			Modify Global Variable(JumpPadPowerList, Append To Array, 12);
+			"The location of the jump pad"
+			Modify Global Variable(JumpPadLocList, Append To Array, Vector(-28.075, 16.300, 81.503));
+			"The strength of the jump pad. How high to to bounce players upwards?"
+			Modify Global Variable(JumpPadPowerList, Append To Array, 16);
+		"Village"
+		Else If(Count Of(Players Within Radius(Vector(-160.389, -94.271, -84.060), 30, Team 1, Off)) != 0);
+			"The location of the jump pad"
+			Modify Global Variable(JumpPadLocList, Append To Array, Vector(-216.263, -94.689, 24.938));
+			"The strength of the jump pad. How high to to bounce players upwards?"
+			Modify Global Variable(JumpPadPowerList, Append To Array, 12);
+			"The location of the jump pad"
+			Modify Global Variable(JumpPadLocList, Append To Array, Vector(-194.944, -92.303, -10.583));
+			"The strength of the jump pad. How high to to bounce players upwards?"
+			Modify Global Variable(JumpPadPowerList, Append To Array, 16);
+	}
+}
+
+rule("Jump pad position init (global J, global K) - hanamura")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		Global.JumpPadLocList == Empty Array;
+		(Current Map == Map(Hanamura) || Current Map == Map(Hanamura Winter)) == True;
+	}
+
+	actions
+	{
+		Modify Global Variable(JumpPadLocList, Append To Array, Vector(33.167, 3, -24.676));
+		Modify Global Variable(JumpPadPowerList, Append To Array, 18);
+	}
+}
+
+rule("Jump pad position init (global J)(global K) - illios")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		Global.JumpPadLocList == Empty Array;
+		Current Map == Map(Ilios);
+	}
+
+	actions
+	{
+		"REQUIRED for control maps (ilios, lijiang tower, nepal, etc)"
+		Wait Until(Is True For Any(All Players(Team 1), Has Spawned(Current Array Element)), 99999);
+		"Town"
+		If(Count Of(Players Within Radius(Vector(322.692, -21.520, 42.832), 30, Team 1, Off)) != 0);
+			"The location of the jump pad"
+			Modify Global Variable(JumpPadLocList, Append To Array, Vector(370.190, -27.343, -56.901));
+			"The strength of the jump pad. How high to to bounce players upwards?"
+			Modify Global Variable(JumpPadPowerList, Append To Array, 20);
+		"Well"
+		Else If(Count Of(Players Within Radius(Vector(-152.014, -1.104, -93.120), 30, Team 1, Off)) != 0);
+			"The location of the jump pad"
+			Modify Global Variable(JumpPadLocList, Append To Array, Vector(-230.206, 0.300, -32.998));
+			"The strength of the jump pad. How high to to bounce players upwards?"
+			Modify Global Variable(JumpPadPowerList, Append To Array, 16);
+			"The location of the jump pad"
+			Modify Global Variable(JumpPadLocList, Append To Array, Vector(-224.623, 0.300, -38.636));
+			"The strength of the jump pad. How high to to bounce players upwards?"
+			Modify Global Variable(JumpPadPowerList, Append To Array, 16);
+			"The location of the jump pad"
+			Modify Global Variable(JumpPadLocList, Append To Array, Vector(-198.022, 2.300, 5.441));
+			"The strength of the jump pad. How high to to bounce players upwards?"
+			Modify Global Variable(JumpPadPowerList, Append To Array, 16);
+			"The location of the jump pad"
+			Modify Global Variable(JumpPadLocList, Append To Array, Vector(-218.367, 6.529, 15.425));
+			"The strength of the jump pad. How high to to bounce players upwards?"
+			Modify Global Variable(JumpPadPowerList, Append To Array, 12);
+		"Ruins"
+		Else If(Count Of(Players Within Radius(Vector(131.609, 64.254, -159.135), 30, Team 1, Off)) != 0);
+			"The location of the jump pad"
+			Modify Global Variable(JumpPadLocList, Append To Array, Vector(77.862, 60.082, -171.666));
+			"The strength of the jump pad. How high to to bounce players upwards?"
+			Modify Global Variable(JumpPadPowerList, Append To Array, 16);
+			"The location of the jump pad"
+			Modify Global Variable(JumpPadLocList, Append To Array, Vector(-49.604, 61.667, -178.331));
+			"The strength of the jump pad. How high to to bounce players upwards?"
+			Modify Global Variable(JumpPadPowerList, Append To Array, 14);
+			"The location of the jump pad"
+			Modify Global Variable(JumpPadLocList, Append To Array, Vector(-54.233, 61.619, -158.073));
+			"The strength of the jump pad. How high to to bounce players upwards?"
+			Modify Global Variable(JumpPadPowerList, Append To Array, 18);
+			"The location of the jump pad"
+			Modify Global Variable(JumpPadLocList, Append To Array, Vector(-56.603, 66.734, -171.348));
+			"The strength of the jump pad. How high to to bounce players upwards?"
+			Modify Global Variable(JumpPadPowerList, Append To Array, 14);
+	}
+}
+
+rule("disable ult")
+{
+	event
+	{
+		Player Died;
+		All;
+		All;
+	}
+
+	actions
+	{
+		Disallow Button(Event Player, Button(Ultimate));
+	}
+}
+
+rule("bastion enable turret mode")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 2;
+		Bastion;
+	}
+
+	conditions
+	{
+		Has Spawned(Event Player) == True;
+		Is Alive(Event Player) == True;
+		Is In Alternate Form(Event Player) == False;
+	}
+
+	actions
+	{
+		Allow Button(Event Player, Button(Ability 1));
+		Press Button(Event Player, Button(Ability 1));
+		Teleport(Event Player, Global.AllBastionPositions[Slot Of(Event Player)]);
+		Disable Nameplates(Event Player, All Players(All Teams));
+		Wait(1, Ignore Condition);
+		Loop If Condition Is True;
+	}
+}
+
+rule("bastion teleport and init (player E, global d)")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 2;
+		Bastion;
+	}
+
+	conditions
+	{
+		Is Alive(Event Player) == True;
+		Has Spawned(Event Player) == True;
+	}
+
+	actions
+	{
+		Wait(0.250, Ignore Condition);
+		Teleport(Event Player, Global.AllBastionPositions[Slot Of(Event Player)]);
+		Set Status(Event Player, Null, Invincible, 99999);
+		Event Player.E = 0;
+		If(Global.DifficultyWS == 0);
+			Set Damage Dealt(Event Player, 100);
+		Else If(Global.DifficultyWS == 1);
+			Set Damage Dealt(Event Player, 150);
+		Else If(Global.DifficultyWS == 2);
+			Set Damage Dealt(Event Player, 200);
+		Else If(Global.DifficultyWS == 3);
+			Set Damage Dealt(Event Player, 250);
+		Else;
+			Set Damage Dealt(Event Player, 300);
+		End;
+		Set Knockback Received(Event Player, 1);
+	}
+}
+
+rule("push players back from bastions")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 2;
+		Bastion;
+	}
+
+	conditions
+	{
+		Event Player.IsWinner != True;
+		Global.IsDebugMode == False;
+		Is True For Any(Players Within Radius(Position Of(Event Player), 3, Team 1, Off), Current Array Element != Null) == True;
+	}
+
+	actions
+	{
+		Event Player.playerToPushBack = Closest Player To(Position Of(Event Player), Team 1);
+		Skip If(Is In Air(Event Player.playerToPushBack) == True, 1);
+		Apply Impulse(Event Player.playerToPushBack, Position Of(Event Player.playerToPushBack) - Position Of(Event Player), 10, To World,
+			Cancel Contrary Motion);
+		Skip If(Is In Air(Event Player.playerToPushBack) == False, 1);
+		Apply Impulse(Event Player.playerToPushBack, Position Of(Event Player.playerToPushBack) - Position Of(Event Player), 5, To World,
+			Cancel Contrary Motion);
+		Wait(0.150, Ignore Condition);
+		Loop If Condition Is True;
+	}
+}
+
+rule("teleport bastions back")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 2;
+		Bastion;
+	}
+
+	conditions
+	{
+		Distance Between(Event Player, Global.AllBastionPositions[Slot Of(Event Player)]) > 2;
+	}
+
+	actions
+	{
+		Teleport(Event Player, Global.AllBastionPositions[Slot Of(Event Player)]);
+		Wait(0.100, Ignore Condition);
+		Loop If Condition Is True;
+	}
+}
+
+rule("winner effects on reach to end")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		All;
+	}
+
+	conditions
+	{
+		Event Player.IsWinner != True;
+		Y Component Of(Position Of(Event Player)) >= Y Component Of(Global.EndPosition);
+		Distance Between(Position Of(Event Player), Vector(X Component Of(Global.EndPosition), Y Component Of(Position Of(Event Player)),
+			Z Component Of(Global.EndPosition))) <= 4;
+	}
+
+	actions
+	{
+		Respawn(Event Player);
+		Wait(0.032, Ignore Condition);
+		If(Event Player.CurrentHero < Count Of(Global.HeroList) && Event Player.CurrentHero == Event Player.TargetHero);
+			Event Player.CurrentHero += 1;
+			Event Player.TargetHero = Event Player.CurrentHero;
+		End;
+		Event Player.BacktrackDeaths = 0;
+		If(Event Player.CurrentHero == Count Of(Global.HeroList));
+			Event Player.IsWinner = True;
+			Skip If(Global.WinnerCountToCycleWS == 0, 1);
+			Global.CurWinnerCount += 1;
+			Skip If(Global.HeroDataSaveIndexWS == -1, 1);
+			Modify Global Variable(SavedWinners, Append To Array, Custom String("{0}", Event Player));
+			Big Message(All Players(Team 1), String("{0}!!!", String("{0}, {1}", String("Wow"), String("{0} {1}", Event Player, Custom String(
+				"WINS WITH {0} DEATHS!", Event Player.Deaths)))));
+		End;
+		Play Effect(All Players(Team 1), Buff Explosion Sound, Color(White), Event Player, 200);
+		Call Subroutine(SpawnAtAltLoc);
+		Call Subroutine(SavePlayerData);
+	}
+}
+
+rule("goal effects")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	actions
+	{
+		Create Effect(All Players(Team 1), Ring, Color(Team 1), Global.EndPosition, 4, Visible To Position and Radius);
+		Create Effect(All Players(Team 1), Light Shaft, Color(Team 1), Global.EndPosition, 4, Visible To Position and Radius);
+		Create Icon(All Players(All Teams), Global.EndPosition + Vector(Empty Array, 5, Empty Array), Flag, Visible To and Position, Color(
+			Blue), True);
+	}
+}
+
+rule("no damage for team 1")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		All;
+	}
+
+	conditions
+	{
+		Has Spawned(Event Player) == True;
+	}
+
+	actions
+	{
+		Set Damage Dealt(Event Player, 0);
+	}
+}
+
+rule("player hud")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		All;
+	}
+
+	conditions
+	{
+		Global.IsDebugMode == False;
+	}
+
+	actions
+	{
+		If(Global.HeroListTypeWS != 2);
+			Create HUD Text(Event Player, Hero Icon String(Global.HeroList[Event Player.TargetHero + 1]), Custom String("Next Hero"),
+				Global.HeroList[Event Player.TargetHero + 1], Left, 2, Color(Blue), Color(White), Color(White), Visible To and String,
+				Default Visibility);
+			Create HUD Text(Event Player, String("{0}: {1}", String("Hero"), !Event Player.IsWinner ? String("{0} / {1}",
+				Event Player.CurrentHero + 1, Count Of(Global.HeroList)) : Custom String("Done!")), Null, Null, Left, 0, Color(White), Color(
+				White), Color(White), Visible To and String, Default Visibility);
+		Else;
+			Create HUD Text(Event Player, Hero Icon String(Event Player.IndieHeroList[Event Player.TargetHero + 1]), Custom String(
+				"Next Hero"), Event Player.IndieHeroList[Event Player.TargetHero + 1], Left, 2, Color(Blue), Color(White), Color(White),
+				Visible To and String, Default Visibility);
+			Create HUD Text(Event Player, String("{0}: {1}", String("Hero"), !Event Player.IsWinner ? String("{0} / {1}",
+				Event Player.CurrentHero + 1, Count Of(Event Player.IndieHeroList)) : Custom String("Done!")), Null, Null, Left, 0, Color(
+				White), Color(White), Color(White), Visible To and String, Default Visibility);
+		End;
+		Skip If(Global.BacktrackDeathsWS == 0, 1);
+		Create HUD Text(Event Player, Custom String("Backtrack Deaths: {0}/{1}", Event Player.BacktrackDeaths, Global.BacktrackDeathsWS),
+			Null, Null, Left, 1, Color(Red), Color(White), Color(White), Visible To and String, Default Visibility);
+	}
+}
+
+rule("infinity game")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		Is In Setup == False;
+	}
+
+	actions
+	{
+		Wait(300, Ignore Condition);
+		Set Match Time(3599);
+	}
+}
+
+rule("heal")
+{
+	event
+	{
+		Player Took Damage;
+		Team 1;
+		All;
+	}
+
+	conditions
+	{
+		Is Alive(Event Player) == True;
+	}
+
+	actions
+	{
+		Stop All Heal Over Time(Event Player);
+		Wait(2, Abort When False);
+		Play Effect(All Players(All Teams), Buff Impact Sound, Color(Yellow), Event Player, 2);
+		Start Heal Over Time(Event Player, Event Player, 9999, 25);
+	}
+}
+
+rule("deaths counter")
+{
+	event
+	{
+		Player Died;
+		Team 1;
+		All;
+	}
+
+	conditions
+	{
+		Event Player.IsWinner == False;
+		Attacker != Null;
+		Attacker != Event Player;
+	}
+
+	actions
+	{
+		Event Player.Deaths += 1;
+		Skip If(Global.BacktrackDeathsWS == 0, 1);
+		Event Player.BacktrackDeaths += 1;
+		Call Subroutine(SavePlayerData);
+	}
+}
+
+rule("Backtrack a hero after many deaths")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		All;
+	}
+
+	conditions
+	{
+		Event Player.IsWinner == False;
+		Global.BacktrackDeathsWS != 0;
+		Event Player.BacktrackDeaths >= Global.BacktrackDeathsWS;
+	}
+
+	actions
+	{
+		Respawn(Event Player);
+		Call Subroutine(SpawnAtAltLoc);
+		Event Player.BacktrackDeaths = 0;
+		If(Event Player.CurrentHero != 0);
+			Event Player.randBacktrackNum = Random Integer(Global.BacktrackMinMaxListWS[0], Global.BacktrackMinMaxListWS[1]);
+			If(Event Player.CurrentHero - Event Player.randBacktrackNum < 0);
+				Event Player.CurrentHero = 0;
+			Else;
+				Event Player.CurrentHero = Event Player.CurrentHero - Event Player.randBacktrackNum;
+			End;
+			Event Player.TargetHero = Event Player.CurrentHero;
+		End;
+		Call Subroutine(SavePlayerData);
+		Respawn(Event Player);
+		Wait(3, Ignore Condition);
+		If(Event Player.CurrentHero == 0);
+			Small Message(Event Player, Custom String("Backtracked to the very first hero!"));
+		Else If(Event Player.randBacktrackNum == 1);
+			Small Message(Event Player, Custom String("Backtracked a single hero!"));
+		Else If(Event Player.randBacktrackNum >= 7);
+			Small Message(Event Player, Custom String("Yikes! Backtracked {0} heroes! Be careful next time!"));
+		Else;
+			Small Message(Event Player, Custom String("Backtracked {0} heroes!", Event Player.randBacktrackNum));
+		End;
+	}
+}
+
+rule("Destroy D.Va's mech goal HUD")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		D.Va;
+	}
+
+	conditions
+	{
+		Is In Alternate Form(Event Player) == False;
+		Event Player.H[1] != Null;
+	}
+
+	actions
+	{
+		Call Subroutine(DestroyDVAMechHUD);
+	}
+}
+
+rule("Destroy goal HUD for D.Va mech [SR]")
+{
+	event
+	{
+		Subroutine;
+		DestroyDVAMechHUD;
+	}
+
+	actions
+	{
+		If(Event Player.H[1] != Null);
+			Wait(0.250, Abort When False);
+			Destroy HUD Text(Event Player.H[1]);
+			Event Player.H[1] = Null;
+			If(Global.IsDVADebug == True);
+				Modify Player Variable(Event Player, DVADebugStates, Append To Array, Custom String("Destroy Mech Goal HUD"));
+			End;
+	}
+}
+
+rule("Create D.Va's goal HUD for mech")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		D.Va;
+	}
+
+	conditions
+	{
+		Is In Alternate Form(Event Player) == True;
+		Event Player.H[1] == Null;
+		Is Alive(Event Player) == True;
+	}
+
+	actions
+	{
+		Wait(0.250, Abort When False);
+		Event Player.M = Position Of(Event Player) * Vector(1, Empty Array, 1);
+		Create HUD Text(Event Player, String("{0}: {1}", String("{0} {1}", String("Goal"), String("Distance")), Max(0,
+			50 - Distance Between(Position Of(Event Player) * Vector(1, Empty Array, 1), Event Player.M))), Null, Null, Top, 5, Color(
+			White), Color(White), Color(White), Visible To and String, Default Visibility);
+		Event Player.H[1] = Last Text ID;
+		If(Global.IsDVADebug == True);
+			Modify Player Variable(Event Player, DVADebugStates, Append To Array, Custom String("Create Mech Goal HUD"));
+		End;
+	}
+}
+
+rule("if D.Va haven't reached 50 meters yet")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		D.Va;
+	}
+
+	conditions
+	{
+		Is In Alternate Form(Event Player) == True;
+		Is In Spawn Room(Event Player) == False;
+		Event Player.H[1] != Null;
+		Distance Between(Position Of(Event Player) * Vector(1, Empty Array, 1), Event Player.M) < 50;
+	}
+
+	actions
+	{
+		Set Ultimate Charge(Event Player, 2 * Distance Between(Position Of(Event Player) * Vector(1, Empty Array, 1), Event Player.M));
+		Wait(0.100, Ignore Condition);
+		Loop If Condition Is True;
+		If(Global.IsDVADebug == True);
+			Modify Player Variable(Event Player, DVADebugStates, Append To Array, Custom String("Not Reached Goal"));
+	}
+}
+
+rule("If D.Va passes 50 meters")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		D.Va;
+	}
+
+	conditions
+	{
+		Is In Alternate Form(Event Player) == True;
+		Is In Spawn Room(Event Player) == False;
+		Event Player.H[1] != Null;
+		Distance Between(Position Of(Event Player) * Vector(1, Empty Array, 1), Event Player.M) >= 50;
+	}
+
+	actions
+	{
+		Set Ultimate Charge(Event Player, 100);
+		If(Global.IsDVADebug == True);
+			Modify Player Variable(Event Player, DVADebugStates, Append To Array, Custom String("Reached Goal"));
+	}
+}
+
+rule("If D.Va calls mech")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		D.Va;
+	}
+
+	conditions
+	{
+		Is In Alternate Form(Event Player) == True;
+		Ultimate Charge Percent(Event Player) == 100;
+		Event Player.H[1] != Null;
+	}
+
+	actions
+	{
+		Allow Button(Event Player, Button(Ultimate));
+		Wait(0.400, Ignore Condition);
+		"Automatically place D.Va in her mech if she has her ultimate"
+		Press Button(Event Player, Button(Ultimate));
+		Loop If(Ultimate Charge Percent(Event Player) == 100);
+		Disallow Button(Event Player, Button(Ultimate));
+		If(Global.IsDVADebug == True);
+			Modify Player Variable(Event Player, DVADebugStates, Append To Array, Custom String("Mech Called"));
+		End;
+	}
+}
+
+rule("If D.Va respawns in alternative form")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		D.Va;
+	}
+
+	conditions
+	{
+		Is In Spawn Room(Event Player) == True;
+		Is In Alternate Form(Event Player) == True;
+	}
+
+	actions
+	{
+		Set Ultimate Charge(Event Player, 100);
+		If(Global.IsDVADebug == True);
+			Modify Player Variable(Event Player, DVADebugStates, Append To Array, Custom String("Respawn in Alt form"));
+	}
+}
+
+disabled rule("D.Va states (debug)")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		D.Va;
+	}
+
+	conditions
+	{
+		Global.IsDebugMode == True;
+	}
+
+	actions
+	{
+		Event Player.DVADebugStates = Empty Array;
+		Global.IsDVADebug = True;
+	}
+}
+
+rule("Removes ult gained from D.Va while in mech")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		D.Va;
+	}
+
+	conditions
+	{
+		Is In Alternate Form(Event Player) == False;
+		Ultimate Charge Percent(Event Player) > 0;
+	}
+
+	actions
+	{
+		Set Ultimate Charge(Event Player, 0);
+	}
+}
+
+rule("If D.Va dies")
+{
+	event
+	{
+		Player Died;
+		Team 1;
+		D.Va;
+	}
+
+	actions
+	{
+		Set Move Speed(Event Player, 0);
+		Wait(0.300, Ignore Condition);
+		If(Is Alive(Event Player) && !Is In Spawn Room(Event Player));
+			"This extra respawn is important!!! If Baby D.Va dies while getting into her mech, she will be permanently stuck at spawn point unrendered.  "
+			Respawn(Event Player);
+		End;
+		If(Is In Alternate Form(Event Player) == True);
+			Set Ultimate Charge(Event Player, 100);
+		Else;
+			Call Subroutine(DestroyDVAMechHUD);
+			Event Player.H[1] = Null;
+		End;
+		Set Move Speed(Event Player, 100);
+		If(Global.IsDVADebug == True);
+			Modify Player Variable(Event Player, DVADebugStates, Append To Array, Custom String("Died"));
+	}
+}
+
+rule("destroy hud if player is not D.Va anymore")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		All;
+	}
+
+	conditions
+	{
+		Event Player.H[1] != Null;
+		Hero Of(Event Player) != Hero(D.Va);
+	}
+
+	actions
+	{
+		Destroy HUD Text(Event Player.H[1]);
+		Wait(0.032, Ignore Condition);
+		Event Player.H[1] = Null;
+	}
+}
+
+rule("Create jump pad effects [SR]")
+{
+	event
+	{
+		Subroutine;
+		CreateJumpPads;
+	}
+
+	actions
+	{
+		If(Global.Y < Count Of(Global.JumpPadLocList) && Global.JumpPadLocList != Empty Array);
+			Create Effect(All Players(All Teams), Sparkles, Color(Green), Global.JumpPadLocList[Global.Y], Global.JumpPadRadius, Visible To);
+	}
+}
+
+rule("Create teleport effects [SR]")
+{
+	event
+	{
+		Subroutine;
+		CreateTeleporters;
+	}
+
+	actions
+	{
+		If(Global.Y < Count Of(Global.T) && Global.T != Empty Array);
+			Skip If(Global.Y % 2 == 0, 1);
+			Create Effect(All Players(All Teams), Bad Aura, Color(Red), Global.T[Global.Y], 1, Visible To);
+			Skip If(Global.Y % 2 == 1, 1);
+			Create Effect(All Players(All Teams), Good Aura, Color(Red), Global.T[Global.Y], 1, Visible To);
+	}
+}
+
+rule("Chase Y from 0 to 100 to create effects")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		Global.Y == -1;
+	}
+
+	actions
+	{
+		Global.Y += 1;
+		"REQUIRED for control maps (ilios, lijiang tower, nepal, etc)"
+		Wait Until(Is True For Any(All Players(Team 1), Has Spawned(Current Array Element)), 99999);
+		Call Subroutine(CreateJumpPads);
+		Call Subroutine(CreateTeleporters);
+		Wait(0.100, Ignore Condition);
+		Loop If(Global.Y < 100);
+	}
+}
+
+rule("If player near a portal")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		All;
+	}
+
+	conditions
+	{
+		Global.T != Empty Array;
+		Is True For Any(Global.T, Distance Between(Current Array Element, Position Of(Event Player)) < 1.500) == True;
+	}
+
+	actions
+	{
+		Event Player.W = Filtered Array(Global.T, Distance Between(Current Array Element, Position Of(Event Player)) < 1.500);
+		Skip If(Index Of Array Value(Global.T, Event Player.W) % 2 == 1, 1);
+		Teleport(Event Player, Global.T[Index Of Array Value(Global.T, Event Player.W) + 1]);
+		Play Effect(All Players(All Teams), Buff Impact Sound, Color(Yellow), Event Player, 1);
+	}
+}
+
+rule("If player near a jump pad")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		All;
+	}
+
+	conditions
+	{
+		Global.JumpPadLocList != Empty Array;
+		Is True For Any(Global.JumpPadLocList, Distance Between(Current Array Element, Position Of(Event Player)) <= Global.JumpPadRadius)
+			== True;
+	}
+
+	actions
+	{
+		Apply Impulse(Event Player, Up, Global.JumpPadPowerList[Index Of Array Value(Global.JumpPadLocList, First Of(Filtered Array(
+			Global.JumpPadLocList, Distance Between(Position Of(Event Player), Current Array Element) < Global.JumpPadRadius)))], To World,
+			Cancel Contrary Motion);
+		Play Effect(All Players(Team 1), Buff Explosion Sound, Color(White), Event Player, 50);
+	}
+}
+
+rule("Create current hero HUD (pl h)")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		All;
+	}
+
+	conditions
+	{
+		Event Player.CurrentHero != Event Player.TargetHero;
+	}
+
+	actions
+	{
+		Wait(Random Real(0, 0.100), Ignore Condition);
+		Create HUD Text(Event Player, Hero Icon String(Global.HeroList[Event Player.CurrentHero]), Custom String("Current Hero"),
+			Global.HeroList[Event Player.CurrentHero], Left, 4, Color(Green), Color(White), Color(White), Visible To and String,
+			Default Visibility);
+		Event Player.H[0] = Last Text ID;
+	}
+}
+
+rule("Destroy current hero HUD (pl h)")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		All;
+	}
+
+	conditions
+	{
+		Event Player.CurrentHero == Event Player.TargetHero;
+		First Of(Event Player.H) != Null;
+	}
+
+	actions
+	{
+		Destroy HUD Text(First Of(Event Player.H));
+		Event Player.H[0] = Null;
+	}
+}
+
+disabled rule("hud map id (global i)(debug)")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		All;
+	}
+
+	conditions
+	{
+		Global.IsDebugMode == True;
+	}
+
+	actions
+	{
+		Create HUD Text(Event Player, Global.I, Null, Null, Left, 0, Color(Purple), Color(White), Color(White), Visible To and String,
+			Default Visibility);
+	}
+}
+
+disabled rule("no dmg (debug)")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		All;
+	}
+
+	conditions
+	{
+		Global.IsDebugMode == True;
+	}
+
+	actions
+	{
+		Set Status(Event Player, Null, Invincible, 9999);
+		Set Move Speed(Event Player, 50);
+	}
+}
+
+disabled rule("init triggers (debug)")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		All;
+	}
+
+	conditions
+	{
+		Global.IsDebugMode == True;
+	}
+
+	actions
+	{
+		Event Player.Z = False;
+	}
+}
+
+disabled rule("triggers hud  (player arr T)(debug)")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		All;
+	}
+
+	conditions
+	{
+		Global.IsDebugMode == True;
+	}
+
+	actions
+	{
+		Create HUD Text(Event Player, String("{0}: {1}", String("Faster"), First Of(Event Player.Z)), Null, Null, Left, 2, Color(Green),
+			Color(White), Color(White), Visible To and String, Default Visibility);
+	}
+}
+
+disabled rule("speed triger on (player t0)(debug)")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		All;
+	}
+
+	conditions
+	{
+		First Of(Event Player.Z) == True;
+		Global.IsDebugMode == True;
+	}
+
+	actions
+	{
+		Set Move Speed(Event Player, 200);
+		Set Projectile Speed(Event Player, 200);
+	}
+}
+
+disabled rule("speed triger off (player t0)(debug)")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		All;
+	}
+
+	conditions
+	{
+		First Of(Event Player.Z) == False;
+		Global.IsDebugMode == True;
+	}
+
+	actions
+	{
+		Set Move Speed(Event Player, 77);
+		Set Projectile Speed(Event Player, 100);
+	}
+}
+
+disabled rule("speed button (debug)")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		All;
+	}
+
+	conditions
+	{
+		Is Button Held(Event Player, Button(Interact)) == True;
+		Global.IsDebugMode == True;
+	}
+
+	actions
+	{
+		Event Player.Z[0] = !First Of(Event Player.Z);
+	}
+}
+
+disabled rule("All positions (debug)")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Global.IsDebugMode == True;
+	}
+
+	actions
+	{
+		Create HUD Text(All Players(All Teams), String("{0}: {1}", Event Player, Position Of(Event Player)), Null, Null, Left, 0, Color(
+			White), Color(White), Color(White), Visible To and String, Default Visibility);
+	}
+}
+
+disabled rule("======== set debug mode on/off")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	actions
+	{
+		Global.IsDebugMode = True;
+		Enable Inspector Recording;
+	}
+}
+
+disabled rule("Init as Winner (debug)")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		All;
+	}
+
+	conditions
+	{
+		Global.IsDebugMode == True;
+	}
+
+	actions
+	{
+		Event Player.IsWinner = True;
+	}
+}
+
+disabled rule("fast restart ctrl + space + f (debug)")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Event Player == Host Player;
+		Is Button Held(Event Player, Button(Crouch)) == True;
+		Is Button Held(Event Player, Button(Jump)) == True;
+		Is Button Held(Event Player, Button(Interact)) == True;
+		Global.IsDebugMode == True;
+	}
+
+	actions
+	{
+		Restart Match;
+	}
+}
+
+disabled rule("Fast Hero (debug)")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		All;
+	}
+
+	conditions
+	{
+		Global.IsDebugMode == True;
+		Is Button Held(Event Player, Button(Melee)) == True;
+		disabled Host Player == Event Player;
+	}
+
+	actions
+	{
+		If(Event Player.CurrentHero < 31);
+			Event Player.CurrentHero += 1;
+			Event Player.TargetHero = Event Player.CurrentHero;
+			Wait(0.625, Ignore Condition);
+	}
+}
+
+rule("Add Bastion Bots")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		Count Of(All Players(Team 2)) < Global.BastionBotCount;
+	}
+
+	actions
+	{
+		Create Dummy Bot(Hero(Bastion), Team 2, -1, Random Value In Array(Spawn Points(Team 2)), Left - Left);
+		Wait(0.250, Ignore Condition);
+		Loop If Condition Is True;
+	}
+}
+
+rule("No Hud & apply winner outline")
+{
+	event
+	{
+		Player Joined Match;
+		Team 1;
+		All;
+	}
+
+	actions
+	{
+		Disable Game Mode HUD(Event Player);
+		If(Is True For Any(All Players(Team 1), Current Array Element.IsWinner));
+			Start Forcing Player Outlines(Filtered Array(All Players(Team 1), Current Array Element.IsWinner), All Players(Team 1), True,
+				Color(Green), Always);
+	}
+}
+
+rule("Rename Bastion On Join")
+{
+	event
+	{
+		Player Joined Match;
+		Team 2;
+		Bastion;
+	}
+
+	actions
+	{
+		Start Forcing Dummy Bot Name(Event Player, Custom String("BASTION {0} | KILLS: {1}", Slot Of(Event Player) + 1,
+			Global.kills[Slot Of(Event Player)]));
+	}
+}
+
+rule("Bastion Bot Enemy Search")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 2;
+		Bastion;
+	}
+
+	conditions
+	{
+		Is Dummy Bot(Event Player) == True;
+		Is Alive(Event Player) == True;
+	}
+
+	actions
+	{
+		Event Player.temp = Filtered Array(All Living Players(Opposite Team Of(Team Of(Event Player))), (Is In Line of Sight(Eye Position(
+			Event Player), Eye Position(Current Array Element), Barriers Do Not Block LOS) == True || Is In Line of Sight(Eye Position(
+			Event Player), Position Of(Current Array Element), Barriers Do Not Block LOS) == True) && Has Spawned(Current Array Element)
+			&& Current Array Element.IsWinner == False && (Hero Of(Current Array Element) != Hero(Sombra) || !Is Using Ability 1(
+			Current Array Element)) && (Hero Of(Current Array Element) != Hero(Reaper) || !Is Using Ability 1(Current Array Element)) && (
+			Hero Of(Current Array Element) != Hero(Moira) || !Is Using Ability 1(Current Array Element)));
+		Wait(0.016, Ignore Condition);
+		Event Player.temp = Sorted Array(Event Player.temp, Global.BastionBotTargetPreferWS == 0 ? Health(Event Player) * Distance Between(
+			Event Player, Current Array Element) : (Global.BastionBotTargetPreferWS == 1 ? Distance Between(Event Player,
+			Current Array Element) : Health(Current Array Element)));
+		Wait(0.016, Ignore Condition);
+		Event Player.Enemy = First Of(Event Player.temp);
+		Wait(Random Real(0.256, 0.512), Ignore Condition);
+		Loop If Condition Is True;
+	}
+}
+
+rule("Bastion Bot Fire")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 2;
+		Bastion;
+	}
+
+	conditions
+	{
+		Is Dummy Bot(Event Player) == True;
+		Is Alive(Event Player) == True;
+		Event Player.Enemy != Null;
+		Is Button Held(Event Player, Button(Primary Fire)) == False;
+	}
+
+	actions
+	{
+		Start Holding Button(Event Player, Button(Primary Fire));
+		Wait(0.256, Ignore Condition);
+		Loop If Condition Is True;
+	}
+}
+
+rule("Bastion Bot Stop Fire")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 2;
+		Bastion;
+	}
+
+	conditions
+	{
+		Is Dummy Bot(Event Player) == True;
+		Is Alive(Event Player) == True;
+		Event Player.Enemy == Null;
+	}
+
+	actions
+	{
+		Stop Holding Button(Event Player, Button(Primary Fire));
+	}
+}
+
+rule("Bastion Bot Aim Position")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 2;
+		Bastion;
+	}
+
+	conditions
+	{
+		Is Dummy Bot(Event Player) == True;
+		Is Alive(Event Player) == True;
+		Event Player.Enemy != Null;
+	}
+
+	actions
+	{
+		Event Player.TempAimPosition = Vector(X Component Of(Eye Position(Event Player.Enemy)), Y Component Of(Position Of(
+			Event Player.Enemy)) + (Y Component Of(Eye Position(Event Player.Enemy)) - Y Component Of(Position Of(Event Player.Enemy)))
+			/ 2, Z Component Of(Eye Position(Event Player.Enemy)));
+		If(Is In Line of Sight(Eye Position(Event Player), Event Player.TempAimPosition, Barriers Do Not Block LOS) == True);
+			Event Player.AimPosition = Event Player.TempAimPosition;
+		Else;
+			If(Is In Line of Sight(Eye Position(Event Player), Eye Position(Event Player.Enemy), Barriers Do Not Block LOS) == True);
+				Event Player.AimPosition = Eye Position(Event Player.Enemy);
+			Else;
+				Event Player.AimPosition = Position Of(Event Player.Enemy);
+			End;
+		End;
+		Wait(0.032, Ignore Condition);
+		Loop If Condition Is True;
+	}
+}
+
+rule("Bastion Bot Aim Position 2")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 2;
+		Bastion;
+	}
+
+	conditions
+	{
+		Is Dummy Bot(Event Player) == True;
+		Is Alive(Event Player) == True;
+		Event Player.Enemy == Null;
+	}
+
+	actions
+	{
+		Event Player.EnemyUnSeen = First Of(Sorted Array(Filtered Array(All Living Players(Opposite Team Of(Team Of(Event Player))),
+			Has Spawned(Current Array Element) && Event Player.IsWinner != True && (Hero Of(Current Array Element) != Hero(Sombra)
+			|| !Is Using Ability 1(Current Array Element))), Distance Between(Eye Position(Event Player), Eye Position(
+			Current Array Element))));
+		Skip If(Event Player.EnemyUnSeen == Null, 1);
+		Event Player.AimPosition = Eye Position(Event Player.EnemyUnSeen) + Vector(Random Real(-1, 1), Random Real(-1, 1), Random Real(-1,
+			1));
+		Wait(Random Real(1, 4), Ignore Condition);
+		Loop If Condition Is True;
+	}
+}
+
+rule("Bastion Bot Aim Smoother")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 2;
+		Bastion;
+	}
+
+	conditions
+	{
+		Is Dummy Bot(Event Player) == True;
+		Is Alive(Event Player) == True;
+		Event Player.Enemy != Null;
+	}
+
+	actions
+	{
+		Event Player.TurnSpeed = Angle Between Vectors(Facing Direction Of(Event Player), Direction Towards(Eye Position(Event Player),
+			Eye Position(Event Player.Enemy))) * 6;
+		Event Player.TurnSpeed += Speed Of(Event Player.Enemy) * 6;
+		Wait(Server Load Average / 1000, Ignore Condition);
+		Loop If Condition Is True;
+	}
+}
+
+rule("Bastion Bot Aim Smoother 2")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 2;
+		Bastion;
+	}
+
+	conditions
+	{
+		Is Dummy Bot(Event Player) == True;
+		Is Alive(Event Player) == True;
+		Event Player.Enemy == Null;
+		Angle Between Vectors(Facing Direction Of(Event Player), Direction Towards(Eye Position(Event Player), Position Of(
+			Event Player.AimPosition))) >= 1;
+	}
+
+	actions
+	{
+		Event Player.TurnSpeed = Angle Between Vectors(Facing Direction Of(Event Player), Direction Towards(Eye Position(Event Player),
+			Position Of(Event Player.AimPosition))) * 7;
+		Wait(Server Load Peak / 1000, Ignore Condition);
+		Loop If Condition Is True;
+	}
+}
+
+rule("Bastion Bot Start Facing")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 2;
+		Bastion;
+	}
+
+	conditions
+	{
+		Is Dummy Bot(Event Player) == True;
+		Is Alive(Event Player) == True;
+		Has Spawned(Event Player) == True;
+	}
+
+	actions
+	{
+		Start Facing(Event Player, Direction Towards(Eye Position(Event Player), Event Player.AimPosition), Has Status(Event Player,
+			Asleep) ? 0 : Event Player.TurnSpeed, To World, Direction and Turn Rate);
+	}
+}
+
+rule("Bastion Bot Hello")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 2;
+		Bastion;
+	}
+
+	conditions
+	{
+		Is Dummy Bot(Event Player) == True;
+		Is Alive(Event Player) == True;
+		Has Spawned(Event Player) == True;
+		Is Communicating(Player Closest To Reticle(Event Player, Opposite Team Of(Team Of(Event Player))), Hello) == True;
+	}
+
+	actions
+	{
+		Wait(Random Real(1, 3), Ignore Condition);
+		Communicate(Event Player, Hello);
+	}
+}
+
+rule("Bastion Bot Hello 2")
+{
+	event
+	{
+		Player Earned Elimination;
+		Team 2;
+		Bastion;
+	}
+
+	conditions
+	{
+		Is Dummy Bot(Event Player) == True;
+		Is Alive(Event Player) == True;
+		Has Spawned(Event Player) == True;
+		Random Integer(1, 3) == 1;
+	}
+
+	actions
+	{
+		Wait(Random Real(1, 3), Ignore Condition);
+		Communicate(Event Player, Hello);
+	}
+}
+
+rule("Bastion Bot NULL ENEMY")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 2;
+		Bastion;
+	}
+
+	conditions
+	{
+		Is Alive(Event Player.Enemy) == False;
+	}
+
+	actions
+	{
+		Event Player.Enemy = Null;
+		Event Player.EnemyUnSeen = Null;
+	}
+}
+
+rule("Sombra Text")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		Sombra;
+	}
+
+	conditions
+	{
+		Is Alive(Event Player) == True;
+		Has Spawned(Event Player) == True;
+	}
+
+	actions
+	{
+		Event Player.Invis = 100;
+		Destroy Progress Bar HUD Text(Event Player.InvisibleText);
+		Wait(0.032, Ignore Condition);
+		Create Progress Bar HUD Text(Event Player.Invis < 100 ? Event Player : Null, Event Player.Invis, Custom String("{0} INVISIBILITY",
+			Ability Icon String(Hero(Sombra), Button(Ability 1))), Top, 6, Color(Purple), Color(White), Visible To Values and Color,
+			Default Visibility);
+		Event Player.InvisibleText = Last Text ID;
+	}
+}
+
+rule("Sombra Limited Ability 1")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		Sombra;
+	}
+
+	conditions
+	{
+		Is Alive(Event Player) == True;
+		Has Spawned(Event Player) == True;
+		Is Using Ability 1(Event Player) == True;
+	}
+
+	actions
+	{
+		Skip If(Event Player.Invis > 1, 1);
+		Press Button(Event Player, Button(Ability 1));
+		Skip If(Event Player.Invis <= 0, 1);
+		Event Player.Invis -= 0.128;
+		Wait(0.016, Ignore Condition);
+		Loop If Condition Is True;
+	}
+}
+
+rule("Sombra Limited Ability 2")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		Sombra;
+	}
+
+	conditions
+	{
+		Is Alive(Event Player) == True;
+		Has Spawned(Event Player) == True;
+		Is Using Ability 1(Event Player) == False;
+		Event Player.Invis < 100;
+	}
+
+	actions
+	{
+		Event Player.Invis += 0.128;
+		Wait(0.032, Ignore Condition);
+		Loop If Condition Is True;
+	}
+}
+
+rule("Sombra Remove Text")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		All;
+	}
+
+	conditions
+	{
+		Is Alive(Event Player) == True;
+		Has Spawned(Event Player) == True;
+		Hero Of(Event Player) != Hero(Sombra);
+	}
+
+	actions
+	{
+		Destroy Progress Bar HUD Text(Event Player.InvisibleText);
+		Event Player.Invis = 100;
+	}
+}
+
+rule("Spawn Dead Players")
+{
+	event
+	{
+		Player Died;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Is Dead(Event Player) == True;
+		Count Of(Filtered Array(All Players(All Teams), Has Spawned(Current Array Element) && Hero Of(Current Array Element) == Hero(
+			Mercy))) <= 0;
+	}
+
+	actions
+	{
+		Wait(0.048, Abort When False);
+		Respawn(Event Player);
+		Remove All Health Pools From Player(Event Player);
+		If(Hero Of(Event Player) == Hero(Tracer));
+			Set Ability Cooldown(Event Player, Button(Ability 2), 5);
+		Else If(Hero Of(Event Player) == Hero(Sombra) && Is Using Ability 2(Event Player));
+			Press Button(Event Player, Button(Interact));
+		Else If(Hero Of(Event Player) == Hero(Symmetra) && Is Using Ability 2(Event Player));
+			Press Button(Event Player, Button(Ability 2));
+		End;
+	}
+}
+
+rule("Brigitte Buff")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		Brigitte;
+	}
+
+	conditions
+	{
+		Is Alive(Event Player) == True;
+		Has Spawned(Event Player) == True;
+	}
+
+	actions
+	{
+		Remove All Health Pools From Player(Event Player);
+		Add Health Pool To Player(Event Player, Armor, 50, True, True);
+	}
+}
+
+rule("Widowmaker Buff")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		Widowmaker;
+	}
+
+	conditions
+	{
+		Is Alive(Event Player) == True;
+		Has Spawned(Event Player) == True;
+	}
+
+	actions
+	{
+		Remove All Health Pools From Player(Event Player);
+		Add Health Pool To Player(Event Player, Health, 25, True, True);
+	}
+}
+
+rule("Remove Buff")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		All;
+	}
+
+	conditions
+	{
+		Hero Of(Event Player) != Hero(Brigitte);
+		Hero Of(Event Player) != Hero(Widowmaker);
+	}
+
+	actions
+	{
+		Remove All Health Pools From Player(Event Player);
+		Wait(1, Ignore Condition);
+		Remove All Health Pools From Player(Event Player);
+	}
+}
+
+rule("Show Bastions Position")
+{
+	event
+	{
+		Player Dealt Final Blow;
+		Team 2;
+		All;
+	}
+
+	actions
+	{
+		Global.kills[Slot Of(Event Player)] += 1;
+		Start Forcing Dummy Bot Name(Event Player, Custom String("BASTION {0} | KILLS: {1}", Slot Of(Event Player) + 1,
+			Global.kills[Slot Of(Event Player)]));
+		Stop Forcing Player Outlines(Victim.attacker, Victim);
+		Wait(0.032, Ignore Condition);
+		Victim.attacker = Attacker;
+		Start Forcing Player Outlines(Victim.attacker, Victim, True, Color(Red), Always);
+	}
+}
+
+rule("Sym broke teleport")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		Symmetra;
+	}
+
+	conditions
+	{
+		Is Button Held(Event Player, Button(Interact)) == True;
+		Is Using Ability 2(Event Player) == True;
+	}
+
+	actions
+	{
+		Wait(0.256, Ignore Condition);
+		Press Button(Event Player, Button(Ability 2));
+	}
+}
+
+rule("Sym tel limit")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		Symmetra;
+	}
+
+	conditions
+	{
+		Is Using Ability 2(Event Player) == True;
+	}
+
+	actions
+	{
+		Wait(1, Ignore Condition);
+		Skip If(!Is Using Ability 2(Event Player), 1);
+		Press Button(Event Player, Button(Ability 2));
+		Loop If Condition Is True;
+	}
+}
+
+rule("Update Scoreboard")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		Count Of(All Players(Team 1)) > 0;
+	}
+
+	actions
+	{
+		Global.ScoreboardArray = Sorted Array(Filtered Array(All Players(Team 1), Current Array Element.IsWinner == False),
+			0 - Current Array Element.CurrentHero);
+		Global.First = First Of(Global.ScoreboardArray);
+		Global.Second = Global.ScoreboardArray[1];
+		Global.Third = Global.ScoreboardArray[2];
+		Wait(Random Real(2, 4), Ignore Condition);
+		Loop If Condition Is True;
+	}
+}
+
+rule("SPAWN FIX")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		All;
+	}
+
+	conditions
+	{
+		Is Alive(Event Player) == True;
+		Has Spawned(Event Player) == True;
+		Current Map == Map(Blizzard World);
+	}
+
+	actions
+	{
+		Teleport(Event Player, Vector(-166.920, 2.948, 97.847));
+		Set Facing(Event Player, Direction Towards(Eye Position(Event Player), Eye Position(Event Player.attacker)), To World);
+	}
+}
+
+rule("Saving Player Data [SR]")
+{
+	event
+	{
+		Subroutine;
+		SavePlayerData;
+	}
+
+	actions
+	{
+		If((Event Player.CurrentHero >= Global.HeroDataSaveIndexWS && Global.HeroDataSaveIndexWS != -1) || Array Contains(
+			Global.SavedIndex, Custom String("{0}", Event Player)));
+			"We're saving data as string, because we cant hold entity id's but we can hold entity names as string."
+			Skip If(Array Contains(Global.SavedIndex, Custom String("{0}", Event Player)), 1);
+			Modify Global Variable(SavedIndex, Append To Array, Custom String("{0}", Event Player));
+			Wait(0.032, Ignore Condition);
+			Global.SavedHero[Index Of Array Value(Global.SavedIndex, Custom String("{0}", Event Player))] = Event Player.CurrentHero;
+			Global.SavedDeaths[Index Of Array Value(Global.SavedIndex, Custom String("{0}", Event Player))] = Event Player.Deaths;
+			Global.SavedBacktrackDeaths[Index Of Array Value(Global.SavedIndex, Custom String("{0}", Event Player))
+				] = Event Player.BacktrackDeaths;
+			Call Subroutine(PlaySaveUnlockedMSG);
+			Small Message(Event Player, Custom String("IF SERVER RESTARTS, ALL PROGRESS DATA WILL BE ERASED!"));
+			Small Message(Event Player, Custom String("YOUR PROGRESS DATA WAS SAVED TO SERVER"));
+	}
+}
+
+rule("Loading Player Data")
+{
+	event
+	{
+		Player Joined Match;
+		Team 1;
+		All;
+	}
+
+	conditions
+	{
+		Global.HeroDataSaveIndexWS != -1;
+		Array Contains(Global.SavedIndex, Custom String("{0}", Event Player)) == True;
+	}
+
+	actions
+	{
+		Event Player.CurrentHero = Global.SavedHero[Index Of Array Value(Global.SavedIndex, Custom String("{0}", Event Player))];
+		Event Player.TargetHero = Event Player.CurrentHero;
+		Event Player.IsWinner = Array Contains(Global.SavedWinners, Custom String("{0}", Event Player));
+		Skip If(Event Player.CurrentHero < Global.HeroDataSaveIndexWS, 1);
+		Event Player.Deaths = Global.SavedDeaths[Index Of Array Value(Global.SavedIndex, Custom String("{0}", Event Player))];
+		Skip If(Global.BacktrackDeathsWS == 0, 1);
+		Event Player.BacktrackDeaths = Global.SavedBacktrackDeaths[Index Of Array Value(Global.SavedIndex, Custom String("{0}",
+			Event Player))];
+		Wait Until(Has Spawned(Event Player), 99999);
+		Skip If(Event Player.CurrentHero < Global.HeroDataSaveIndexWS, 1);
+		Big Message(Event Player, Custom String("Welcome Back, {0}!", Event Player));
+		Call Subroutine(PlaySaveUnlockedMSG);
+		Small Message(Event Player, Custom String("YOUR PROGRESS DATA WAS SUCCESSFULLY LOADED FROM THE SERVER"));
+		Small Message(Filtered Array(All Players(Team 1), Event Player != Current Array Element), Custom String("HERO {0} LOADED FOR {1}",
+			Hero Icon String(Global.HeroList[Event Player.CurrentHero]), Event Player));
+	}
+}
+
+rule("Display save feature unlocked message [SR]")
+{
+	event
+	{
+		Subroutine;
+		PlaySaveUnlockedMSG;
+	}
+
+	actions
+	{
+		If(Event Player.CurrentHero == Global.HeroDataSaveIndexWS && !Event Player.hasPlayedSaveMessage);
+			Big Message(Event Player, Custom String("Unlocked Save Feature!"));
+			Wait(3, Ignore Condition);
+		End;
+		Event Player.hasPlayedSaveMessage = True;
+	}
+}
+
+rule("Green outlines for winners")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		All;
+	}
+
+	conditions
+	{
+		Is Alive(Event Player) == True;
+		Event Player.IsWinner == True;
+	}
+
+	actions
+	{
+		Start Forcing Player Outlines(Event Player, All Players(Team 1), True, Color(Green), Always);
+		Disable Nameplates(Event Player, All Players(Team 1));
+		Set Move Speed(Event Player, 120);
+		If(Event Player.WinnerDeathID == Null);
+			Create HUD Text(Event Player, Custom String("Total Deaths: {0}", Event Player.Deaths), Null, Null, Left, 2, Color(Turquoise),
+				Color(White), Color(White), Visible To, Default Visibility);
+			Event Player.WinnerDeathID = Last Text ID;
+	}
+}
+
+rule("force player hero")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		All;
+	}
+
+	conditions
+	{
+		Event Player.IsWinner == False;
+		((Global.HeroListTypeWS != 2 && Hero Of(Event Player) != Global.HeroList[Event Player.CurrentHero]) || (
+			Global.HeroListTypeWS == 2 && Hero Of(Event Player) != Event Player.IndieHeroList[Event Player.CurrentHero])) == True;
+	}
+
+	actions
+	{
+		If(Global.HeroListTypeWS != 2);
+			Start Forcing Player To Be Hero(Event Player, Global.HeroList[Event Player.CurrentHero]);
+			Wait(0.250, Ignore Condition);
+			Preload Hero(Event Player, Array Slice(Global.HeroList, Event Player.CurrentHero + 1, 12));
+		Else;
+			Start Forcing Player To Be Hero(Event Player, Event Player.IndieHeroList[Event Player.CurrentHero]);
+			Wait(0.250, Ignore Condition);
+			Preload Hero(Event Player, Array Slice(Event Player.IndieHeroList, Event Player.CurrentHero + 1, 12));
+		End;
+		Loop If Condition Is True;
+		Small Message(Filtered Array(All Players(Team 1), Current Array Element != Event Player), Custom String("{0} is now {1}!",
+			Event Player, Hero Icon String(Hero Of(Event Player))));
+	}
+}
+
+rule("force winner player hero")
+{
+	event
+	{
+		Player Joined Match;
+		Team 1;
+		All;
+	}
+
+	conditions
+	{
+		Event Player.IsWinner == True;
+		((Global.HeroListTypeWS != 2 && Event Player.CurrentHero == Count Of(Global.HeroList)) || (
+			Global.HeroListTypeWS == 2 && Event Player.CurrentHero == Count Of(Event Player.IndieHeroList))) == True;
+	}
+
+	actions
+	{
+		If(Global.HeroListTypeWS != 2);
+			Start Forcing Player To Be Hero(Event Player, Last Of(Global.HeroList));
+		Else;
+			Start Forcing Player To Be Hero(Event Player, Last Of(Event Player.IndieHeroList));
+		End;
+		Start Forcing Player Outlines(Event Player, All Players(Team 1), True, Color(Green), Always);
+	}
+}

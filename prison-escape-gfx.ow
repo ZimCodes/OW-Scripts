@@ -176,7 +176,6 @@ settings
 variables
 {
 	global:
-		0: ScoreboardArray
 		1: EndPosition
 		2: BastionBotCount
 		3: IsGEEnabledWS
@@ -188,9 +187,6 @@ variables
 		9: JumpPadLocList
 		10: JumpPadPowerList
 		11: HeroList
-		12: First
-		13: Second
-		14: Third
 		15: AllBastionPositions
 		16: TempVar
 		17: IsGEIntervalRandomWS
@@ -208,7 +204,7 @@ variables
 		31: SavedWinners
 		32: SavedBacktrackDeaths
 		33: BlizzWorldSpawnLoc
-		34: WinnerCountToCycleWS
+		34: HasAllWinnersToCycleWS
 		35: HollywoodSpawns
 		36: RBPDefaultMaps
 		37: isTeleporterEnabled
@@ -386,7 +382,7 @@ rule("Workshop Settings")
 		Global.BacktrackDeathsWS = Workshop Setting Integer(Custom String("Backtracking"), Custom String(
 			"# of deaths before backtracking (0=disable)"), 8, 0, 999, 0);
 		Global.HeroDataSaveIndexWS = Workshop Setting Integer(Custom String("Game"), Custom String(
-			"Unlock Save feature At Hero Number (0=disable)"), 5, 0, 32, 0) - 1;
+			"Unlock Save feature At Hero Number (0=disable)"), 7, 0, 32, 0) - 1;
 		Global.BacktrackMinMaxListWS = Empty Array;
 		Global.BacktrackMinMaxListWS[0] = Workshop Setting Integer(Custom String("Backtracking"), Custom String(
 			"Minimum random number to backtrack by"), 1, 1, 31, 0);
@@ -413,8 +409,8 @@ rule("Workshop Settings")
 			Global.BastionPosIntervalMinMaxWS[0], Global.BastionPosIntervalMinMaxWS[1]));
 		Global.BastionPosTypeWS = Workshop Setting Combo(Custom String("Bastion Position"), Custom String("Position Type"), 1, Array(
 			Custom String("Original"), Custom String("Random"), Custom String("Random Once"), Custom String("On Escape")), 0);
-		Global.WinnerCountToCycleWS = Workshop Setting Integer(Custom String("Game"), Custom String(
-			"Winners needed to cycle map(0=disabled)"), 2, 0, 100, 0);
+		Global.HasAllWinnersToCycleWS = Workshop Setting Toggle(Custom String("Game"), Custom String(
+			"All players must be Winners to cycle next map"), True, 0);
 	}
 }
 
@@ -529,17 +525,9 @@ rule("Global Stats & inits")
 		Create HUD Text(All Players(All Teams), Null, Null, Custom String("Server hosted \"{1}\" for {0} seconds!\r\n \r\n ",
 			Round To Integer(Total Time Elapsed, To Nearest), Current Map), Left, -1, Color(White), Color(White), Color(White),
 			Visible To and String, Default Visibility);
-		Create HUD Text(All Players(All Teams), Null, Null, Custom String(" \n \nEscape Status:"), Left, 10, Color(White), Color(White),
-			Color(Aqua), Visible To and String, Default Visibility);
-		Create HUD Text(All Players(All Teams), Null, Null, Custom String("{0}", !Has Spawned(Global.First) ? Custom String(" ")
-			: Custom String("1. {0} {1} - {2}", Hero Icon String(Hero Of(Global.First)), Global.First, Global.First.TargetHero + 1)), Left,
-			11, Color(White), Color(White), Color(Green), Visible To and String, Default Visibility);
-		Create HUD Text(All Players(All Teams), Null, Null, Custom String("{0}", !Has Spawned(Global.Second) ? Custom String(" ")
-			: Custom String("2. {0} {1} - {2}", Hero Icon String(Hero Of(Global.Second)), Global.Second, Global.Second.TargetHero + 1)),
-			Left, 12, Color(White), Color(White), Color(Yellow), Visible To and String, Default Visibility);
-		Create HUD Text(All Players(All Teams), Null, Null, Custom String("{0}", !Has Spawned(Global.Third) ? Custom String(" ")
-			: Custom String("3. {0} {1} - {2}", Hero Icon String(Hero Of(Global.Third)), Global.Third, Global.Third.TargetHero + 1)), Left,
-			13, Color(White), Color(White), Color(Orange), Visible To and String, Default Visibility);
+		Create HUD Text(All Players(All Teams), Null, Custom String(" \n \nReset To Spawn:"), Custom String("Hold [{0}] + [{1}] + [{2}]",
+			Input Binding String(Button(Crouch)), Input Binding String(Button(Jump)), Input Binding String(Button(Interact))), Left, 10,
+			Color(White), Color(Aqua), Color(White), Visible To and String, Default Visibility);
 		Create HUD Text(All Players(All Teams), Null, Null, Custom String("PRISON ESCAPE [GFX]"), Top, 0, Color(White), Color(White),
 			Color(White), Visible To and String, Default Visibility);
 		Create HUD Text(All Players(All Teams), Null, Custom String("Code: N0B1R"), Null, Top, 1, Color(White), Color(White), Color(White),
@@ -675,8 +663,8 @@ rule("Cycle to next map (Map Cycling)")
 
 	conditions
 	{
-		Global.WinnerCountToCycleWS != 0;
-		Global.CurWinnerCount >= Global.WinnerCountToCycleWS;
+		Global.HasAllWinnersToCycleWS == True;
+		Global.CurWinnerCount >= Count Of(All Players(Team 1));
 	}
 
 	actions
@@ -1704,9 +1692,9 @@ rule("setup game option settings text for world HUD [SR]")
 		"Height of \"Game Setting\" title from options"
 		Global.GameSettingTextVec += Vector(0, 0.150, 0);
 		"The \"Next Map Cycle Option\""
-		If(Global.WinnerCountToCycleWS != 0);
-			Create In-World Text(All Players(Team 1), Custom String("WInners Until Next Map: [{0}] / [{1}]", Global.CurWinnerCount,
-				Global.WinnerCountToCycleWS), Global.GameOptTextVec, 1.500, Clip Against Surfaces, Visible To and String, Color(Yellow),
+		If(Global.HasAllWinnersToCycleWS);
+			Create In-World Text(All Players(Team 1), Custom String("WInners Until Next Map: [{0}] / [{1}]", Global.CurWinnerCount, Count Of(
+				All Players(Team 1))), Global.GameOptTextVec, 1.500, Clip Against Surfaces, Visible To and String, Color(Yellow),
 				Default Visibility);
 			Call Subroutine(IncrementGameSettingsPos);
 		End;
@@ -2445,7 +2433,7 @@ rule("winner effects on reach to end")
 		Event Player.BacktrackDeaths = 0;
 		If(Event Player.CurrentHero == Count Of(Global.HeroList));
 			Event Player.IsWinner = True;
-			Skip If(Global.WinnerCountToCycleWS == 0, 1);
+			Skip If(!Global.HasAllWinnersToCycleWS, 1);
 			Global.CurWinnerCount += 1;
 			Skip If(Global.HeroDataSaveIndexWS == -1, 1);
 			Modify Global Variable(SavedWinners, Append To Array, Custom String("{0}", Event Player));
@@ -3827,30 +3815,6 @@ rule("Sym tel limit")
 	}
 }
 
-rule("Update Scoreboard")
-{
-	event
-	{
-		Ongoing - Global;
-	}
-
-	conditions
-	{
-		Count Of(All Players(Team 1)) > 0;
-	}
-
-	actions
-	{
-		Global.ScoreboardArray = Sorted Array(Filtered Array(All Players(Team 1), Current Array Element.IsWinner == False),
-			0 - Current Array Element.CurrentHero);
-		Global.First = First Of(Global.ScoreboardArray);
-		Global.Second = Global.ScoreboardArray[1];
-		Global.Third = Global.ScoreboardArray[2];
-		Wait(Random Real(2, 4), Ignore Condition);
-		Loop If Condition Is True;
-	}
-}
-
 rule("SPAWN FIX")
 {
 	event
@@ -4055,6 +4019,31 @@ rule("force winner player hero")
 	}
 }
 
+rule("Player reset button combo shortcut (BUTTONS)")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		All;
+	}
+
+	conditions
+	{
+		Is Button Held(Event Player, Button(Crouch)) == True;
+		Is Button Held(Event Player, Button(Jump)) == True;
+		Is Button Held(Event Player, Button(Interact)) == True;
+	}
+
+	actions
+	{
+		Small Message(Event Player, Custom String("Attempting to reset. Hold for 5 seconds!"));
+		Wait(5, Abort When False);
+		Respawn(Event Player);
+		Call Subroutine(SpawnAtAltLoc);
+	}
+}
+
 disabled rule("Spawn a lot of friendly soldiers. Stress Test (debug)")
 {
 	event
@@ -4134,7 +4123,7 @@ rule("Select a global effect & configurate (GE)[SR]")
 		"Current NUMBER of players currently around. Used if global effect requires more than 1 player"
 		Global.TempVar2 = 1;
 		"DEBUG: Chose a specific global effect"
-		disabled Global.TempVar = 49;
+		disabled Global.TempVar = 43;
 		If(Global.TempVar == 1);
 			"The Patrol Guard to use"
 			Global.GEPatrolChoice = Random Integer(0, 2);
@@ -4446,7 +4435,7 @@ rule("Select a global effect & configurate (GE)[SR]")
 			Global.GEName = Custom String("Bastion Extra Upgrade!");
 			Global.BUChoices[1] = Random Value In Array(Filtered Array(Array(0, 1, 2, 3, 4, 5), Current Array Element != Global.BUChoices[1]));
 			"DEBUGGING only"
-			disabled Global.BUChoices[1] = 5;
+			disabled Global.BUChoices[1] = 2;
 		Else If(Global.TempVar == 44);
 			Global.GEMinPlayerReq = 3;
 			Global.TempVar3 = Custom String(
@@ -8530,6 +8519,7 @@ rule("Reset extra Bastion Upgrade (BU)[Extra][SR]")
 			Destroy Effect(Global.TempVar4[Global.TempVar2].BUExtraEffectIDs);
 			Global.TempVar4[Global.TempVar2].BUExtraEffectIDs = Null;
 		End;
+		Global.TempVar4 = Filtered Array(All Players(Team 2), Hero Of(Current Array Element) == Hero(Bastion));
 	}
 }
 
@@ -8547,9 +8537,10 @@ rule("Bastion passives (GE)(BU)[Extra]")
 
 	actions
 	{
-		Wait(20, Abort When False);
+		Wait(Random Integer(20, 30), Abort When False);
 		Stop Scaling Player(Filtered Array(All Players(Team 2), Hero Of(Current Array Element) == Hero(Bastion)));
-		Start Scaling Player(Global.TempVar4, Global.BUExtraScale, False);
+		Start Scaling Player(Filtered Array(All Players(Team 2), Hero Of(Current Array Element) == Hero(Bastion)), Global.BUExtraScale,
+			False);
 		Loop If Condition Is True;
 	}
 }
