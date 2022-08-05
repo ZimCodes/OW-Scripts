@@ -2,7 +2,7 @@ settings
 {
 	main
 	{
-		Description: "Work cooperatively to escape death row. Escape prison with all heroes to finish the game.\n\nThis is the Global Effects version of PRISON ESCAPE."
+		Description: "Work cooperatively to escape death row. Escape prison with ALL heroes to finish the game.\n\nThis is an alternative version of BASTION ESCAPE 2."
 		Mode Name: "PRISON ESCAPE [GFX]"
 	}
 
@@ -176,6 +176,7 @@ settings
 variables
 {
 	global:
+		0: LotteryStats
 		1: EndPosition
 		2: BastionBotCount
 		3: IsGEEnabledWS
@@ -235,7 +236,6 @@ variables
 		62: WinnerHeroesRingStats
 		63: WinnerResetRingStats
 		64: GECameraChoice
-		65: IsBastionUpgradableWS
 		66: BUExtraScale
 		67: BastionPosLocType
 		68: BastionPosDistance
@@ -307,6 +307,8 @@ variables
 		53: BUBulletEffectIDs
 		54: BUExtraEffectIDs
 		55: GETempVar2
+		56: LotteryChoice
+		57: GEIndex
 }
 
 subroutines
@@ -367,7 +369,7 @@ subroutines
 	53: NextHero
 	54: SetGEBastionDamage
 	55: SetBoopDirection
-	56: SetCloudLoc
+	56: SetZoneLocation
 }
 
 rule("Workshop Settings")
@@ -395,8 +397,6 @@ rule("Workshop Settings")
 			999, 1);
 		Global.IsGEIntervalRandomWS = Workshop Setting Toggle(Custom String("Global Effect Mode"), Custom String(
 			"Randomize the interval.  Between (0.5 * [INTERVAL]) & (1.5 * [INTERVAL])"), True, 2);
-		Global.IsBastionUpgradableWS = Workshop Setting Toggle(Custom String("Global Effect Mode"), Custom String(
-			"Can Bastions Receive Upgrades"), True, 3);
 		Global.IsBastionLastHeroWS = Workshop Setting Toggle(Custom String("Hero Ordering"), Custom String(
 			"Set Bastion as the last hero [random/independent only]"), False, 0);
 		Global.HeroListTypeWS = Workshop Setting Combo(Custom String("Hero Ordering"), Custom String("Hero order to use"), 2, Array(
@@ -526,7 +526,7 @@ rule("Global Stats & inits")
 			Round To Integer(Total Time Elapsed, To Nearest), Current Map), Left, -1, Color(White), Color(White), Color(White),
 			Visible To and String, Default Visibility);
 		Create HUD Text(All Players(All Teams), Null, Custom String(" \n \nReset To Spawn:"), Custom String("Hold [{0}] + [{1}] + [{2}]",
-			Input Binding String(Button(Crouch)), Input Binding String(Button(Jump)), Input Binding String(Button(Interact))), Left, 10,
+			Input Binding String(Button(Reload)), Input Binding String(Button(Jump)), Input Binding String(Button(Interact))), Left, 10,
 			Color(White), Color(Aqua), Color(White), Visible To and String, Default Visibility);
 		Create HUD Text(All Players(All Teams), Null, Null, Custom String("PRISON ESCAPE [GFX]"), Top, 0, Color(White), Color(White),
 			Color(White), Visible To and String, Default Visibility);
@@ -4030,7 +4030,7 @@ rule("Player reset button combo shortcut (BUTTONS)")
 
 	conditions
 	{
-		Is Button Held(Event Player, Button(Crouch)) == True;
+		Is Button Held(Event Player, Button(Reload)) == True;
 		Is Button Held(Event Player, Button(Jump)) == True;
 		Is Button Held(Event Player, Button(Interact)) == True;
 	}
@@ -4118,7 +4118,7 @@ rule("Select a global effect & configurate (GE)[SR]")
 
 	actions
 	{
-		Global.TempVar = Random Integer(1, 49);
+		Global.TempVar = Random Integer(1, 50);
 		Global.GEMinPlayerReq = 1;
 		"Current NUMBER of players currently around. Used if global effect requires more than 1 player"
 		Global.TempVar2 = 1;
@@ -4400,7 +4400,7 @@ rule("Select a global effect & configurate (GE)[SR]")
 			Global.TempVar3 = Custom String("Avoid spotlight or risk teleporting to a Bastion!");
 			"Set the timer for the Global Effect"
 			Global.GEWaitTime = Random Integer(160, 250);
-			Global.GEBallPosition = Vector(0, 0, 0);
+			Global.GEBallPosition = Nearest Walkable Position(Vector(0, 0, 0));
 			Global.GEBallSpeed = 2.560;
 			Global.TempVar2 = Count Of(Filtered Array(All Players(Team 1), !Current Array Element.IsWinner));
 			Global.GEName = Custom String("Spotlight!");
@@ -4435,7 +4435,7 @@ rule("Select a global effect & configurate (GE)[SR]")
 			Global.GEName = Custom String("Bastion Extra Upgrade!");
 			Global.BUChoices[1] = Random Value In Array(Filtered Array(Array(0, 1, 2, 3, 4, 5), Current Array Element != Global.BUChoices[1]));
 			"DEBUGGING only"
-			disabled Global.BUChoices[1] = 2;
+			disabled Global.BUChoices[1] = 5;
 		Else If(Global.TempVar == 44);
 			Global.GEMinPlayerReq = 3;
 			Global.TempVar3 = Custom String(
@@ -4472,12 +4472,19 @@ rule("Select a global effect & configurate (GE)[SR]")
 			"Set the timer for the Global Effect"
 			Global.GEWaitTime = Random Integer(60, 120);
 			Global.GERadius = Random Real(4, 10);
+		Else If(Global.TempVar == 50);
+			Global.TempVar3 = Custom String(
+				"Play the lottery by betting at ONE zone before time runs out!\n\nEarnings: Demotion, Promotion, Nothing");
+			Global.GEName = Custom String("Rigged Lottery!");
+			"Set the timer for the Global Effect"
+			Global.GEWaitTime = Random Integer(90, 120);
+			Global.GERadius = 5;
 		End;
 		Wait(0.300, Ignore Condition);
 		"DEBUGGING ONLY: bypass minimum player req."
 		disabled Global.GEMinPlayerReq = 1;
-		Loop If((Global.GEMinPlayerReq != 1 && Global.TempVar2 < Global.GEMinPlayerReq) || ((Global.TempVar == 34 || Global.TempVar == 43)
-			&& !Global.IsBastionUpgradableWS) || (Global.TempVar == 35 && Global.BacktrackDeathsWS == 0));
+		Loop If((Global.GEMinPlayerReq != 1 && Global.TempVar2 < Global.GEMinPlayerReq) || (
+			Global.TempVar == 35 && Global.BacktrackDeathsWS == 0));
 		Global.GEChoice = Global.TempVar;
 		Global.GEHelpText = Global.TempVar3;
 		Big Message(All Players(Team 1), Custom String("Global Effect ---> {0}", Global.GEName));
@@ -4552,16 +4559,15 @@ rule("Set HUD recent help text for players(GE)")
 			Question Mark), Global.GEHelpText == Null ? Custom String("") : Global.GEHelpText), Right, -1, Color(White), Color(White),
 			Color(White), Visible To and String, Default Visibility);
 		Modify Player Variable(Event Player, GEHelpTextIDs, Append To Array, Last Text ID);
-		If(Global.IsBastionUpgradableWS);
-			Create HUD Text(Event Player, Custom String("{0} Bastion Upgrades: {1}{2}", Hero Icon String(Hero(Bastion)),
-				Global.BUChoices[0] == 1 ? Icon String(Arrow: Right) : (Global.BUChoices[0] == 2 ? Icon String(Fire) : (
-				Global.BUChoices[0] == 3 ? Icon String(Spiral) : (Global.BUChoices[0] == 4 ? Ability Icon String(Hero(Bastion), Button(
-				Ultimate)) : (Global.BUChoices[0] == 5 ? Icon String(Dizzy) : (Global.BUChoices[0] == 6 ? Icon String(Bolt) : String("")))))),
-				Global.BUChoices[1] == 1 ? Ability Icon String(Hero(Sombra), Button(Ability 1)) : (Global.BUChoices[1] == 2 ? Icon String(
-				Arrow: Down) : (Global.BUChoices[1] == 3 ? Icon String(Arrow: Up) : (Global.BUChoices[1] == 4 ? Ability Icon String(Hero(
-				Genji), Button(Ability 1)) : (Global.BUChoices[1] == 5 ? Icon String(Eye) : String("")))))), Null, Null, Right, -4, Color(
-				Aqua), Color(White), Color(White), Visible To and String, Default Visibility);
-			Modify Player Variable(Event Player, GEHelpTextIDs, Append To Array, Last Text ID);
+		Create HUD Text(Event Player, Custom String("{0} Bastion Upgrades: {1}{2}", Hero Icon String(Hero(Bastion)),
+			Global.BUChoices[0] == 1 ? Icon String(Arrow: Right) : (Global.BUChoices[0] == 2 ? Icon String(Fire) : (
+			Global.BUChoices[0] == 3 ? Icon String(Spiral) : (Global.BUChoices[0] == 4 ? Ability Icon String(Hero(Bastion), Button(
+			Ultimate)) : (Global.BUChoices[0] == 5 ? Icon String(Dizzy) : (Global.BUChoices[0] == 6 ? Icon String(Bolt) : String("")))))),
+			Global.BUChoices[1] == 1 ? Ability Icon String(Hero(Sombra), Button(Ability 1)) : (Global.BUChoices[1] == 2 ? Icon String(
+			Arrow: Down) : (Global.BUChoices[1] == 3 ? Icon String(Arrow: Up) : (Global.BUChoices[1] == 4 ? Ability Icon String(Hero(
+			Genji), Button(Ability 1)) : (Global.BUChoices[1] == 5 ? Icon String(Eye) : String("")))))), Null, Null, Right, -4, Color(
+			Aqua), Color(White), Color(White), Visible To and String, Default Visibility);
+		Modify Player Variable(Event Player, GEHelpTextIDs, Append To Array, Last Text ID);
 	}
 }
 
@@ -4717,8 +4723,8 @@ rule("Start Global Effect -- [Type A] (GE)")
 	conditions
 	{
 		Global.IsGEEnabledWS == True;
-		(Global.GEChoice == 1 || Global.GEChoice == 49) == True;
 		Global.CanStartGE == 1;
+		(Global.GEChoice == 1 || Global.GEChoice == 49 || Global.GEChoice == 50) == True;
 	}
 
 	actions
@@ -4750,6 +4756,14 @@ rule("Init Type A (CHOICE:Variety)(NOT:Winners,In spawn) (GE)[SR]")
 		"Roadhog Time"
 		If(Global.GEChoice == 1);
 			Call Subroutine(SelectAPatrol);
+		"Rigged Lottery"
+		Else If(Global.GEChoice == 50);
+			"Promotion Lottery Number"
+			Global.LotteryStats[0] = Random Integer(1, Count Of(Filtered Array(All Players(Team 2), Hero Of(Current Array Element) == Hero(
+				Bastion))));
+			"Demotion Lottery Number"
+			Global.LotteryStats[1] = Random Integer(1, Count Of(Filtered Array(All Players(Team 2), Hero Of(Current Array Element) == Hero(
+				Bastion))));
 	}
 }
 
@@ -5495,13 +5509,27 @@ rule("Clean up specific Global Effect at the end (GE)[SR]")
 			Destroy Effect(Global.GEBallID);
 			Global.GEBallID = Null;
 			Stop Chasing Global Variable(GERadius);
-		"Toxic Clouds"
-		Else If(Global.GEChoice == 49);
-			Global.TempVar = All Players(Team 2);
-			For Global Variable(TempVar2, 0, Count Of(Global.TempVar), 1);
-				Destroy Effect(Global.TempVar[Global.TempVar2].GEID);
-				Global.TempVar[Global.TempVar2].GEID = Null;
+		"Rigged Lottery"
+		Else If(Global.GEChoice == 50);
+			If(Global.LotteryStats[0] != Global.LotteryStats[1]);
+				Global.TempVar = Filtered Array(All Players(Team 1), Current Array Element.LotteryChoice == Global.LotteryStats[0]);
+				Teleport(Global.TempVar, Global.EndPosition + Vector(0, 5, 0));
+				Big Message(Global.TempVar, Custom String("You Won the lottery! Congrats!"));
+				If(Global.BacktrackDeathsWS != 0);
+					Global.TempVar = Filtered Array(All Players(Team 1), Current Array Element.LotteryChoice == Global.LotteryStats[1]);
+					For Global Variable(TempVar2, 0, Count Of(Global.TempVar), 1);
+						Global.TempVar[Global.TempVar2].BacktrackDeaths = Global.BacktrackDeathsWS;
+					End;
+					Big Message(Global.TempVar, Custom String("You were demoted! Better luck next time!"));
+				End;
+				Global.TempVar = Filtered Array(All Players(Team 1),
+					Current Array Element.LotteryChoice != Global.LotteryStats[0] && Current Array Element.LotteryChoice != Global.LotteryStats[1] && Current Array Element.LotteryChoice != 0);
+				Big Message(Global.TempVar, Custom String("Nice try! Better luck next time!"));
+			Else;
+				Big Message(Filtered Array(All Players(Team 1), Current Array Element.LotteryChoice > 0), Custom String(
+					"Nice try! Better luck next time!"));
 			End;
+		End;
 	}
 }
 
@@ -5546,7 +5574,41 @@ rule("End of Global Effect *EVENT PLAYER*(GE)")
 		Event Player.GEHUDID = Null;
 		Event Player.GEIsAffectedPlayer = False;
 		Event Player.GECount = 0;
+		Event Player.LotteryChoice = 0;
 		Call Subroutine(ApplyWinnerStats);
+	}
+}
+
+rule("End of Global Effect ENEMY *EVENT PLAYER*(GE)")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 2;
+		Bastion;
+	}
+
+	conditions
+	{
+		Global.IsGEEnabledWS == True;
+		Global.GEChoice == 0;
+	}
+
+	actions
+	{
+		"Clean up applied effects"
+		If(Event Player.GEID != Null);
+			If(Count Of(Event Player.GEID) == 0);
+				Destroy Effect(Event Player.GEID);
+			Else;
+				For Player Variable(Event Player, GETempVar, 0, Count Of(Event Player.GEID), 1);
+					Destroy Effect(Event Player.GEID[Event Player.GETempVar]);
+				End;
+			End;
+		End;
+		Event Player.GEID = Null;
+		Destroy In-World Text(Event Player.GEHUDID);
+		Event Player.GEHUDID = Null;
 	}
 }
 
@@ -5601,7 +5663,7 @@ rule("Set basic HUD & stats (GE)")
 		Event Player.IsWinner == False;
 		Event Player.GEHUDID == Null;
 		(
-			Global.GEChoice == 7 || Global.GEChoice == 13 || Global.GEChoice == 15 || Global.GEChoice == 21 || Global.GEChoice == 26 || Global.GEChoice == 29 || Global.GEChoice == 30 || Global.GEChoice == 36 || Global.GEChoice == 38 || Global.GEChoice == 39)
+			Global.GEChoice == 7 || Global.GEChoice == 13 || Global.GEChoice == 15 || Global.GEChoice == 21 || Global.GEChoice == 26 || Global.GEChoice == 29 || Global.GEChoice == 30 || Global.GEChoice == 36 || Global.GEChoice == 38 || Global.GEChoice == 39 || Global.GEChoice == 50)
 			== True;
 	}
 
@@ -5675,6 +5737,14 @@ rule("Set basic HUD & stats (GE)")
 			"Set status id for player(if needed)"
 			Create HUD Text(Event Player, Custom String("Wind Direction: {0}", Global.GEText), Null, Null, Right, 1, Color(White), Color(
 				White), Color(White), Visible To and String, Default Visibility);
+			"Save IDs of something for the player(if needed)"
+			Event Player.GEHUDID = Last Text ID;
+		"Rigged Lottery"
+		Else If(Global.GEChoice == 50);
+			"Set status id for player(if needed)"
+			Create HUD Text(Event Player, Custom String("Zone Choice: {0}",
+				Event Player.LotteryChoice != 0 ? Event Player.LotteryChoice : Custom String("None")), Null, Null, Right, 1, Color(Yellow),
+				Color(White), Color(White), Visible To and String, Default Visibility);
 			"Save IDs of something for the player(if needed)"
 			Event Player.GEHUDID = Last Text ID;
 	}
@@ -5761,7 +5831,8 @@ rule("Instructions for players (GE)")
 	{
 		Global.IsGETimerStart == True;
 		Event Player.IsWinner == False;
-		(Global.GEChoice == 30 || Global.GEChoice == 22 || Global.GEChoice == 26 || Global.GEChoice == 41) == True;
+		(Global.GEChoice == 30 || Global.GEChoice == 22 || Global.GEChoice == 26 || Global.GEChoice == 41 || Global.GEChoice == 50)
+			== True;
 	}
 
 	actions
@@ -5775,8 +5846,10 @@ rule("Instructions for players (GE)")
 			Small Message(Event Player, Custom String("Press {0} to tag a player!", Input Binding String(Button(Melee))));
 		Else If(Global.GEChoice == 41);
 			Small Message(Event Player, Custom String("Hold {0} to use jet boots!", Input Binding String(Button(Jump))));
+		Else If(Global.GEChoice == 50);
+			Small Message(Event Player, Custom String("Hold {0} to place your bets at a zone!", Input Binding String(Button(Reload))));
 		End;
-		Wait(10, Ignore Condition);
+		Wait(8, Ignore Condition);
 		Loop If Condition Is True;
 	}
 }
@@ -7686,7 +7759,6 @@ rule("Player took damage (BU)[Bullet]")
 
 	conditions
 	{
-		Global.IsBastionUpgradableWS == True;
 		Attacker != Event Player;
 		(Global.BUChoices[0] == 2 || Global.BUChoices[0] == 1 || Global.BUChoices[0] == 5 || Global.BUChoices[0] == 6) == True;
 	}
@@ -7731,7 +7803,6 @@ rule("Bastion kills player (BU)[Bullet]")
 
 	conditions
 	{
-		Global.IsBastionUpgradableWS == True;
 		Global.BUChoices[0] == 3;
 	}
 
@@ -7830,7 +7901,6 @@ rule("Player Dies during Bastion Upgrade (BU)")
 
 	conditions
 	{
-		Global.IsBastionUpgradableWS == True;
 		Global.BUChoices[0] == 2;
 	}
 
@@ -8613,7 +8683,7 @@ rule("Player is looking at Bastion (Shining Armor)(GE)(BU)[Extra]")
 		"Clandestine Toggle"
 		Global.BUChoices[1] == 5;
 		Event Player.BUExtraEffectIDs == Null;
-		Is True For Any(Players in View Angle(Event Player, Team 2, 50), Is In Line of Sight(Position Of(Event Player), Position Of(
+		Is True For Any(Players in View Angle(Event Player, Team 2, 45), Is In Line of Sight(Position Of(Event Player), Position Of(
 			Current Array Element), All Barriers Block LOS)) == True;
 	}
 
@@ -8640,7 +8710,7 @@ rule("Player is not looking at Bastion (Shining Armor)(GE)(BU)[Extra]")
 		"Clandestine Toggle"
 		Global.BUChoices[1] == 5;
 		Event Player.BUExtraEffectIDs != Null;
-		Is True For Any(Players in View Angle(Event Player, Team 2, 50), Is In Line of Sight(Position Of(Event Player), Position Of(
+		Is True For Any(Players in View Angle(Event Player, Team 2, 45), Is In Line of Sight(Position Of(Event Player), Position Of(
 			Current Array Element), All Barriers Block LOS)) == False;
 	}
 
@@ -8989,12 +9059,12 @@ rule("Set boop direction (Boop)(GE)[SR]")
 	}
 }
 
-rule("Set cloud location (Toxic Clouds)(GE)[SR]")
+rule("Set zone location (Toxic Clouds & Rigged Lottery)(GE)[SR]")
 {
 	event
 	{
 		Subroutine;
-		SetCloudLoc;
+		SetZoneLocation;
 	}
 
 	actions
@@ -9058,7 +9128,7 @@ rule("Set cloud location (Toxic Clouds)(GE)[SR]")
 	}
 }
 
-rule("Init clouds (Toxic Clouds)(GE)")
+rule("Init zones (Toxic Clouds & Rigged Lottery)(GE)")
 {
 	event
 	{
@@ -9069,16 +9139,25 @@ rule("Init clouds (Toxic Clouds)(GE)")
 
 	conditions
 	{
-		Global.GEChoice == 49;
+		(Global.GEChoice == 49 || Global.GEChoice == 50) == True;
 		Global.IsGETimerStart == True;
 		Event Player.GEID == Null;
 	}
 
 	actions
 	{
-		Call Subroutine(SetCloudLoc);
-		Create Effect(All Players(Team 1), Cloud, Color(Green), Event Player.GETempVar + Vector(0, 2, 0), Global.GERadius, Visible To);
-		Event Player.GEID = Last Created Entity;
+		Call Subroutine(SetZoneLocation);
+		"Toxic Clouds"
+		If(Global.GEChoice == 49);
+			Create Effect(All Players(Team 1), Cloud, Color(Green), Event Player.GETempVar + Vector(0, 2, 0), Global.GERadius, Visible To);
+			Event Player.GEID = Last Created Entity;
+		Else;
+			Create Effect(All Players(Team 1), Sphere, Color(Yellow), Event Player.GETempVar, Global.GERadius, Visible To);
+			Event Player.GEID = Last Created Entity;
+			Create In-World Text(All Players(Team 1), Custom String("{0}", Slot Of(Event Player) + 1), Event Player.GETempVar, 1.200,
+				Do Not Clip, Visible To, Color(Rose), Default Visibility);
+			Event Player.GEHUDID = Last Text ID;
+		End;
 	}
 }
 
@@ -9105,6 +9184,37 @@ rule("Player touches cloud (Toxic Clouds)(GE)")
 		Event Player.GETempVar2 = Players Within Radius(Event Player.GETempVar, Global.GERadius - 0.500, Team 1, Off);
 		Start Damage Over Time(Event Player.GETempVar2, Event Player, 5, Random Real(15, 30));
 		Wait(5, Abort When False);
+		Loop If Condition Is True;
+	}
+}
+
+rule("Placing bets (Lottery)(GE)")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 2;
+		Bastion;
+	}
+
+	conditions
+	{
+		Global.GEChoice == 50;
+		Global.IsGETimerStart == True;
+		Event Player.GEID != Null;
+		Is True For Any(Players Within Radius(Event Player.GETempVar, Global.GERadius, Team 1, Off),
+			!Current Array Element.IsWinner && Is Button Held(Current Array Element, Button(Reload))) == True;
+	}
+
+	actions
+	{
+		Event Player.GETempVar2 = Filtered Array(Players Within Radius(Event Player.GETempVar, Global.GERadius, Team 1, Off),
+			!Current Array Element.IsWinner && Is Button Held(Current Array Element, Button(Reload)));
+		For Player Variable(Event Player, GEIndex, 0, Count Of(Event Player.GETempVar2), 1);
+			Event Player.GETempVar2[Event Player.GEIndex].LotteryChoice = Slot Of(Event Player) + 1;
+		End;
+		Small Message(All Players(Team 1), Custom String("Player(s) have placed a bet in zone {0}", Slot Of(Event Player) + 1));
+		Wait(0.250, Abort When False);
 		Loop If Condition Is True;
 	}
 }
