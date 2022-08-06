@@ -370,6 +370,7 @@ subroutines
 	54: SetGEBastionDamage
 	55: SetBoopDirection
 	56: SetZoneLocation
+	57: ApplyTankForm
 }
 
 rule("Workshop Settings")
@@ -1349,13 +1350,14 @@ rule("map setting (global arr p, global b, global d, global c) - hollywood (hall
 	actions
 	{
 		Global.AllBastionPositions = Array(Vector(-26.166, 7.503, -134.609), Vector(-2.241, 12.161, -112.505), Vector(11.552, 6.303,
-			-69.943), Vector(-7.480, 7.441, -43.441), Vector(-20.714, 8.050, 9.977), Vector(4.864, 7.147, 38.401));
+			-69.943), Vector(-7.480, 7.441, -43.441), Vector(-20.714, 8.050, 9.977), Vector(4.864, 7.147, 38.401), Vector(-43.340, 0.500,
+			48.970));
 		Start Forcing Spawn Room(Team 1, 2);
 		Global.EndPosition = Vector(-12.002, -1.307, 69.489);
 		"Base coordinates for world game settings HUD"
 		Global.GameSettingTextVec = Vector(-32.049, 4.714, -155.052);
 		"Total amount of Bastion Bots to spawn"
-		Global.BastionBotCount = 6;
+		Global.BastionBotCount = 7;
 		"Location of winners end game rings"
 		Global.WinnerHeroesRingStats[0] = Vector(-27.106, 5.414, -157.424);
 		Global.WinnerResetRingStats[0] = Vector(-22.370, 5.416, -158.670);
@@ -3067,7 +3069,6 @@ disabled rule("no dmg (debug)")
 	actions
 	{
 		Set Status(Event Player, Null, Invincible, 9999);
-		Set Move Speed(Event Player, 50);
 	}
 }
 
@@ -4123,7 +4124,7 @@ rule("Select a global effect & configurate (GE)[SR]")
 		"Current NUMBER of players currently around. Used if global effect requires more than 1 player"
 		Global.TempVar2 = 1;
 		"DEBUG: Chose a specific global effect"
-		disabled Global.TempVar = 43;
+		disabled Global.TempVar = 50;
 		If(Global.TempVar == 1);
 			"The Patrol Guard to use"
 			Global.GEPatrolChoice = Random Integer(0, 2);
@@ -4196,7 +4197,13 @@ rule("Select a global effect & configurate (GE)[SR]")
 			Global.TempVar3 = Custom String("Bastion will spawn on top of a player. Watch out!");
 			"Bastion Drop"
 			Global.TempVar2 = Count Of(Filtered Array(All Players(Team 1), !Current Array Element.IsWinner && !Is In Spawn Room(
-				Current Array Element)));
+				Current Array Element) && ((Current Map == Map(Blizzard World) && Distance Between(Position Of(Current Array Element),
+				Global.BlizzWorldSpawnLoc) > 30) || (Current Map == Map(Blizzard World Winter) && Distance Between(Position Of(
+				Current Array Element), Global.BlizzWorldSpawnLoc) > 30) || (Current Map != Map(Blizzard World) && Current Map != Map(
+				Blizzard World Winter)) == True) && ((Current Map == Map(Hollywood) && Distance Between(Position Of(Current Array Element),
+				Global.HollywoodSpawns[0]) > 30) || (Current Map == Map(Hollywood Halloween) && Distance Between(Position Of(
+				Current Array Element), Global.HollywoodSpawns[0]) > 30) || (Current Map != Map(Hollywood) && Current Map != Map(
+				Hollywood Halloween)) == True)));
 			Global.GEMinPlayerReq = 3;
 			Global.GEName = Custom String("Bastion Drop!");
 			"Set the timer for the Global Effect"
@@ -4378,7 +4385,7 @@ rule("Select a global effect & configurate (GE)[SR]")
 			Global.BUChoices[0] = Random Value In Array(Filtered Array(Array(0, 1, 2, 3, 4, 5, 6),
 				Current Array Element != Global.BUChoices[0]));
 			"DEBUGGING only"
-			disabled Global.BUChoices[0] = 0;
+			disabled Global.BUChoices[0] = 4;
 		Else If(Global.TempVar == 35);
 			Global.TempVar3 = Custom String("Incremental value for backtrack deaths has changed.");
 			Global.GEName = Custom String("Blood Sacrifice!");
@@ -4470,14 +4477,14 @@ rule("Select a global effect & configurate (GE)[SR]")
 			Global.TempVar3 = Custom String("Toxic clouds are spread throughout the lands!");
 			Global.GEName = Custom String("Toxic Clouds!");
 			"Set the timer for the Global Effect"
-			Global.GEWaitTime = Random Integer(60, 120);
+			Global.GEWaitTime = Random Integer(90, 120);
 			Global.GERadius = Random Real(4, 10);
 		Else If(Global.TempVar == 50);
 			Global.TempVar3 = Custom String(
 				"Play the lottery by betting at ONE zone before time runs out!\n\nEarnings: Demotion, Promotion, Nothing");
 			Global.GEName = Custom String("Rigged Lottery!");
 			"Set the timer for the Global Effect"
-			Global.GEWaitTime = Random Integer(90, 120);
+			Global.GEWaitTime = 120;
 			Global.GERadius = 5;
 		End;
 		Wait(0.300, Ignore Condition);
@@ -5529,6 +5536,10 @@ rule("Clean up specific Global Effect at the end (GE)[SR]")
 				Big Message(Filtered Array(All Players(Team 1), Current Array Element.LotteryChoice > 0), Custom String(
 					"Nice try! Better luck next time!"));
 			End;
+			Wait(3, Ignore Condition);
+			Big Message(All Players(Team 1), Custom String("{0}", Global.LotteryStats[0] == Global.LotteryStats[1] ? Custom String(
+				"All zones were Nothing... Sorry!") : Custom String("Promotion #: {0}\nDemotion #: {1}", Global.LotteryStats[0],
+				Global.LotteryStats[1])));
 		End;
 	}
 }
@@ -6156,10 +6167,10 @@ rule("Teleport Winston to player (Patrol Guards)(GE)")
 	actions
 	{
 		Wait(2, Abort When False);
-		Event Player.GETempVar = Random Integer(0, 2);
+		Event Player.GETempVar = Random Integer(0, 3);
 		If(Event Player.GETempVar == 0);
 			Teleport(Event Player, Nearest Walkable Position(Eye Position(Closest Player To(Event Player, Team 1)) + Forward * 2.500));
-		Else If(Event Player.GETempVar == 1);
+		Else If(Event Player.GETempVar == 1 || Event Player.GETempVar == 2);
 			Teleport(Event Player, Nearest Walkable Position(Eye Position(Farthest Player From(Event Player, Team 1)) + Forward * 2.500));
 		Else;
 			Teleport(Event Player, Nearest Walkable Position(Eye Position(Random Value In Array(Filtered Array(All Players(Team 1),
@@ -6271,6 +6282,12 @@ rule("Player on foot (Lava Floor)(GE)")
 		Is In Spawn Room(Event Player) == False;
 		Is In Air(Event Player) == False;
 		Event Player.GEID == Null;
+		((Current Map == Map(Blizzard World) && Distance Between(Position Of(Event Player), Global.BlizzWorldSpawnLoc) > 30) || (
+			Current Map == Map(Blizzard World Winter) && Distance Between(Position Of(Event Player), Global.BlizzWorldSpawnLoc) > 30) || (
+			Current Map != Map(Blizzard World) && Current Map != Map(Blizzard World Winter))) == True;
+		((Current Map == Map(Hollywood) && Distance Between(Position Of(Event Player), Global.HollywoodSpawns[0]) > 30) || (
+			Current Map == Map(Hollywood Halloween) && Distance Between(Position Of(Event Player), Global.HollywoodSpawns[0]) > 30) || (
+			Current Map != Map(Hollywood) && Current Map != Map(Hollywood Halloween))) == True;
 	}
 
 	actions
@@ -7414,7 +7431,7 @@ rule("Tagger tags a player (World Tag)(GE)")
 	}
 }
 
-rule("Bug is going to be squished (Bugs)(GE)")
+rule("Player is going to be squished (Bugs & Growth Spurt)(GE)")
 {
 	event
 	{
@@ -7431,6 +7448,12 @@ rule("Bug is going to be squished (Bugs)(GE)")
 		Event Player.GEIsAffectedPlayer == True;
 		Event Player.IsWinner == False;
 		Is In Spawn Room(Event Player) == False;
+		((Current Map == Map(Blizzard World) && Distance Between(Position Of(Event Player), Global.BlizzWorldSpawnLoc) > 30) || (
+			Current Map == Map(Blizzard World Winter) && Distance Between(Position Of(Event Player), Global.BlizzWorldSpawnLoc) > 30) || (
+			Current Map != Map(Blizzard World) && Current Map != Map(Blizzard World Winter))) == True;
+		((Current Map == Map(Hollywood) && Distance Between(Position Of(Event Player), Global.HollywoodSpawns[0]) > 30) || (
+			Current Map == Map(Hollywood Halloween) && Distance Between(Position Of(Event Player), Global.HollywoodSpawns[0]) > 30) || (
+			Current Map != Map(Hollywood) && Current Map != Map(Hollywood Halloween))) == True;
 		Is True For Any(Players Within Radius(Position Of(Event Player), Global.GERadius, Team 1, Surfaces),
 			!Current Array Element.GEIsAffectedPlayer) == True;
 	}
@@ -7730,13 +7753,7 @@ rule("Select a Bastion Bullet Upgrade (BU)[Bullet][SR]")
 			Global.BastionDamages[1] = 0.500;
 		"Tank Mode"
 		Else If(Global.BUChoices[0] == 4);
-			Allow Button(Global.TempVar4, Button(Ultimate));
-			Set Ultimate Ability Enabled(Global.TempVar4, True);
-			Set Ultimate Charge(Global.TempVar4, 100);
-			Press Button(Global.TempVar4, Button(Ultimate));
-			Disallow Button(Global.TempVar4, Button(Ultimate));
-			Set Ultimate Ability Enabled(Global.TempVar4, False);
-			Global.BastionDamages[1] = Global.BastionDamages[0];
+			Call Subroutine(ApplyTankForm);
 		"Concussion Bullets"
 		Else If(Global.BUChoices[0] == 5);
 			Global.BastionDamages[1] = 100;
@@ -7909,6 +7926,49 @@ rule("Player Dies during Bastion Upgrade (BU)")
 		Stop All Damage Over Time(Event Player);
 		Clear Status(Event Player, Burning);
 		Call Subroutine(AddBacktrackDeath);
+	}
+}
+
+rule("Transform Bastions into tank form (BU)[Bullet][SR]")
+{
+	event
+	{
+		Subroutine;
+		ApplyTankForm;
+	}
+
+	actions
+	{
+		Global.TempVar4 = Filtered Array(All Players(Team 2), Hero Of(Current Array Element) == Hero(Bastion));
+		Allow Button(Global.TempVar4, Button(Ultimate));
+		Set Ultimate Ability Enabled(Global.TempVar4, True);
+		Set Ultimate Charge(Global.TempVar4, 100);
+		Press Button(Global.TempVar4, Button(Ultimate));
+		Disallow Button(Global.TempVar4, Button(Ultimate));
+		Set Ultimate Ability Enabled(Global.TempVar4, False);
+		Global.BastionDamages[1] = Global.BastionDamages[0];
+	}
+}
+
+rule("Make sure Bastion stays in tank form _if selected_ (BU)[Bullet]")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		Global.BUChoices[0] == 4;
+		Is True For Any(Filtered Array(All Players(Team 2), Hero Of(Current Array Element) == Hero(Bastion)), !Is In Alternate Form(
+			Current Array Element)) == True;
+	}
+
+	actions
+	{
+		Call Subroutine(ApplyTankForm);
+		Call Subroutine(BeforeNewBastionBulletUpgrade);
+		Call Subroutine(SetGEBastionDamage);
 	}
 }
 
@@ -8419,6 +8479,7 @@ rule("Player touches ground (Bad Jet Boots)(GE)")
 		"Change the ID # from -1 to a positive number"
 		Global.GEChoice == 41;
 		Global.IsGETimerStart == True;
+		Event Player.IsWinner == False;
 		Is On Ground(Event Player) == True;
 		Is In Spawn Room(Event Player) == False;
 		((Current Map == Map(Blizzard World) && Distance Between(Position Of(Event Player), Global.BlizzWorldSpawnLoc) > 30) || (
@@ -8584,7 +8645,7 @@ rule("Reset extra Bastion Upgrade (BU)[Extra][SR]")
 		Stop Scaling Player(Global.TempVar4);
 		Enable Movement Collision With Environment(Global.TempVar4);
 		Global.BastionDamages[2] = 0;
-		Global.TempVar4 = All Players(Team 1);
+		Global.TempVar4 = All Players(All Teams);
 		For Global Variable(TempVar2, 0, Count Of(Global.TempVar4), 1);
 			Destroy Effect(Global.TempVar4[Global.TempVar2].BUExtraEffectIDs);
 			Global.TempVar4[Global.TempVar2].BUExtraEffectIDs = Null;
@@ -8683,7 +8744,7 @@ rule("Player is looking at Bastion (Shining Armor)(GE)(BU)[Extra]")
 		"Clandestine Toggle"
 		Global.BUChoices[1] == 5;
 		Event Player.BUExtraEffectIDs == Null;
-		Is True For Any(Players in View Angle(Event Player, Team 2, 45), Is In Line of Sight(Position Of(Event Player), Position Of(
+		Is True For Any(Players in View Angle(Event Player, Team 2, 45), Is In Line of Sight(Eye Position(Event Player), Eye Position(
 			Current Array Element), All Barriers Block LOS)) == True;
 	}
 
@@ -8710,13 +8771,13 @@ rule("Player is not looking at Bastion (Shining Armor)(GE)(BU)[Extra]")
 		"Clandestine Toggle"
 		Global.BUChoices[1] == 5;
 		Event Player.BUExtraEffectIDs != Null;
-		Is True For Any(Players in View Angle(Event Player, Team 2, 45), Is In Line of Sight(Position Of(Event Player), Position Of(
+		Is True For Any(Players in View Angle(Event Player, Team 2, 45), Is In Line of Sight(Eye Position(Event Player), Eye Position(
 			Current Array Element), All Barriers Block LOS)) == False;
 	}
 
 	actions
 	{
-		Wait(5, Abort When False);
+		Wait(4, Abort When False);
 		Destroy Effect(Event Player.BUExtraEffectIDs);
 		Event Player.BUExtraEffectIDs = Null;
 		Loop If Condition Is True;
@@ -9153,8 +9214,10 @@ rule("Init zones (Toxic Clouds & Rigged Lottery)(GE)")
 			Event Player.GEID = Last Created Entity;
 		Else;
 			Create Effect(All Players(Team 1), Sphere, Color(Yellow), Event Player.GETempVar, Global.GERadius, Visible To);
-			Event Player.GEID = Last Created Entity;
-			Create In-World Text(All Players(Team 1), Custom String("{0}", Slot Of(Event Player) + 1), Event Player.GETempVar, 1.200,
+			Event Player.GEID[0] = Last Created Entity;
+			Create Effect(All Players(Team 1), Pick-up Sound, Color(White), Event Player.GETempVar, 100, Visible To);
+			Event Player.GEID[1] = Last Created Entity;
+			Create In-World Text(All Players(Team 1), Custom String("{0}", Slot Of(Event Player) + 1), Event Player.GETempVar, 1.400,
 				Do Not Clip, Visible To, Color(Rose), Default Visibility);
 			Event Player.GEHUDID = Last Text ID;
 		End;
@@ -9212,8 +9275,10 @@ rule("Placing bets (Lottery)(GE)")
 			!Current Array Element.IsWinner && Is Button Held(Current Array Element, Button(Reload)));
 		For Player Variable(Event Player, GEIndex, 0, Count Of(Event Player.GETempVar2), 1);
 			Event Player.GETempVar2[Event Player.GEIndex].LotteryChoice = Slot Of(Event Player) + 1;
+			Small Message(Event Player.GETempVar2[Event Player.GEIndex], Custom String("You have placed a bet in zone {0}", Slot Of(
+				Event Player) + 1));
+			Wait(0.100, Ignore Condition);
 		End;
-		Small Message(All Players(Team 1), Custom String("Player(s) have placed a bet in zone {0}", Slot Of(Event Player) + 1));
 		Wait(0.250, Abort When False);
 		Loop If Condition Is True;
 	}
