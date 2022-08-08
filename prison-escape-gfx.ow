@@ -9278,7 +9278,7 @@ rule("Init Toxic clouds (Toxic Clouds)(GE)")
 		Create Effect(All Players(Team 1), Cloud, Color(Green), Event Player.ToxicCloudLoc + Vector(0, 2, 0),
 			Event Player.ToxicCloudRadius, Visible To Position and Radius);
 		Event Player.ToxicCloudIDs[0] = Last Created Entity;
-		Create Effect(All Players(Team 1), Smoke Sound, Color(White), Event Player.ToxicCloudLoc, 100, Visible To Position and Radius);
+		Create Effect(All Players(Team 1), Smoke Sound, Color(White), Event Player.ToxicCloudLoc, 90, Visible To Position and Radius);
 		Event Player.ToxicCloudIDs[1] = Last Created Entity;
 	}
 }
