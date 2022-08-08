@@ -309,6 +309,12 @@ variables
 		55: GETempVar2
 		56: LotteryChoice
 		57: GEIndex
+		58: BlindChanceNum
+		59: PlayersInToxicCloud
+		60: ToxicCloudSpawnDistance
+		61: ToxicCloudLoc
+		62: ToxicCloudIDs
+		63: ToxicCloudRadius
 }
 
 subroutines
@@ -369,8 +375,9 @@ subroutines
 	53: NextHero
 	54: SetGEBastionDamage
 	55: SetBoopDirection
-	56: SetZoneLocation
+	56: SetBetZoneLoc
 	57: ApplyTankForm
+	58: SetToxicCloudLoc
 }
 
 rule("Workshop Settings")
@@ -526,7 +533,7 @@ rule("Global Stats & inits")
 		Create HUD Text(All Players(All Teams), Null, Null, Custom String("Server hosted \"{1}\" for {0} seconds!\r\n \r\n ",
 			Round To Integer(Total Time Elapsed, To Nearest), Current Map), Left, -1, Color(White), Color(White), Color(White),
 			Visible To and String, Default Visibility);
-		Create HUD Text(All Players(All Teams), Null, Custom String(" \n \nReset To Spawn:"), Custom String("Hold [{0}] + [{1}] + [{2}]",
+		Create HUD Text(All Players(All Teams), Null, Custom String(" \n \nGo To Spawn:"), Custom String("Hold [{0}] + [{1}] + [{2}]",
 			Input Binding String(Button(Reload)), Input Binding String(Button(Jump)), Input Binding String(Button(Interact))), Left, 10,
 			Color(White), Color(Aqua), Color(White), Visible To and String, Default Visibility);
 		Create HUD Text(All Players(All Teams), Null, Null, Custom String("PRISON ESCAPE [GFX]"), Top, 0, Color(White), Color(White),
@@ -546,8 +553,8 @@ rule("Global Stats & inits")
 		Global.RBPDefaultMaps = Array(Map(Busan), Map(Eichenwalde), Map(Eichenwalde Halloween), Map(Hanamura), Map(Hanamura Winter), Map(
 			Havana), Map(Horizon Lunar Colony), Map(King's Row), Map(King's Row Winter), Map(Numbani), Map(Oasis), Map(Paris), Map(Rialto),
 			Map(Route 66), Map(Temple of Anubis), Map(Watchpoint: Gibraltar), Map(Volskaya Industries));
-		"0 = I Need Healing"
-		Global.GEToggles = Array(False);
+		"0 = I Need Healing, 1 = Toxic Clouds"
+		Global.GEToggles = Array(False, False);
 		"0 = Bullets; 1 = Extra"
 		Global.BUChoices = Array(0, 0);
 		"0 = Initial Damage; 1 = New Base Damage; 2 = Extra Damage; "
@@ -1381,13 +1388,14 @@ rule("map setting (global arr p, global b, global d, global c) - junkertown")
 	actions
 	{
 		Global.AllBastionPositions = Array(Vector(-96.235, 13.672, -136.725), Vector(-72.380, 7.672, -144.151), Vector(-27.431, 13.780,
-			-100.155), Vector(-32.236, 12.976, -29.143), Vector(-2.080, 11.366, -61.807), Vector(30.116, 13.407, -59.880));
+			-100.155), Vector(-32.236, 12.976, -29.143), Vector(-2.080, 11.366, -61.807), Vector(30.116, 13.407, -59.880), Vector(33.010,
+			9, -52.060));
 		Global.EndPosition = Vector(30.248, 5.515, -81.733);
 		Start Forcing Spawn Room(Team 1, 2);
 		"Base coordinates for world game settings HUD"
 		Global.GameSettingTextVec = Vector(-95.486, 12.245, -86.316);
 		"Total amount of Bastion Bots to spawn"
-		Global.BastionBotCount = 6;
+		Global.BastionBotCount = 7;
 		"Location of winners end game rings"
 		Global.WinnerHeroesRingStats[0] = Vector(-85.345, 11.812, -81.681);
 		Global.WinnerResetRingStats[0] = Vector(-94.717, 11.800, -84.011);
@@ -1760,6 +1768,26 @@ rule("Activate teleporters if spawn room doors is inaccessible - hollywood")
 	}
 }
 
+rule("Teleporter position init (global T) - temple of anubis")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		Global.T == Empty Array;
+		Current Map == Map(Temple of Anubis);
+	}
+
+	actions
+	{
+		"Even indexes (0, 2, ...)  are portal senders. Odd indexes (1, 3, ...) are portal receivers. Example: 0 index sends players to 1 index position."
+		Global.T = Array(Vector(-44.946, 10.509, 27.075), Vector(-10.927, 13.007, 15.272));
+	}
+}
+
 rule("Teleporter position init (global T) - paris")
 {
 	event
@@ -1802,9 +1830,6 @@ rule("Teleporter position init (global T) - nepal")
 			"Even indexes (0, 2, ...)  are portal senders. Odd indexes (1, 3, ...) are portal receivers. Example: 0 index sends players to 1 index position."
 			Global.T = Array(Vector(-220.003, -94.746, -24.949), Vector(-220.392, -93.377, -10.542), Vector(-220.104, -94.205, 13.117), Vector(
 				-220.205, -94.747, 25.866));
-		"Sanctum"
-		Else If(Count Of(Players Within Radius(Vector(82.236, 133.730, -90.834), 30, Team 1, Off)) != 0);
-			Global.T = Array(Vector(96.787, 129.300, -0.132), Vector(105.339, 133.942, 32.889));
 	}
 }
 
@@ -1941,6 +1966,12 @@ rule("Jump pad position init (global J)(global K) - nepal")
 			Modify Global Variable(JumpPadLocList, Append To Array, Vector(-194.944, -92.303, -10.583));
 			"The strength of the jump pad. How high to to bounce players upwards?"
 			Modify Global Variable(JumpPadPowerList, Append To Array, 16);
+		"Sanctum"
+		Else If(Count Of(Players Within Radius(Vector(82.236, 133.730, -90.834), 30, Team 1, Off)) != 0);
+			"The location of the jump pad"
+			Modify Global Variable(JumpPadLocList, Append To Array, Vector(106.045, 129.817, -0.222));
+			"The strength of the jump pad. How high to to bounce players upwards?"
+			Modify Global Variable(JumpPadPowerList, Append To Array, 12);
 	}
 }
 
@@ -2264,7 +2295,7 @@ rule("Check Bastion position before setting it (RPB)[SR]")
 				Teleport(Players In Slot(Global.RBPIndex, Team 2), Global.AllBastionPositions[Global.RBPIndex]);
 			Else If((Current Map == Map(Ilios) || Current Map == Map(Lijiang Tower) || Current Map == Map(Lijiang Tower Lunar New Year)
 					|| Current Map == Map(Nepal)) && Distance Between(Global.AllBastionPositions[Global.RBPIndex], Random Value In Array(
-					Spawn Points(Team 1))) > 25);
+					Spawn Points(Team 1))) > 37);
 				Global.RBPIndex += 1;
 				Teleport(Players In Slot(Global.RBPIndex, Team 2), Global.AllBastionPositions[Global.RBPIndex]);
 			Else If(Current Map == Map(Junkertown) && Distance Between(Global.AllBastionPositions[Global.RBPIndex], Random Value In Array(
@@ -4038,7 +4069,7 @@ rule("Player reset button combo shortcut (BUTTONS)")
 
 	actions
 	{
-		Small Message(Event Player, Custom String("Attempting to reset. Hold for 5 seconds!"));
+		Small Message(Event Player, Custom String("Teleporting to spawn. Hold for 5 seconds!"));
 		Wait(5, Abort When False);
 		Respawn(Event Player);
 		Call Subroutine(SpawnAtAltLoc);
@@ -4124,7 +4155,7 @@ rule("Select a global effect & configurate (GE)[SR]")
 		"Current NUMBER of players currently around. Used if global effect requires more than 1 player"
 		Global.TempVar2 = 1;
 		"DEBUG: Chose a specific global effect"
-		disabled Global.TempVar = 50;
+		disabled Global.TempVar = 33;
 		If(Global.TempVar == 1);
 			"The Patrol Guard to use"
 			Global.GEPatrolChoice = Random Integer(0, 2);
@@ -4376,7 +4407,10 @@ rule("Select a global effect & configurate (GE)[SR]")
 			Global.GEName = Custom String("Group Up!");
 			Global.GEMinPlayerReq = 3;
 		Else If(Global.TempVar == 33);
-			Global.TempVar3 = Custom String("Self-healing is toggled on/off.");
+			"Toggle on/off self-healing regeneration"
+			Global.GEToggles[0] = !Global.GEToggles[0];
+			Global.TempVar3 = Custom String("Self-healing is [{0}].", Global.GEToggles[0] ? Custom String("no longer active") : Custom String(
+				"now active"));
 			Global.GEName = Custom String("I Need Healing!");
 		Else If(Global.TempVar == 34);
 			Call Subroutine(BeforeNewBastionBulletUpgrade);
@@ -4474,11 +4508,11 @@ rule("Select a global effect & configurate (GE)[SR]")
 			Global.TempVar3 = Custom String("All players get booped!");
 			Global.GEName = Custom String("Boop!");
 		Else If(Global.TempVar == 49);
-			Global.TempVar3 = Custom String("Toxic clouds are spread throughout the lands!");
+			"Toggle on/off toxic clouds"
+			Global.GEToggles[1] = !Global.GEToggles[1];
+			Global.TempVar3 = Custom String("{0}", Global.GEToggles[1] ? Custom String("Toxic clouds will spread throughout the lands!")
+				: Custom String("Toxic clouds have dissipated!"));
 			Global.GEName = Custom String("Toxic Clouds!");
-			"Set the timer for the Global Effect"
-			Global.GEWaitTime = Random Integer(90, 120);
-			Global.GERadius = Random Real(4, 10);
 		Else If(Global.TempVar == 50);
 			Global.TempVar3 = Custom String(
 				"Play the lottery by betting at ONE zone before time runs out!\n\nEarnings: Demotion, Promotion, Nothing");
@@ -4555,8 +4589,9 @@ rule("Set HUD recent help text for players(GE)")
 
 	actions
 	{
-		Create HUD Text(Event Player, Custom String("{0} Self-Healing: [{1}]", Ability Icon String(Hero(Soldier: 76), Button(Ability 2)),
-			!Global.GEToggles[0] ? String("On") : String("Off")), Null, Null, Right, -3, Color(Green), Color(White), Color(White),
+		Create HUD Text(Event Player, Custom String("{0} World Actives: {1}{2}", Icon String(Recycle),
+			!Global.GEToggles[0] ? Ability Icon String(Hero(Soldier: 76), Button(Ability 2)) : String(""),
+			Global.GEToggles[1] ? Icon String(Radioactive) : String("")), Null, Null, Right, -3, Color(Green), Color(White), Color(White),
 			Visible To and String, Default Visibility);
 		Event Player.GEHelpTextIDs = Array(Last Text ID);
 		Create HUD Text(Event Player, Custom String("{0} Recent Effect:", Ability Icon String(Hero(Wrecking Ball), Button(Ability 1))),
@@ -4731,7 +4766,7 @@ rule("Start Global Effect -- [Type A] (GE)")
 	{
 		Global.IsGEEnabledWS == True;
 		Global.CanStartGE == 1;
-		(Global.GEChoice == 1 || Global.GEChoice == 49 || Global.GEChoice == 50) == True;
+		(Global.GEChoice == 1 || Global.GEChoice == 50) == True;
 	}
 
 	actions
@@ -4860,7 +4895,7 @@ rule("Start Global Effect -- [Type C] (GE)")
 		Global.IsGEEnabledWS == True;
 		Global.CanStartGE == 1;
 		(
-			Global.GEChoice == 4 || Global.GEChoice == 32 || Global.GEChoice == 33 || Global.GEChoice == 34 || Global.GEChoice == 35 || Global.GEChoice == 43 || Global.GEChoice == 48)
+			Global.GEChoice == 4 || Global.GEChoice == 32 || Global.GEChoice == 33 || Global.GEChoice == 34 || Global.GEChoice == 35 || Global.GEChoice == 43 || Global.GEChoice == 48 || Global.GEChoice == 49)
 			== True;
 	}
 
@@ -4895,11 +4930,9 @@ rule("Init Type C (CHOICE:All)(NOT:Timer) (GE)[SR]")
 		"I Need Healing"
 		Else If(Global.GEChoice == 33);
 			"I Need Healing"
-			If(Global.GEToggles[0]);
-				Global.GEToggles[0] = False;
+			If(!Global.GEToggles[0]);
 				Heal(All Players(Team 1), Null, 9999);
 			Else;
-				Global.GEToggles[0] = True;
 				Stop All Heal Over Time(All Players(All Teams));
 			End;
 		"Bastion Bullet Upgrade"
@@ -4921,6 +4954,13 @@ rule("Init Type C (CHOICE:All)(NOT:Timer) (GE)[SR]")
 			For Global Variable(TempVar2, 0, Count Of(Global.TempVar), 1);
 				Play Effect(All Players(Team 1), Buff Impact Sound, Color(White), Global.TempVar[Global.TempVar2], 80);
 				Wait(0.400, Ignore Condition);
+			End;
+		"Toxic Clouds"
+		Else If(Global.GEChoice == 49 && !Global.GEToggles[1]);
+			Global.TempVar = Filtered Array(All Players(Team 2), Hero Of(Current Array Element) == Hero(Bastion));
+			For Global Variable(TempVar2, 0, Count Of(Global.TempVar), 1);
+				Destroy Effect(Global.TempVar[Global.TempVar2].ToxicCloudIDs);
+				Global.TempVar[Global.TempVar2].ToxicCloudIDs = Null;
 			End;
 	}
 }
@@ -5470,6 +5510,7 @@ rule("Clean up specific Global Effect at the end (GE)[SR]")
 		Else If(Global.GEChoice == 27 || Global.GEChoice == 46);
 			Enable Nameplates(All Players(Team 1), All Players(Team 1));
 			Set Max Health(All Players(Team 1), 100);
+			Heal(Filtered Array(All Players(Team 1), Current Array Element.GEIsAffectedPlayer), Null, 9999);
 			Stop Scaling Player(All Players(Team 1));
 			Set Move Speed(All Players(Team 1), 100);
 			Enable Movement Collision With Environment(All Players(Team 1));
@@ -8743,13 +8784,16 @@ rule("Player is looking at Bastion (Shining Armor)(GE)(BU)[Extra]")
 	{
 		"Clandestine Toggle"
 		Global.BUChoices[1] == 5;
+		Event Player.IsWinner == False;
 		Event Player.BUExtraEffectIDs == Null;
 		Is True For Any(Players in View Angle(Event Player, Team 2, 45), Is In Line of Sight(Eye Position(Event Player), Eye Position(
-			Current Array Element), All Barriers Block LOS)) == True;
+			Current Array Element), Barriers Do Not Block LOS)) == True;
 	}
 
 	actions
 	{
+		Event Player.BlindChanceNum = Random Integer(0, 2);
+		Abort If(Event Player.BlindChanceNum != 1);
 		Create Effect(Event Player, Sphere, Color(Yellow), Event Player, 50, Visible To Position and Radius);
 		Event Player.BUExtraEffectIDs[0] = Last Created Entity;
 		Create Effect(Event Player, Sphere, Color(White), Event Player, 5, Visible To Position and Radius);
@@ -8772,12 +8816,12 @@ rule("Player is not looking at Bastion (Shining Armor)(GE)(BU)[Extra]")
 		Global.BUChoices[1] == 5;
 		Event Player.BUExtraEffectIDs != Null;
 		Is True For Any(Players in View Angle(Event Player, Team 2, 45), Is In Line of Sight(Eye Position(Event Player), Eye Position(
-			Current Array Element), All Barriers Block LOS)) == False;
+			Current Array Element), Barriers Do Not Block LOS)) == False;
 	}
 
 	actions
 	{
-		Wait(4, Abort When False);
+		Wait(5, Abort When False);
 		Destroy Effect(Event Player.BUExtraEffectIDs);
 		Event Player.BUExtraEffectIDs = Null;
 		Loop If Condition Is True;
@@ -8921,6 +8965,9 @@ rule("Body reaches goal (One-For-All)(GE)[SR]")
 				Else;
 					Global.TempVar[Global.TempVar2].CurrentHero += 1;
 					Global.TempVar[Global.TempVar2].TargetHero = Global.TempVar[Global.TempVar2].CurrentHero;
+				End;
+			End;
+		End;
 	}
 }
 
@@ -9120,12 +9167,191 @@ rule("Set boop direction (Boop)(GE)[SR]")
 	}
 }
 
-rule("Set zone location (Toxic Clouds & Rigged Lottery)(GE)[SR]")
+rule("Set toxic cloud location (Toxic Clouds)(GE)[SR]")
 {
 	event
 	{
 		Subroutine;
-		SetZoneLocation;
+		SetToxicCloudLoc;
+	}
+
+	actions
+	{
+		Event Player.ToxicCloudLoc = Random Integer(0, 25);
+		Event Player.ToxicCloudSpawnDistance = Random Real(20, 75);
+		Event Player.ToxicCloudRadius = Random Real(4, 10);
+		If(Event Player.ToxicCloudLoc == 0);
+			Event Player.ToxicCloudLoc = Nearest Walkable Position(Position Of(Event Player) + Forward * Event Player.ToxicCloudSpawnDistance);
+		Else If(Event Player.ToxicCloudLoc == 1);
+			Event Player.ToxicCloudLoc = Nearest Walkable Position(Position Of(Event Player) + (Forward + Right)
+				* Event Player.ToxicCloudSpawnDistance);
+		Else If(Event Player.ToxicCloudLoc == 2);
+			Event Player.ToxicCloudLoc = Nearest Walkable Position(Position Of(Event Player) + Right * Event Player.ToxicCloudSpawnDistance);
+		Else If(Event Player.ToxicCloudLoc == 3);
+			Event Player.ToxicCloudLoc = Nearest Walkable Position(Position Of(Event Player) + (Backward + Right)
+				* Event Player.ToxicCloudSpawnDistance);
+		Else If(Event Player.ToxicCloudLoc == 4);
+			Event Player.ToxicCloudLoc = Nearest Walkable Position(Position Of(Event Player)
+				+ Backward * Event Player.ToxicCloudSpawnDistance);
+		Else If(Event Player.ToxicCloudLoc == 5);
+			Event Player.ToxicCloudLoc = Nearest Walkable Position(Position Of(Event Player) + (Backward + Left)
+				* Event Player.ToxicCloudSpawnDistance);
+		Else If(Event Player.ToxicCloudLoc == 6);
+			Event Player.ToxicCloudLoc = Nearest Walkable Position(Position Of(Event Player) + Left * Event Player.ToxicCloudSpawnDistance);
+		Else If(Event Player.ToxicCloudLoc == 7);
+			Event Player.ToxicCloudLoc = Nearest Walkable Position(Position Of(Event Player) + (Forward + Left)
+				* Event Player.ToxicCloudSpawnDistance);
+		Else If(Event Player.ToxicCloudLoc == 8);
+			Event Player.ToxicCloudLoc = Nearest Walkable Position(Position Of(Event Player) + (Forward + Down)
+				* Event Player.ToxicCloudSpawnDistance);
+		Else If(Event Player.ToxicCloudLoc == 9);
+			Event Player.ToxicCloudLoc = Nearest Walkable Position(Position Of(Event Player) + (Forward + Up)
+				* Event Player.ToxicCloudSpawnDistance);
+		Else If(Event Player.ToxicCloudLoc == 10);
+			Event Player.ToxicCloudLoc = Nearest Walkable Position(Position Of(Event Player) + (Right + Up)
+				* Event Player.ToxicCloudSpawnDistance);
+		Else If(Event Player.ToxicCloudLoc == 11);
+			Event Player.ToxicCloudLoc = Nearest Walkable Position(Position Of(Event Player) + (Right + Down)
+				* Event Player.ToxicCloudSpawnDistance);
+		Else If(Event Player.ToxicCloudLoc == 12);
+			Event Player.ToxicCloudLoc = Nearest Walkable Position(Position Of(Event Player) + (Backward + Down)
+				* Event Player.ToxicCloudSpawnDistance);
+		Else If(Event Player.ToxicCloudLoc == 13);
+			Event Player.ToxicCloudLoc = Nearest Walkable Position(Position Of(Event Player) + (Backward + Up)
+				* Event Player.ToxicCloudSpawnDistance);
+		Else If(Event Player.ToxicCloudLoc == 14);
+			Event Player.ToxicCloudLoc = Nearest Walkable Position(Position Of(Event Player) + (Left + Up)
+				* Event Player.ToxicCloudSpawnDistance);
+		Else If(Event Player.ToxicCloudLoc == 15);
+			Event Player.ToxicCloudLoc = Nearest Walkable Position(Position Of(Event Player) + (Left + Down)
+				* Event Player.ToxicCloudSpawnDistance);
+		Else If(Event Player.ToxicCloudLoc == 16);
+			Event Player.ToxicCloudLoc = Nearest Walkable Position(Position Of(Event Player) + (Forward + Right + Up)
+				* Event Player.ToxicCloudSpawnDistance);
+		Else If(Event Player.ToxicCloudLoc == 17);
+			Event Player.ToxicCloudLoc = Nearest Walkable Position(Position Of(Event Player) + (Forward + Right + Down)
+				* Event Player.ToxicCloudSpawnDistance);
+		Else If(Event Player.ToxicCloudLoc == 18);
+			Event Player.ToxicCloudLoc = Nearest Walkable Position(Position Of(Event Player) + (Backward + Right + Down)
+				* Event Player.ToxicCloudSpawnDistance);
+		Else If(Event Player.ToxicCloudLoc == 19);
+			Event Player.ToxicCloudLoc = Nearest Walkable Position(Position Of(Event Player) + (Backward + Right + Up)
+				* Event Player.ToxicCloudSpawnDistance);
+		Else If(Event Player.ToxicCloudLoc == 20);
+			Event Player.ToxicCloudLoc = Nearest Walkable Position(Position Of(Event Player) + (Forward + Left + Up)
+				* Event Player.ToxicCloudSpawnDistance);
+		Else If(Event Player.ToxicCloudLoc == 21);
+			Event Player.ToxicCloudLoc = Nearest Walkable Position(Position Of(Event Player) + (Forward + Left + Down)
+				* Event Player.ToxicCloudSpawnDistance);
+		Else If(Event Player.ToxicCloudLoc == 22);
+			Event Player.ToxicCloudLoc = Nearest Walkable Position(Position Of(Event Player) + (Backward + Left + Down)
+				* Event Player.ToxicCloudSpawnDistance);
+		Else If(Event Player.ToxicCloudLoc == 23);
+			Event Player.ToxicCloudLoc = Nearest Walkable Position(Position Of(Event Player) + (Backward + Left + Up)
+				* Event Player.ToxicCloudSpawnDistance);
+		Else If(Event Player.ToxicCloudLoc == 24);
+			Event Player.ToxicCloudLoc = Nearest Walkable Position(Position Of(Event Player) + Up * Event Player.ToxicCloudSpawnDistance);
+		Else If(Event Player.ToxicCloudLoc == 25);
+			Event Player.ToxicCloudLoc = Nearest Walkable Position(Position Of(Event Player) + Down * Event Player.ToxicCloudSpawnDistance);
+		End;
+	}
+}
+
+rule("Init Toxic clouds (Toxic Clouds)(GE)")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 2;
+		Bastion;
+	}
+
+	conditions
+	{
+		Global.GEToggles[1] == True;
+		Event Player.ToxicCloudIDs == Null;
+	}
+
+	actions
+	{
+		Call Subroutine(SetToxicCloudLoc);
+		Create Effect(All Players(Team 1), Cloud, Color(Green), Event Player.ToxicCloudLoc + Vector(0, 2, 0),
+			Event Player.ToxicCloudRadius, Visible To Position and Radius);
+		Event Player.ToxicCloudIDs[0] = Last Created Entity;
+		Create Effect(All Players(Team 1), Smoke Sound, Color(White), Event Player.ToxicCloudLoc, 100, Visible To Position and Radius);
+		Event Player.ToxicCloudIDs[1] = Last Created Entity;
+	}
+}
+
+rule("Move toxic cloud (Toxic Clouds)(GE)")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 2;
+		Bastion;
+	}
+
+	conditions
+	{
+		Global.GEToggles[1] == True;
+		Event Player.ToxicCloudIDs != Null;
+	}
+
+	actions
+	{
+		Call Subroutine(SetToxicCloudLoc);
+		Wait(Random Integer(40, 180), Abort When False);
+		Loop If Condition Is True;
+	}
+}
+
+rule("Player touches cloud (Toxic Clouds)(GE)")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 2;
+		Bastion;
+	}
+
+	conditions
+	{
+		Global.GEToggles[1] == True;
+		Event Player.ToxicCloudIDs != Null;
+		Is True For Any(Players Within Radius(Event Player.ToxicCloudLoc, Event Player.ToxicCloudRadius - 0.500, Team 1, Off),
+			!Current Array Element.IsWinner && !Is In Spawn Room(Current Array Element) && ((Current Map == Map(Blizzard World)
+			&& Distance Between(Position Of(Current Array Element), Global.BlizzWorldSpawnLoc) > 30) || (Current Map == Map(
+			Blizzard World Winter) && Distance Between(Position Of(Current Array Element), Global.BlizzWorldSpawnLoc) > 30) || (
+			Current Map != Map(Blizzard World) && Current Map != Map(Blizzard World Winter))) == True && ((Current Map == Map(Hollywood)
+			&& Distance Between(Position Of(Current Array Element), Global.HollywoodSpawns[0]) > 30) || (Current Map == Map(
+			Hollywood Halloween) && Distance Between(Position Of(Current Array Element), Global.HollywoodSpawns[0]) > 30) || (
+			Current Map != Map(Hollywood) && Current Map != Map(Hollywood Halloween))) == True) == True;
+	}
+
+	actions
+	{
+		Event Player.PlayersInToxicCloud = Filtered Array(Players Within Radius(Event Player.ToxicCloudLoc,
+			Event Player.ToxicCloudRadius - 0.500, Team 1, Off), !Current Array Element.IsWinner && !Is In Spawn Room(
+			Current Array Element) && ((Current Map == Map(Blizzard World) && Distance Between(Position Of(Current Array Element),
+			Global.BlizzWorldSpawnLoc) > 30) || (Current Map == Map(Blizzard World Winter) && Distance Between(Position Of(
+			Current Array Element), Global.BlizzWorldSpawnLoc) > 30) || (Current Map != Map(Blizzard World) && Current Map != Map(
+			Blizzard World Winter))) == True && ((Current Map == Map(Hollywood) && Distance Between(Position Of(Current Array Element),
+			Global.HollywoodSpawns[0]) > 30) || (Current Map == Map(Hollywood Halloween) && Distance Between(Position Of(
+			Current Array Element), Global.HollywoodSpawns[0]) > 30) || (Current Map != Map(Hollywood) && Current Map != Map(
+			Hollywood Halloween))) == True);
+		Start Damage Over Time(Event Player.PlayersInToxicCloud, Event Player, 5, Random Real(15, 30));
+		Wait(5, Abort When False);
+		Loop If Condition Is True;
+	}
+}
+
+rule("Set betting zone location (Rigged Lottery)(GE)[SR]")
+{
+	event
+	{
+		Subroutine;
+		SetBetZoneLoc;
 	}
 
 	actions
@@ -9189,7 +9415,7 @@ rule("Set zone location (Toxic Clouds & Rigged Lottery)(GE)[SR]")
 	}
 }
 
-rule("Init zones (Toxic Clouds & Rigged Lottery)(GE)")
+rule("Init betting zones (Rigged Lottery)(GE)")
 {
 	event
 	{
@@ -9200,58 +9426,25 @@ rule("Init zones (Toxic Clouds & Rigged Lottery)(GE)")
 
 	conditions
 	{
-		(Global.GEChoice == 49 || Global.GEChoice == 50) == True;
+		Global.GEChoice == 50;
 		Global.IsGETimerStart == True;
 		Event Player.GEID == Null;
 	}
 
 	actions
 	{
-		Call Subroutine(SetZoneLocation);
-		"Toxic Clouds"
-		If(Global.GEChoice == 49);
-			Create Effect(All Players(Team 1), Cloud, Color(Green), Event Player.GETempVar + Vector(0, 2, 0), Global.GERadius, Visible To);
-			Event Player.GEID = Last Created Entity;
-		Else;
-			Create Effect(All Players(Team 1), Sphere, Color(Yellow), Event Player.GETempVar, Global.GERadius, Visible To);
-			Event Player.GEID[0] = Last Created Entity;
-			Create Effect(All Players(Team 1), Pick-up Sound, Color(White), Event Player.GETempVar, 100, Visible To);
-			Event Player.GEID[1] = Last Created Entity;
-			Create In-World Text(All Players(Team 1), Custom String("{0}", Slot Of(Event Player) + 1), Event Player.GETempVar, 1.400,
-				Do Not Clip, Visible To, Color(Rose), Default Visibility);
-			Event Player.GEHUDID = Last Text ID;
-		End;
+		Call Subroutine(SetBetZoneLoc);
+		Create Effect(All Players(Team 1), Sphere, Color(Yellow), Event Player.GETempVar, Global.GERadius, Visible To);
+		Event Player.GEID[0] = Last Created Entity;
+		Create Effect(All Players(Team 1), Pick-up Sound, Color(White), Event Player.GETempVar, 100, Visible To);
+		Event Player.GEID[1] = Last Created Entity;
+		Create In-World Text(All Players(Team 1), Custom String("{0}", Slot Of(Event Player) + 1), Event Player.GETempVar, 1.400,
+			Do Not Clip, Visible To, Color(Rose), Default Visibility);
+		Event Player.GEHUDID = Last Text ID;
 	}
 }
 
-rule("Player touches cloud (Toxic Clouds)(GE)")
-{
-	event
-	{
-		Ongoing - Each Player;
-		Team 2;
-		Bastion;
-	}
-
-	conditions
-	{
-		Global.GEChoice == 49;
-		Global.IsGETimerStart == True;
-		Event Player.GEID != Null;
-		Is True For Any(Players Within Radius(Event Player.GETempVar, Global.GERadius - 0.500, Team 1, Off),
-			!Current Array Element.IsWinner && !Is In Spawn Room(Current Array Element)) == True;
-	}
-
-	actions
-	{
-		Event Player.GETempVar2 = Players Within Radius(Event Player.GETempVar, Global.GERadius - 0.500, Team 1, Off);
-		Start Damage Over Time(Event Player.GETempVar2, Event Player, 5, Random Real(15, 30));
-		Wait(5, Abort When False);
-		Loop If Condition Is True;
-	}
-}
-
-rule("Placing bets (Lottery)(GE)")
+rule("Placing bets (Rigged Lottery)(GE)")
 {
 	event
 	{
