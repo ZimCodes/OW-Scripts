@@ -418,7 +418,7 @@ rule("Workshop Settings")
 		Global.BastionPosTypeWS = Workshop Setting Combo(Custom String("Bastion Position"), Custom String("Position Type"), 1, Array(
 			Custom String("Original"), Custom String("Random"), Custom String("Random Once"), Custom String("On Escape")), 0);
 		Global.HasAllWinnersToCycleWS = Workshop Setting Toggle(Custom String("Game"), Custom String(
-			"All players must be Winners to cycle next map"), True, 0);
+			"To cycle next map, the amount of completions = total players in the lobby"), True, 0);
 	}
 }
 
@@ -1038,11 +1038,11 @@ rule("map setting (global arr p, global b, global d, global c) - gibraltar")
 	actions
 	{
 		Global.AllBastionPositions = Array(Vector(70.099, 9, 26.803), Vector(81.759, 6, 3.200), Vector(64.465, 9.690, -32.138), Vector(
-			32.373, 3, -50.866), Vector(31.113, 7.300, -89.871), Vector(41.383, 4, -124.788));
+			32.373, 3, -50.866), Vector(31.113, 7.300, -89.871), Vector(41.383, 4, -124.788), Vector(51, -3.910, -159.860));
 		Global.EndPosition = Vector(46.558, 1, -146.808);
 		Start Forcing Spawn Room(Team 1, 2);
 		"Total amount of Bastion Bots to spawn"
-		Global.BastionBotCount = 6;
+		Global.BastionBotCount = 7;
 		"Location of winners end game rings"
 		Global.WinnerHeroesRingStats[0] = Vector(82.842, -8.700, 44.751);
 		Global.WinnerResetRingStats[0] = Vector(77.831, -8.700, 49.404);
@@ -1703,8 +1703,8 @@ rule("setup game option settings text for world HUD [SR]")
 		Global.GameSettingTextVec += Vector(0, 0.150, 0);
 		"The \"Next Map Cycle Option\""
 		If(Global.HasAllWinnersToCycleWS);
-			Create In-World Text(All Players(Team 1), Custom String("WInners Until Next Map: [{0}] / [{1}]", Global.CurWinnerCount, Count Of(
-				All Players(Team 1))), Global.GameOptTextVec, 1.500, Clip Against Surfaces, Visible To and String, Color(Yellow),
+			Create In-World Text(All Players(Team 1), Custom String("Completions Until Next Map: [{0}] / [{1}]", Global.CurWinnerCount,
+				Count Of(All Players(Team 1))), Global.GameOptTextVec, 1.500, Clip Against Surfaces, Visible To and String, Color(Yellow),
 				Default Visibility);
 			Call Subroutine(IncrementGameSettingsPos);
 		End;
@@ -2300,6 +2300,10 @@ rule("Check Bastion position before setting it (RPB)[SR]")
 				Teleport(Players In Slot(Global.RBPIndex, Team 2), Global.AllBastionPositions[Global.RBPIndex]);
 			Else If(Current Map == Map(Junkertown) && Distance Between(Global.AllBastionPositions[Global.RBPIndex], Random Value In Array(
 					Spawn Points(Team 1))) > 27);
+				Global.RBPIndex += 1;
+				Teleport(Players In Slot(Global.RBPIndex, Team 2), Global.AllBastionPositions[Global.RBPIndex]);
+			Else If(Current Map == Map(Watchpoint: Gibraltar) && Distance Between(Global.AllBastionPositions[Global.RBPIndex],
+					Random Value In Array(Spawn Points(Team 1))) > 38);
 				Global.RBPIndex += 1;
 				Teleport(Players In Slot(Global.RBPIndex, Team 2), Global.AllBastionPositions[Global.RBPIndex]);
 			Else If(Array Contains(Global.RBPDefaultMaps, Current Map) && Distance Between(Global.AllBastionPositions[Global.RBPIndex],
@@ -4155,7 +4159,7 @@ rule("Select a global effect & configurate (GE)[SR]")
 		"Current NUMBER of players currently around. Used if global effect requires more than 1 player"
 		Global.TempVar2 = 1;
 		"DEBUG: Chose a specific global effect"
-		disabled Global.TempVar = 33;
+		disabled Global.TempVar = 27;
 		If(Global.TempVar == 1);
 			"The Patrol Guard to use"
 			Global.GEPatrolChoice = Random Integer(0, 2);
@@ -5510,7 +5514,6 @@ rule("Clean up specific Global Effect at the end (GE)[SR]")
 		Else If(Global.GEChoice == 27 || Global.GEChoice == 46);
 			Enable Nameplates(All Players(Team 1), All Players(Team 1));
 			Set Max Health(All Players(Team 1), 100);
-			Heal(Filtered Array(All Players(Team 1), Current Array Element.GEIsAffectedPlayer), Null, 9999);
 			Stop Scaling Player(All Players(Team 1));
 			Set Move Speed(All Players(Team 1), 100);
 			Enable Movement Collision With Environment(All Players(Team 1));
