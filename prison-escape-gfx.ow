@@ -41,7 +41,7 @@ settings
 			Health Pack Respawn Time Scalar: 10%
 			Hero Limit: Off
 			Respawn As Random Hero: On
-			Respawn Time Scalar: 40%
+			Respawn Time Scalar: 0%
 			Spawn Health Packs: Enabled
 		}
 	}
@@ -1156,11 +1156,12 @@ rule("map setting (global arr p, global b, global d, global c) - rialto")
 	actions
 	{
 		Global.AllBastionPositions = Array(Vector(-64.421, 5.040, -125.927), Vector(-16.976, 1.660, -38.459), Vector(-36.002, 4.750,
-			-77.344), Vector(59.058, 0.070, -8.103), Vector(54.797, 1.740, -59.938), Vector(87.874, -0.370, 0.268));
+			-77.344), Vector(59.058, 0.070, -8.103), Vector(54.797, 1.740, -59.938), Vector(87.874, -0.370, 0.268), Vector(13.670, 3.750,
+			-35.720));
 		Global.EndPosition = Vector(98.662, -1.500, -21.009);
 		Start Forcing Spawn Room(Team 1, 2);
 		"Total amount of Bastion Bots to spawn"
-		Global.BastionBotCount = 6;
+		Global.BastionBotCount = 7;
 		"Location of winners end game rings"
 		Global.WinnerHeroesRingStats[0] = Vector(-49.550, 5.050, -171.124);
 		Global.WinnerResetRingStats[0] = Vector(-63.679, 5.050, -170.880);
@@ -3285,6 +3286,7 @@ rule("No Hud")
 		Disable Game Mode HUD(Event Player);
 		Disable Kill Feed(Event Player);
 		Disable Scoreboard(Event Player);
+		Disable Built-In Game Mode Respawning(Event Player);
 	}
 }
 
@@ -3690,25 +3692,48 @@ rule("Sombra Remove Text")
 	}
 }
 
-rule("Spawn Dead Players")
+rule("Spawn Dead Players (ENEMY)")
 {
 	event
 	{
 		Player Died;
-		All;
+		Team 2;
 		All;
 	}
 
 	conditions
 	{
 		Is Dead(Event Player) == True;
-		Count Of(Filtered Array(All Players(All Teams), Has Spawned(Current Array Element) && Hero Of(Current Array Element) == Hero(
-			Mercy))) <= 0;
 	}
 
 	actions
 	{
 		Wait(0.048, Abort When False);
+		Respawn(Event Player);
+	}
+}
+
+rule("Spawn Dead Players (PLAYERS)")
+{
+	event
+	{
+		Player Died;
+		Team 1;
+		All;
+	}
+
+	conditions
+	{
+		Is Dead(Event Player) == True;
+	}
+
+	actions
+	{
+		If(Is True For Any(All Players(Team 1), Hero Of(Current Array Element) == Hero(Mercy)));
+			Wait(7, Abort When False);
+		Else;
+			Wait(0.048, Abort When False);
+		End;
 		Respawn(Event Player);
 		Remove All Health Pools From Player(Event Player);
 		If(Hero Of(Event Player) == Hero(Tracer));
@@ -4954,7 +4979,7 @@ rule("Init Type C (CHOICE:All)(NOT:Timer) (GE)[SR]")
 		Else If(Global.GEChoice == 48);
 			Call Subroutine(SetBoopDirection);
 			Global.TempVar = All Players(Team 1);
-			Apply Impulse(Global.TempVar, Global.GEBallPosition, Random Real(6000, 9000), To World, Cancel Contrary Motion);
+			Apply Impulse(Global.TempVar, Global.GEBallPosition, Random Real(8000, 10000), To World, Cancel Contrary Motion);
 			For Global Variable(TempVar2, 0, Count Of(Global.TempVar), 1);
 				Play Effect(All Players(Team 1), Buff Impact Sound, Color(White), Global.TempVar[Global.TempVar2], 80);
 				Wait(0.400, Ignore Condition);
@@ -9113,7 +9138,7 @@ rule("Player touches sphere (Kill Sphere)(GE)")
 
 	actions
 	{
-		Kill(Filtered Array(Players Within Radius(Global.GEBallPosition, Global.GERadius, All Teams, Off), !Is In Spawn Room(
+		Kill(Filtered Array(Players Within Radius(Global.GEBallPosition, Global.GERadius, Team 1, Off), !Is In Spawn Room(
 			Current Array Element) && !Current Array Element.IsWinner && (Current Map == Map(Hollywood) || Current Map == Map(
 			Hollywood Halloween)) && Distance Between(Position Of(Current Array Element), Global.HollywoodSpawns[0]) > 26 && (
 			Current Map == Map(Blizzard World) || Current Map == Map(Blizzard World Winter)) && Distance Between(Position Of(
@@ -9182,7 +9207,7 @@ rule("Set toxic cloud location (Toxic Clouds)(GE)[SR]")
 	{
 		Event Player.ToxicCloudLoc = Random Integer(0, 25);
 		Event Player.ToxicCloudSpawnDistance = Random Real(20, 75);
-		Event Player.ToxicCloudRadius = Random Real(4, 10);
+		Event Player.ToxicCloudRadius = 5;
 		If(Event Player.ToxicCloudLoc == 0);
 			Event Player.ToxicCloudLoc = Nearest Walkable Position(Position Of(Event Player) + Forward * Event Player.ToxicCloudSpawnDistance);
 		Else If(Event Player.ToxicCloudLoc == 1);
@@ -9278,11 +9303,14 @@ rule("Init Toxic clouds (Toxic Clouds)(GE)")
 	actions
 	{
 		Call Subroutine(SetToxicCloudLoc);
-		Create Effect(All Players(Team 1), Cloud, Color(Green), Event Player.ToxicCloudLoc + Vector(0, 2, 0),
+		Create Effect(All Players(Team 1), Cloud, Color(Green), Event Player.ToxicCloudLoc + Vector(0, 1.500, 0),
 			Event Player.ToxicCloudRadius, Visible To Position and Radius);
 		Event Player.ToxicCloudIDs[0] = Last Created Entity;
 		Create Effect(All Players(Team 1), Smoke Sound, Color(White), Event Player.ToxicCloudLoc, 90, Visible To Position and Radius);
 		Event Player.ToxicCloudIDs[1] = Last Created Entity;
+		Create Effect(All Players(Team 1), Cloud, Color(Green), Event Player.ToxicCloudLoc - Vector(0, 1.500, 0),
+			Event Player.ToxicCloudRadius, Visible To Position and Radius);
+		Event Player.ToxicCloudIDs[2] = Last Created Entity;
 	}
 }
 
@@ -9322,7 +9350,7 @@ rule("Player touches cloud (Toxic Clouds)(GE)")
 	{
 		Global.GEToggles[1] == True;
 		Event Player.ToxicCloudIDs != Null;
-		Is True For Any(Players Within Radius(Event Player.ToxicCloudLoc, Event Player.ToxicCloudRadius - 0.500, Team 1, Off),
+		Is True For Any(Players Within Radius(Event Player.ToxicCloudLoc, Event Player.ToxicCloudRadius - 1, Team 1, Off),
 			!Current Array Element.IsWinner && !Is In Spawn Room(Current Array Element) && ((Current Map == Map(Blizzard World)
 			&& Distance Between(Position Of(Current Array Element), Global.BlizzWorldSpawnLoc) > 30) || (Current Map == Map(
 			Blizzard World Winter) && Distance Between(Position Of(Current Array Element), Global.BlizzWorldSpawnLoc) > 30) || (
@@ -9335,14 +9363,13 @@ rule("Player touches cloud (Toxic Clouds)(GE)")
 	actions
 	{
 		Event Player.PlayersInToxicCloud = Filtered Array(Players Within Radius(Event Player.ToxicCloudLoc,
-			Event Player.ToxicCloudRadius - 0.500, Team 1, Off), !Current Array Element.IsWinner && !Is In Spawn Room(
-			Current Array Element) && ((Current Map == Map(Blizzard World) && Distance Between(Position Of(Current Array Element),
-			Global.BlizzWorldSpawnLoc) > 30) || (Current Map == Map(Blizzard World Winter) && Distance Between(Position Of(
-			Current Array Element), Global.BlizzWorldSpawnLoc) > 30) || (Current Map != Map(Blizzard World) && Current Map != Map(
-			Blizzard World Winter))) == True && ((Current Map == Map(Hollywood) && Distance Between(Position Of(Current Array Element),
-			Global.HollywoodSpawns[0]) > 30) || (Current Map == Map(Hollywood Halloween) && Distance Between(Position Of(
-			Current Array Element), Global.HollywoodSpawns[0]) > 30) || (Current Map != Map(Hollywood) && Current Map != Map(
-			Hollywood Halloween))) == True);
+			Event Player.ToxicCloudRadius - 1, Team 1, Off), !Current Array Element.IsWinner && !Is In Spawn Room(Current Array Element)
+			&& ((Current Map == Map(Blizzard World) && Distance Between(Position Of(Current Array Element), Global.BlizzWorldSpawnLoc)
+			> 30) || (Current Map == Map(Blizzard World Winter) && Distance Between(Position Of(Current Array Element),
+			Global.BlizzWorldSpawnLoc) > 30) || (Current Map != Map(Blizzard World) && Current Map != Map(Blizzard World Winter)))
+			== True && ((Current Map == Map(Hollywood) && Distance Between(Position Of(Current Array Element), Global.HollywoodSpawns[0])
+			> 30) || (Current Map == Map(Hollywood Halloween) && Distance Between(Position Of(Current Array Element),
+			Global.HollywoodSpawns[0]) > 30) || (Current Map != Map(Hollywood) && Current Map != Map(Hollywood Halloween))) == True);
 		Start Damage Over Time(Event Player.PlayersInToxicCloud, Event Player, 5, Random Real(15, 30));
 		Wait(5, Abort When False);
 		Loop If Condition Is True;
