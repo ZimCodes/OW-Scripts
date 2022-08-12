@@ -9492,7 +9492,7 @@ rule("Player touches cloud (Toxic Clouds)(GE)")
 	{
 		Event Player.PlayersInToxicCloud = Filtered Array(Players Within Radius(Event Player.ToxicCloudLoc,
 			Event Player.ToxicCloudRadius - 1, Team 1, Off), !Current Array Element.IsWinner && !Current Array Element.IsInSpawnRoom);
-		Start Damage Over Time(Event Player.PlayersInToxicCloud, Event Player, 5, Random Real(15, 30));
+		Start Damage Over Time(Event Player.PlayersInToxicCloud, Event Player, 5, Random Real(16, 32));
 		Wait(5, Abort When False);
 		Loop If Condition Is True;
 	}
