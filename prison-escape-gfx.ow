@@ -2,7 +2,7 @@ settings
 {
 	main
 	{
-		Description: "Work cooperatively to escape death row. Escape prison with ALL heroes to finish the game.\n\nThis is an alternative version of BASTION ESCAPE 2."
+		Description: "Work cooperatively to escape death row. Escape prison with ALL heroes to finish the game.\n\n*This is an alternative version of BASTION ESCAPE 2."
 		Mode Name: "PRISON ESCAPE [GFX]"
 	}
 
@@ -46,6 +46,8 @@ settings
 			Game Mode Start: Immediately
 			Health Pack Respawn Time Scalar: 10%
 			Hero Limit: Off
+			Kill Cam: Off
+			Kill Feed: Off
 			Respawn As Random Hero: On
 			Respawn Time Scalar: 0%
 			Spawn Health Packs: Enabled
@@ -492,8 +494,8 @@ rule("init winner hero list")
 	actions
 	{
 		Global.WinnerHeroesList = Array(Hero(Ana), Hero(Baptiste), Hero(Brigitte), Hero(Cassidy), Hero(D.Va), Hero(Genji), Hero(Hanzo),
-			Hero(Lúcio), Hero(Mei), Hero(Mercy), Hero(Moira), Hero(Orisa), Hero(Reinhardt), Hero(Sigma), Hero(Soldier: 76), Hero(Symmetra),
-			Hero(Winston), Hero(Zarya), Hero(Zenyatta));
+			Hero(Lúcio), Hero(Mei), Hero(Mercy), Hero(Moira), Hero(Orisa), Hero(Reinhardt), Hero(Roadhog), Hero(Sigma), Hero(Soldier: 76),
+			Hero(Symmetra), Hero(Winston), Hero(Zarya), Hero(Zenyatta));
 	}
 }
 
@@ -687,13 +689,13 @@ rule("Cycle to next map (Map Cycling)")
 	actions
 	{
 		Big Message(All Players(Team 1), Custom String("     Winner Limit Reached!\n\nMap will cycle in 60 seconds!"));
-		Wait(3, Abort When False);
-		Wait(45, Abort When False);
+		Wait(3, Ignore Condition);
+		Wait(45, Ignore Condition);
 		Big Message(All Players(Team 1), Custom String("Map will cycle in 15 seconds!"));
-		Wait(2, Abort When False);
-		Wait(12, Abort When False);
+		Wait(2, Ignore Condition);
+		Wait(12, Ignore Condition);
 		Big Message(All Players(Team 1), Custom String("Cycling Map!"));
-		Wait(3, Abort When False);
+		Wait(3, Ignore Condition);
 		Restart Match;
 	}
 }
@@ -1047,11 +1049,16 @@ rule("map setting (global arr p, global b, global d, global c) - gibraltar")
 	actions
 	{
 		Global.AllBastionPositions = Array(Vector(70.099, 9, 26.803), Vector(81.759, 6, 3.200), Vector(64.465, 9.690, -32.138), Vector(
-			32.373, 3, -50.866), Vector(31.113, 7.300, -89.871), Vector(41.383, 4, -124.788), Vector(51, -3.910, -159.860));
+			32.373, 3, -50.866), Vector(31.113, 7.300, -89.871), Vector(41.383, 4, -124.788));
+		"Total amount of Bastion Bots to spawn"
+		Global.BastionBotCount = 6;
+		"Add another bastion if position type is \"Random\""
+		If(Global.BastionPosTypeWS == 1);
+			Global.AllBastionPositions[6] = Vector(51, -3.910, -159.860);
+			Global.BastionBotCount = 7;
+		End;
 		Global.EndPosition = Vector(46.558, 1, -146.808);
 		Start Forcing Spawn Room(Team 1, 2);
-		"Total amount of Bastion Bots to spawn"
-		Global.BastionBotCount = 7;
 		"Location of winners end game rings"
 		Global.WinnerHeroesRingStats[0] = Vector(82.842, -8.700, 44.751);
 		Global.WinnerResetRingStats[0] = Vector(77.831, -8.700, 49.404);
@@ -1107,10 +1114,15 @@ rule("map setting (global arr p, global b, global d, global c) - volskaya indust
 	{
 		Global.AllBastionPositions = Array(Vector(-87.972, 2.020, 38.919), Vector(-67.835, 10.390, 49.479), Vector(-63.809, -0.410,
 			77.730), Vector(-11.250, 1.270, 76.356), Vector(-16.279, 2.200, 41.017), Vector(-6.364, 8.240, 35.514));
-		Global.EndPosition = Vector(-11.477, -6, 19.868);
-		Start Forcing Spawn Room(Team 1, 0);
 		"Total amount of Bastion Bots to spawn"
 		Global.BastionBotCount = 6;
+		"Add another bastion if position type is \"Random\""
+		If(Global.BastionPosTypeWS == 1);
+			Global.AllBastionPositions[6] = Vector(-35.430, -2.980, 28.190);
+			Global.BastionBotCount = 7;
+		End;
+		Global.EndPosition = Vector(-11.477, -6, 19.868);
+		Start Forcing Spawn Room(Team 1, 0);
 		"Location of winners end game rings"
 		Global.WinnerHeroesRingStats[0] = Vector(-108.629, -0.680, 27.504);
 		Global.WinnerResetRingStats[0] = Vector(-117.908, -0.680, 36.678);
@@ -1135,10 +1147,15 @@ rule("map setting (global arr p, global b, global d, global c) - route 66")
 	{
 		Global.AllBastionPositions = Array(Vector(-95.624, 12.660, -5.541), Vector(-38.680, 12.750, -22.136), Vector(-15.784, 8.540,
 			-12.685), Vector(36.467, 2.140, -4.003), Vector(48.707, 10.110, 25.063), Vector(26.871, 7.010, 2.468));
-		Global.EndPosition = Vector(47.956, 5.200, 47.318);
-		Start Forcing Spawn Room(Team 1, 1);
 		"Total amount of Bastion Bots to spawn"
 		Global.BastionBotCount = 6;
+		"Add another bastion if position type is \"Random\""
+		If(Global.BastionPosTypeWS == 1);
+			Global.AllBastionPositions[6] = Vector(51.140, 2.380, 59.880);
+			Global.BastionBotCount = 7;
+		End;
+		Global.EndPosition = Vector(47.956, 5.200, 47.318);
+		Start Forcing Spawn Room(Team 1, 1);
 		"Location of winners end game rings"
 		Global.WinnerHeroesRingStats[0] = Vector(-106.441, 6, -58.824);
 		Global.WinnerResetRingStats[0] = Vector(-108.447, 6, -62.336);
@@ -1165,12 +1182,16 @@ rule("map setting (global arr p, global b, global d, global c) - rialto")
 	actions
 	{
 		Global.AllBastionPositions = Array(Vector(-64.421, 5.040, -125.927), Vector(-16.976, 1.660, -38.459), Vector(-36.002, 4.750,
-			-77.344), Vector(59.058, 0.070, -8.103), Vector(54.797, 1.740, -59.938), Vector(87.874, -0.370, 0.268), Vector(13.670, 3.750,
-			-35.720));
+			-77.344), Vector(59.058, 0.070, -8.103), Vector(54.797, 1.740, -59.938), Vector(87.874, -0.370, 0.268));
+		"Total amount of Bastion Bots to spawn"
+		Global.BastionBotCount = 6;
+		"Add another bastion if position type is \"Random\""
+		If(Global.BastionPosTypeWS == 1);
+			Global.AllBastionPositions[6] = Vector(13.670, 3.750, -35.720);
+			Global.BastionBotCount = 7;
+		End;
 		Global.EndPosition = Vector(98.662, -1.500, -21.009);
 		Start Forcing Spawn Room(Team 1, 2);
-		"Total amount of Bastion Bots to spawn"
-		Global.BastionBotCount = 7;
 		"Location of winners end game rings"
 		Global.WinnerHeroesRingStats[0] = Vector(-49.550, 5.050, -171.124);
 		Global.WinnerResetRingStats[0] = Vector(-63.679, 5.050, -170.880);
@@ -1195,12 +1216,17 @@ rule("map setting (global arr p, global b, global d, global c) - horizon lunar c
 	{
 		Global.AllBastionPositions = Array(Vector(-15.287, 6, -127.244), Vector(16.250, 11.860, -106.756), Vector(70.800, 15, -76.840),
 			Vector(62.340, 6, -34.740), Vector(19.496, 9, -1.439), Vector(66.687, 8.520, -37.241));
+		"Total amount of Bastion Bots to spawn"
+		Global.BastionBotCount = 6;
+		"Add another bastion if position type is \"Random\""
+		If(Global.BastionPosTypeWS == 1);
+			Global.AllBastionPositions[6] = Vector(92.690, 14.530, -83.950);
+			Global.BastionBotCount = 7;
+		End;
 		Global.EndPosition = Vector(34.476, 12, -23.518);
 		Start Forcing Spawn Room(Team 1, 0);
 		"Base coordinates for world game settings HUD"
 		Global.GameSettingTextVec = Vector(-43.492, 5.800, -156.776);
-		"Total amount of Bastion Bots to spawn"
-		Global.BastionBotCount = 6;
 		"Location of winners end game rings"
 		Global.WinnerHeroesRingStats[0] = Vector(-37.170, 6.450, -161.895);
 		Global.WinnerResetRingStats[0] = Vector(-38.639, 6.450, -165.470);
@@ -1251,12 +1277,17 @@ rule("map setting (global arr p, global b, global d, global c) - dorado")
 	{
 		Global.AllBastionPositions = Array(Vector(170.288, 19.100, 45.051), Vector(118.262, 18.250, 1.209), Vector(78.973, 17.480, -6.843),
 			Vector(34.074, 11.080, -17.958), Vector(26.361, 10.650, 20.115), Vector(126.713, 16.300, 17.517));
+		"Total amount of Bastion Bots to spawn"
+		Global.BastionBotCount = 6;
+		"Add another bastion if position type is \"Random\""
+		If(Global.BastionPosTypeWS == 1);
+			Global.AllBastionPositions[6] = Vector(-5.490, 8.010, 2);
+			Global.BastionBotCount = 7;
+		End;
 		Global.EndPosition = Vector(16.012, Empty Array, 5.874);
 		Start Forcing Spawn Room(Team 1, 1);
 		"Base coordinates for world game settings HUD"
 		Global.GameSettingTextVec = Vector(184.096, 7.840, 40.671);
-		"Total amount of Bastion Bots to spawn"
-		Global.BastionBotCount = 6;
 		"Location of winners end game rings"
 		Global.WinnerHeroesRingStats[0] = Vector(182.148, 8.390, 42.701);
 		Global.WinnerResetRingStats[0] = Vector(183.660, 8.390, 37.902);
@@ -1340,12 +1371,17 @@ rule("map setting (global arr p, global b, global d, global c) - eichenwalde (ha
 	{
 		Global.AllBastionPositions = Array(Vector(123.333, 8.971, -27.303), Vector(89.318, 21.095, -62.697), Vector(38.021, 13.917,
 			-79.821), Vector(23.799, 7.417, -53.839), Vector(-4.858, 6.957, -31.559), Vector(25.587, 6.300, -14.531));
+		"Total amount of Bastion Bots to spawn"
+		Global.BastionBotCount = 6;
+		"Add another bastion if position type is \"Random\""
+		If(Global.BastionPosTypeWS == 1);
+			Global.AllBastionPositions[6] = Vector(67.750, 4.720, -84.020);
+			Global.BastionBotCount = 7;
+		End;
 		Global.EndPosition = Vector(-10.354, -2.149, -12.399);
 		Start Forcing Spawn Room(Team 1, 2);
 		"Base coordinates for world game settings HUD"
 		Global.GameSettingTextVec = Vector(129.339, 12.120, -2.655);
-		"Total amount of Bastion Bots to spawn"
-		Global.BastionBotCount = 6;
 		"Location of winners end game rings"
 		Global.WinnerHeroesRingStats[0] = Vector(135.825, 11.899, -2.692);
 		Global.WinnerResetRingStats[0] = Vector(124.359, 11.898, 0.626);
@@ -1398,14 +1434,18 @@ rule("map setting (global arr p, global b, global d, global c) - junkertown")
 	actions
 	{
 		Global.AllBastionPositions = Array(Vector(-96.235, 13.672, -136.725), Vector(-72.380, 7.672, -144.151), Vector(-27.431, 13.780,
-			-100.155), Vector(-32.236, 12.976, -29.143), Vector(-2.080, 11.366, -61.807), Vector(30.116, 13.407, -59.880), Vector(33.010,
-			9, -52.060));
+			-100.155), Vector(-32.236, 12.976, -29.143), Vector(-2.080, 11.366, -61.807), Vector(30.116, 13.407, -59.880));
+		"Total amount of Bastion Bots to spawn"
+		Global.BastionBotCount = 6;
+		"Add another bastion if position type is \"Random\""
+		If(Global.BastionPosTypeWS == 1);
+			Global.AllBastionPositions[6] = Vector(33.010, 9, -52.060);
+			Global.BastionBotCount = 7;
+		End;
 		Global.EndPosition = Vector(30.248, 5.515, -81.733);
 		Start Forcing Spawn Room(Team 1, 2);
 		"Base coordinates for world game settings HUD"
 		Global.GameSettingTextVec = Vector(-95.486, 12.245, -86.316);
-		"Total amount of Bastion Bots to spawn"
-		Global.BastionBotCount = 7;
 		"Location of winners end game rings"
 		Global.WinnerHeroesRingStats[0] = Vector(-85.345, 11.812, -81.681);
 		Global.WinnerResetRingStats[0] = Vector(-94.717, 11.800, -84.011);
@@ -1775,6 +1815,26 @@ rule("Activate teleporters if spawn room doors is inaccessible - hollywood")
 		"Sometimes, the doors to spawn room 3 would be closed. These actions will force the players inside the room. The teleporters will allow players to leave the room at will."
 		Global.isTeleporterEnabled = True;
 		Call Subroutine(SpawnAtAltLoc);
+	}
+}
+
+rule("Teleporter position init (global T) -  volskaya industries")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		Global.T == Empty Array;
+		Current Map == Map(Volskaya Industries);
+	}
+
+	actions
+	{
+		"Even indexes (0, 2, ...)  are portal senders. Odd indexes (1, 3, ...) are portal receivers. Example: 0 index sends players to 1 index position."
+		Global.T = Array(Vector(33.510, -3.200, 71.280), Vector(20.840, -4.230, 48.830));
 	}
 }
 
@@ -2173,7 +2233,7 @@ rule("Randomize Bastion positions (RBP)")
 		If(Global.BastionPosTypeWS == 1);
 			"Lag intervals"
 			Wait(Random Real(Global.BastionPosIntervalMinMaxWS[0], Global.BastionPosIntervalMinMaxWS[1]), Ignore Condition);
-			Big Message(All Players(Team 1), Custom String("Changing Bastion Positions...."));
+			Big Message(All Players(Team 1), Custom String("Relocating Bastions..."));
 			Wait(1.500, Ignore Condition);
 		End;
 		Global.RBPIndex = 0;
@@ -3769,8 +3829,11 @@ rule("Spawn Dead Players (PLAYERS)")
 
 	actions
 	{
-		If(Is True For Any(All Players(Team 1), Hero Of(Current Array Element) == Hero(Mercy)));
+		Disable Built-In Game Mode Respawning(Event Player);
+		If(Is True For Any(All Players(Team 1), Hero Of(Current Array Element) == Hero(Mercy) && !Current Array Element.IsWinner));
 			Wait(6, Abort When False);
+		Else If(Is True For Any(All Players(Team 1), Hero Of(Current Array Element) == Hero(Mercy) && Current Array Element.IsWinner));
+			Wait(4, Abort When False);
 		Else;
 			Wait(0.048, Abort When False);
 		End;
@@ -6442,7 +6505,7 @@ rule("Target is in line of sight of Widowmaker (Patrol Guards)(GE)")
 			Barriers Do Not Block LOS)));
 		Start Facing(Event Player, Eye Position(Event Player.GETarget) - Vector(Z Component Of(Facing Direction Of(Event Player.GETarget)
 			* -1), 1.400, 0) - Position Of(Event Player), 900, To World, Direction and Turn Rate);
-		Wait(Random Real(0.900, 4), Abort When False);
+		Wait(Random Real(0.900, 2.500), Ignore Condition);
 		Press Button(Event Player, Button(Primary Fire));
 		Loop If Condition Is True;
 	}
