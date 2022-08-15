@@ -689,13 +689,13 @@ rule("Cycle to next map (Map Cycling)")
 	actions
 	{
 		Big Message(All Players(Team 1), Custom String("     Winner Limit Reached!\n\nMap will cycle in 60 seconds!"));
-		Wait(3, Ignore Condition);
-		Wait(45, Ignore Condition);
+		Wait(3, Abort When False);
+		Wait(45, Abort When False);
 		Big Message(All Players(Team 1), Custom String("Map will cycle in 15 seconds!"));
-		Wait(2, Ignore Condition);
-		Wait(12, Ignore Condition);
+		Wait(2, Abort When False);
+		Wait(12, Abort When False);
 		Big Message(All Players(Team 1), Custom String("Cycling Map!"));
-		Wait(3, Ignore Condition);
+		Wait(3, Abort When False);
 		Restart Match;
 	}
 }
