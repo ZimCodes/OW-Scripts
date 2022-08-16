@@ -196,6 +196,8 @@ variables
 		9: JumpPadLocList
 		10: JumpPadPowerList
 		11: HeroList
+		12: EscapeBoardStats
+		13: HasSeventhBastionWS
 		15: AllBastionPositions
 		16: TempVar
 		17: IsGEIntervalRandomWS
@@ -244,6 +246,7 @@ variables
 		62: WinnerHeroesRingStats
 		63: WinnerResetRingStats
 		64: GECameraChoice
+		65: ShowEscapeStatusWS
 		66: BUExtraScale
 		67: BastionPosLocType
 		68: BastionPosDistance
@@ -430,6 +433,8 @@ rule("Workshop Settings")
 			Custom String("Original"), Custom String("Random"), Custom String("Random Once"), Custom String("On Escape")), 0);
 		Global.HasAllWinnersToCycleWS = Workshop Setting Toggle(Custom String("Game"), Custom String(
 			"To cycle next map, the amount of completions = total players in the lobby"), True, 0);
+		Global.ShowEscapeStatusWS = Workshop Setting Toggle(Custom String("Game"), Custom String("Show Escape Status Board"), False, 1);
+		Global.HasSeventhBastionWS = Workshop Setting Toggle(Custom String("Experimental"), Custom String("Add 7th Bastion"), True, 0);
 	}
 }
 
@@ -544,8 +549,8 @@ rule("Global Stats & inits")
 		Create HUD Text(All Players(All Teams), Null, Null, Custom String("Server hosted \"{1}\" for {0} seconds!\r\n \r\n ",
 			Round To Integer(Total Time Elapsed, To Nearest), Current Map), Left, -1, Color(White), Color(White), Color(White),
 			Visible To and String, Default Visibility);
-		Create HUD Text(All Players(All Teams), Null, Custom String(" \n \nGo To Spawn:"), Custom String("Hold [{0}] + [{1}] + [{2}]",
-			Input Binding String(Button(Reload)), Input Binding String(Button(Jump)), Input Binding String(Button(Interact))), Left, 10,
+		Create HUD Text(All Players(All Teams), Null, Custom String(" \nGo To Spawn:"), Custom String("Hold [{0}] + [{1}] + [{2}]",
+			Input Binding String(Button(Reload)), Input Binding String(Button(Jump)), Input Binding String(Button(Interact))), Left, 14,
 			Color(White), Color(Aqua), Color(White), Visible To and String, Default Visibility);
 		Create HUD Text(All Players(All Teams), Null, Null, Custom String("PRISON ESCAPE [GFX]"), Top, 0, Color(White), Color(White),
 			Color(White), Visible To and String, Default Visibility);
@@ -563,13 +568,29 @@ rule("Global Stats & inits")
 		"Maps with Players spawns using the game's default locations "
 		Global.RBPDefaultMaps = Array(Map(Busan), Map(Eichenwalde), Map(Eichenwalde Halloween), Map(Hanamura), Map(Hanamura Winter), Map(
 			Havana), Map(Horizon Lunar Colony), Map(King's Row), Map(King's Row Winter), Map(Numbani), Map(Oasis), Map(Paris), Map(Rialto),
-			Map(Route 66), Map(Temple of Anubis), Map(Watchpoint: Gibraltar), Map(Volskaya Industries));
+			Map(Route 66), Map(Temple of Anubis), Map(Volskaya Industries));
 		"0 = I Need Healing, 1 = Toxic Clouds"
 		Global.GEToggles = Array(False, False);
 		"0 = Bullets; 1 = Extra"
 		Global.BUChoices = Array(0, 0);
 		"0 = Initial Damage; 1 = New Base Damage; 2 = Extra Damage; "
 		Global.BastionDamages = Array(150, 150, 0);
+		If(Global.ShowEscapeStatusWS);
+			Create HUD Text(All Players(All Teams), Null, Null, Custom String(" \n \nEscape Status:"), Left, 10, Color(White), Color(White),
+				Color(Aqua), Visible To and String, Default Visibility);
+			Create HUD Text(All Players(All Teams), Null, Null, Custom String("{0}", !Has Spawned(Global.EscapeBoardStats[1]) ? Custom String(
+				" ") : Custom String("1. {0} {1} - {2}", Hero Icon String(Hero Of(Global.EscapeBoardStats[1])), Global.EscapeBoardStats[1],
+				Global.EscapeBoardStats[1].TargetHero + 1)), Left, 11, Color(White), Color(White), Color(Green), Visible To and String,
+				Default Visibility);
+			Create HUD Text(All Players(All Teams), Null, Null, Custom String("{0}", !Has Spawned(Global.EscapeBoardStats[2]) ? Custom String(
+				" ") : Custom String("2. {0} {1} - {2}", Hero Icon String(Hero Of(Global.EscapeBoardStats[2])), Global.EscapeBoardStats[2],
+				Global.EscapeBoardStats[2].TargetHero + 1)), Left, 12, Color(White), Color(White), Color(Yellow), Visible To and String,
+				Default Visibility);
+			Create HUD Text(All Players(All Teams), Null, Null, Custom String("{0}", !Has Spawned(Global.EscapeBoardStats[3]) ? Custom String(
+				" ") : Custom String("3. {0} {1} - {2}", Hero Icon String(Hero Of(Global.EscapeBoardStats[3])), Global.EscapeBoardStats[3],
+				Global.EscapeBoardStats[3].TargetHero + 1)), Left, 13, Color(White), Color(White), Color(Orange), Visible To and String,
+				Default Visibility);
+		End;
 	}
 }
 
@@ -1052,8 +1073,8 @@ rule("map setting (global arr p, global b, global d, global c) - gibraltar")
 			32.373, 3, -50.866), Vector(31.113, 7.300, -89.871), Vector(41.383, 4, -124.788));
 		"Total amount of Bastion Bots to spawn"
 		Global.BastionBotCount = 6;
-		"Add another bastion if position type is \"Random\""
-		If(Global.BastionPosTypeWS == 1);
+		"Add another bastion (Experimental)"
+		If(Global.HasSeventhBastionWS);
 			Global.AllBastionPositions[6] = Vector(51, -3.910, -159.860);
 			Global.BastionBotCount = 7;
 		End;
@@ -1116,8 +1137,8 @@ rule("map setting (global arr p, global b, global d, global c) - volskaya indust
 			77.730), Vector(-11.250, 1.270, 76.356), Vector(-16.279, 2.200, 41.017), Vector(-6.364, 8.240, 35.514));
 		"Total amount of Bastion Bots to spawn"
 		Global.BastionBotCount = 6;
-		"Add another bastion if position type is \"Random\""
-		If(Global.BastionPosTypeWS == 1);
+		"Add another bastion (Experimental)"
+		If(Global.HasSeventhBastionWS);
 			Global.AllBastionPositions[6] = Vector(-35.430, -2.980, 28.190);
 			Global.BastionBotCount = 7;
 		End;
@@ -1149,8 +1170,8 @@ rule("map setting (global arr p, global b, global d, global c) - route 66")
 			-12.685), Vector(36.467, 2.140, -4.003), Vector(48.707, 10.110, 25.063), Vector(26.871, 7.010, 2.468));
 		"Total amount of Bastion Bots to spawn"
 		Global.BastionBotCount = 6;
-		"Add another bastion if position type is \"Random\""
-		If(Global.BastionPosTypeWS == 1);
+		"Add another bastion (Experimental)"
+		If(Global.HasSeventhBastionWS);
 			Global.AllBastionPositions[6] = Vector(51.140, 2.380, 59.880);
 			Global.BastionBotCount = 7;
 		End;
@@ -1185,8 +1206,8 @@ rule("map setting (global arr p, global b, global d, global c) - rialto")
 			-77.344), Vector(59.058, 0.070, -8.103), Vector(54.797, 1.740, -59.938), Vector(87.874, -0.370, 0.268));
 		"Total amount of Bastion Bots to spawn"
 		Global.BastionBotCount = 6;
-		"Add another bastion if position type is \"Random\""
-		If(Global.BastionPosTypeWS == 1);
+		"Add another bastion (Experimental)"
+		If(Global.HasSeventhBastionWS);
 			Global.AllBastionPositions[6] = Vector(13.670, 3.750, -35.720);
 			Global.BastionBotCount = 7;
 		End;
@@ -1218,8 +1239,8 @@ rule("map setting (global arr p, global b, global d, global c) - horizon lunar c
 			Vector(62.340, 6, -34.740), Vector(19.496, 9, -1.439), Vector(66.687, 8.520, -37.241));
 		"Total amount of Bastion Bots to spawn"
 		Global.BastionBotCount = 6;
-		"Add another bastion if position type is \"Random\""
-		If(Global.BastionPosTypeWS == 1);
+		"Add another bastion (Experimental)"
+		If(Global.HasSeventhBastionWS);
 			Global.AllBastionPositions[6] = Vector(92.690, 14.530, -83.950);
 			Global.BastionBotCount = 7;
 		End;
@@ -1279,8 +1300,8 @@ rule("map setting (global arr p, global b, global d, global c) - dorado")
 			Vector(34.074, 11.080, -17.958), Vector(26.361, 10.650, 20.115), Vector(126.713, 16.300, 17.517));
 		"Total amount of Bastion Bots to spawn"
 		Global.BastionBotCount = 6;
-		"Add another bastion if position type is \"Random\""
-		If(Global.BastionPosTypeWS == 1);
+		"Add another bastion (Experimental)"
+		If(Global.HasSeventhBastionWS);
 			Global.AllBastionPositions[6] = Vector(-5.490, 8.010, 2);
 			Global.BastionBotCount = 7;
 		End;
@@ -1373,8 +1394,8 @@ rule("map setting (global arr p, global b, global d, global c) - eichenwalde (ha
 			-79.821), Vector(23.799, 7.417, -53.839), Vector(-4.858, 6.957, -31.559), Vector(25.587, 6.300, -14.531));
 		"Total amount of Bastion Bots to spawn"
 		Global.BastionBotCount = 6;
-		"Add another bastion if position type is \"Random\""
-		If(Global.BastionPosTypeWS == 1);
+		"Add another bastion (Experimental)"
+		If(Global.HasSeventhBastionWS);
 			Global.AllBastionPositions[6] = Vector(67.750, 4.720, -84.020);
 			Global.BastionBotCount = 7;
 		End;
@@ -1437,8 +1458,8 @@ rule("map setting (global arr p, global b, global d, global c) - junkertown")
 			-100.155), Vector(-32.236, 12.976, -29.143), Vector(-2.080, 11.366, -61.807), Vector(30.116, 13.407, -59.880));
 		"Total amount of Bastion Bots to spawn"
 		Global.BastionBotCount = 6;
-		"Add another bastion if position type is \"Random\""
-		If(Global.BastionPosTypeWS == 1);
+		"Add another bastion (Experimental)"
+		If(Global.HasSeventhBastionWS);
 			Global.AllBastionPositions[6] = Vector(33.010, 9, -52.060);
 			Global.BastionBotCount = 7;
 		End;
@@ -1720,7 +1741,7 @@ rule("Game settings world HUD")
 			Call Subroutine(IncrementGameSettingsPos);
 		End;
 		"World game settings HUD"
-		Create In-World Text(All Players(Team 1), Custom String("Game Settings"), Global.GameSettingTextVec, 2.750, Clip Against Surfaces,
+		Create In-World Text(All Players(Team 1), Custom String("Prison Escape"), Global.GameSettingTextVec, 2.750, Clip Against Surfaces,
 			Visible To, Color(Rose), Default Visibility);
 	}
 }
@@ -1751,6 +1772,12 @@ rule("setup game option settings text for world HUD [SR]")
 		Global.GameOptTextVec = Global.GameSettingTextVec;
 		"Height of \"Game Setting\" title from options"
 		Global.GameSettingTextVec += Vector(0, 0.150, 0);
+		"(Experimental) \"7th Bastion Option\""
+		If(Global.HasSeventhBastionWS);
+			Create In-World Text(All Players(Team 1), Custom String("7th Bastion is present!"), Global.GameOptTextVec, 1.500,
+				Clip Against Surfaces, Visible To and String, Color(Orange), Default Visibility);
+			Call Subroutine(IncrementGameSettingsPos);
+		End;
 		"The \"Next Map Cycle Option\""
 		If(Global.HasAllWinnersToCycleWS);
 			Create In-World Text(All Players(Team 1), Custom String("Completions Until Next Map: [{0}] / [{1}]", Global.CurWinnerCount,
@@ -3422,10 +3449,10 @@ rule("Bastion Bot Enemy Search")
 
 	actions
 	{
-		Event Player.temp = Filtered Array(All Living Players(Opposite Team Of(Team Of(Event Player))), (Is In Line of Sight(Eye Position(
-			Event Player), Eye Position(Current Array Element), Barriers Do Not Block LOS) == True || Is In Line of Sight(Eye Position(
-			Event Player), Position Of(Current Array Element), Barriers Do Not Block LOS) == True) && Has Spawned(Current Array Element)
-			&& Current Array Element.IsWinner == False && (Hero Of(Current Array Element) != Hero(Sombra) || !Is Using Ability 1(
+		Event Player.temp = Filtered Array(All Living Players(Team 1), (Is In Line of Sight(Eye Position(Event Player), Eye Position(
+			Current Array Element), Barriers Do Not Block LOS) == True || Is In Line of Sight(Eye Position(Event Player), Position Of(
+			Current Array Element), Barriers Do Not Block LOS) == True) && Has Spawned(Current Array Element)
+			&& !Current Array Element.IsWinner && (Hero Of(Current Array Element) != Hero(Sombra) || !Is Using Ability 1(
 			Current Array Element)) && (Hero Of(Current Array Element) != Hero(Reaper) || !Is Using Ability 1(Current Array Element)) && (
 			Hero Of(Current Array Element) != Hero(Moira) || !Is Using Ability 1(Current Array Element)));
 		Wait(0.016, Ignore Condition);
@@ -3979,6 +4006,30 @@ rule("Sym tel limit")
 	}
 }
 
+rule("Update Escape Status Board (Scoreboard)")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		Global.ShowEscapeStatusWS == True;
+	}
+
+	actions
+	{
+		Global.EscapeBoardStats[0] = Sorted Array(Filtered Array(All Players(Team 1), Current Array Element.IsWinner == False),
+			0 - Current Array Element.CurrentHero);
+		Global.EscapeBoardStats[1] = First Of(Global.EscapeBoardStats[0]);
+		Global.EscapeBoardStats[2] = Global.EscapeBoardStats[0][1];
+		Global.EscapeBoardStats[3] = Global.EscapeBoardStats[0][2];
+		Wait(Random Real(2, 4), Ignore Condition);
+		Loop If Condition Is True;
+	}
+}
+
 rule("SPAWN FIX")
 {
 	event
@@ -4201,8 +4252,12 @@ rule("Player reset button combo shortcut (BUTTONS)")
 
 	actions
 	{
-		Small Message(Event Player, Custom String("Teleporting to spawn. Hold for 5 seconds!"));
-		Wait(5, Abort When False);
+		Small Message(Event Player, Custom String("Teleporting to spawn. Continue Holding!"));
+		If(!Event Player.IsWinner);
+			Wait(5, Abort When False);
+		Else;
+			Wait(3, Abort When False);
+		End;
 		Respawn(Event Player);
 		Call Subroutine(SpawnAtAltLoc);
 	}
@@ -4280,7 +4335,7 @@ rule("Select a global effect & configurate (GE)[SR]")
 		"Current NUMBER of players currently around. Used if global effect requires more than 1 player"
 		Global.TempVar2 = 1;
 		"DEBUG: Chose a specific global effect"
-		disabled Global.TempVar = 29;
+		disabled Global.TempVar = 43;
 		If(Global.TempVar == 1);
 			"The Patrol Guard to use"
 			Global.GEPatrolChoice = Random Integer(0, 3);
@@ -4594,14 +4649,15 @@ rule("Select a global effect & configurate (GE)[SR]")
 			"Set the timer for the Global Effect"
 			Global.GEWaitTime = Random Integer(60, 120);
 		Else If(Global.TempVar == 43);
-			Global.BUChoices[1] = Random Value In Array(Filtered Array(Array(0, 1, 2, 3, 4, 5), Current Array Element != Global.BUChoices[1]));
+			Global.BUChoices[1] = Random Value In Array(Filtered Array(Array(0, 1, 2, 3, 4, 5, 6),
+				Current Array Element != Global.BUChoices[1]));
 			Global.GEName = Custom String("Bastion Extra Upgrade!");
+			"DEBUGGING only"
+			disabled Global.BUChoices[1] = 6;
 			Global.TempVar3 = Custom String("Bastion receives an extra upgrade! [{0}]", Global.BUChoices[1] == 1 ? Custom String("Camo") : (
 				Global.BUChoices[1] == 2 ? Custom String("Bastion Jr.") : (Global.BUChoices[1] == 3 ? Custom String("Bastion Sr.") : (
-				Global.BUChoices[1] == 4 ? Custom String("Damage Boost") : (Global.BUChoices[1] == 5 ? Custom String("Shining Armor")
-				: Custom String("None"))))));
-			"DEBUGGING only"
-			disabled Global.BUChoices[1] = 5;
+				Global.BUChoices[1] == 4 ? Custom String("Damage Boost") : (Global.BUChoices[1] == 5 ? Custom String("Shining Armor") : (
+				Global.BUChoices[1] == 6 ? Custom String("Ample Damage Boost") : Custom String("None")))))));
 		Else If(Global.TempVar == 44);
 			Global.GEMinPlayerReq = 3;
 			Global.TempVar3 = Custom String(
@@ -4640,7 +4696,7 @@ rule("Select a global effect & configurate (GE)[SR]")
 			Global.GEName = Custom String("Toxic Clouds!");
 		Else If(Global.TempVar == 50);
 			Global.TempVar3 = Custom String(
-				"Play the lottery by betting at ONE zone before time runs out!\n\nEarnings: Demotion, Promotion, Nothing");
+				"Play the lottery by betting at ONE of the zones. This is optional!\n\nEarnings: Demotion, Promotion, Nothing");
 			Global.GEName = Custom String("Rigged Lottery!");
 			"Set the timer for the Global Effect"
 			Global.GEWaitTime = 120;
@@ -4732,8 +4788,9 @@ rule("Set HUD recent help text for players(GE)")
 			Ultimate)) : (Global.BUChoices[0] == 5 ? Icon String(Dizzy) : (Global.BUChoices[0] == 6 ? Icon String(Bolt) : String("")))))),
 			Global.BUChoices[1] == 1 ? Ability Icon String(Hero(Sombra), Button(Ability 1)) : (Global.BUChoices[1] == 2 ? Icon String(
 			Arrow: Down) : (Global.BUChoices[1] == 3 ? Icon String(Arrow: Up) : (Global.BUChoices[1] == 4 ? Ability Icon String(Hero(
-			Genji), Button(Ability 1)) : (Global.BUChoices[1] == 5 ? Icon String(Eye) : String("")))))), Null, Null, Right, -4, Color(
-			Aqua), Color(White), Color(White), Visible To and String, Default Visibility);
+			Hanzo), Button(Ability 2)) : (Global.BUChoices[1] == 5 ? Icon String(Eye) : (Global.BUChoices[1] == 6 ? Ability Icon String(
+			Hero(Genji), Button(Ability 1)) : String(""))))))), Null, Null, Right, -4, Color(Aqua), Color(White), Color(White),
+			Visible To and String, Default Visibility);
 		Modify Player Variable(Event Player, GEHelpTextIDs, Append To Array, Last Text ID);
 	}
 }
@@ -8244,12 +8301,13 @@ rule("Make sure Bastion stays in tank form _if selected_ (BU)[Bullet]")
 	conditions
 	{
 		Global.BUChoices[0] == 4;
-		Is True For Any(Filtered Array(All Players(Team 2), Hero Of(Current Array Element) == Hero(Bastion)), !Is In Alternate Form(
-			Current Array Element)) == True;
+		Is True For Any(All Players(Team 2), Hero Of(Current Array Element) == Hero(Bastion) && !Is Using Ultimate(Current Array Element))
+			== True;
 	}
 
 	actions
 	{
+		Wait(1, Abort When False);
 		Call Subroutine(ApplyTankForm);
 		Call Subroutine(BeforeNewBastionBulletUpgrade);
 		Call Subroutine(SetGEBastionDamage);
@@ -8896,6 +8954,9 @@ rule("Select extra Bastion Upgrade (BU)[Extra][SR]")
 		"Damage Boost"
 		Else If(Global.BUChoices[1] == 4);
 			Global.BastionDamages[2] = 50;
+		"Ample Damage Boost"
+		Else If(Global.BUChoices[1] == 6);
+			Global.BastionDamages[2] = 75;
 		End;
 		Call Subroutine(SetGEBastionDamage);
 	}
