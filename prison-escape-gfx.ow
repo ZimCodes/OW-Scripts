@@ -1270,12 +1270,17 @@ rule("map setting (global arr p, global b, global d, global c) - havana")
 	{
 		Global.AllBastionPositions = Array(Vector(117.332, 14.433, -58.091), Vector(140.438, 6.413, -16.667), Vector(31.288, 18.900,
 			-75.331), Vector(-32.514, 7.150, -79.487), Vector(14.787, 7.300, -47.470), Vector(-71.110, 5.846, -72.362));
+		"Total amount of Bastion Bots to spawn"
+		Global.BastionBotCount = 6;
+		"Add another bastion (Experimental)"
+		If(Global.HasSeventhBastionWS);
+			Global.AllBastionPositions[6] = Vector(43.260, 9.950, -93.300);
+			Global.BastionBotCount = 7;
+		End;
 		Global.EndPosition = Vector(-71.203, 2, -50.678);
 		Start Forcing Spawn Room(Team 1, 2);
 		"Base coordinates for world game settings HUD"
 		Global.GameSettingTextVec = Vector(158.050, 12.302, -46.921);
-		"Total amount of Bastion Bots to spawn"
-		Global.BastionBotCount = 6;
 		"Location of winners end game rings"
 		Global.WinnerHeroesRingStats[0] = Vector(172.764, 12.300, -51.870);
 		Global.WinnerResetRingStats[0] = Vector(172.695, 12.300, -41.247);
@@ -1773,7 +1778,7 @@ rule("setup game option settings text for world HUD [SR]")
 		"Height of \"Game Setting\" title from options"
 		Global.GameSettingTextVec += Vector(0, 0.150, 0);
 		"(Experimental) \"7th Bastion Option\""
-		If(Global.HasSeventhBastionWS);
+		If(Global.BastionBotCount == 7 && Global.HasSeventhBastionWS);
 			Create In-World Text(All Players(Team 1), Custom String("7th Bastion is present!"), Global.GameOptTextVec, 1.500,
 				Clip Against Surfaces, Visible To and String, Color(Orange), Default Visibility);
 			Call Subroutine(IncrementGameSettingsPos);
