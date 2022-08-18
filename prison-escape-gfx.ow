@@ -3,7 +3,7 @@ settings
 	main
 	{
 		Description: "Work cooperatively to escape death row. Escape prison with ALL heroes to finish the game.\n\n*This is an alternative version of BASTION ESCAPE 2."
-		Mode Name: "PRISON ESCAPE [GFX]"
+		Mode Name: "PRISON ESCAPE"
 	}
 
 	lobby
@@ -2481,6 +2481,11 @@ rule("Display message to players attempting to shoot Bastion")
 		Bastion;
 	}
 
+	conditions
+	{
+		Attacker.IsWinner == False;
+	}
+
 	actions
 	{
 		Big Message(Attacker, Custom String("I'm invincible! Stop hurting me!"));
@@ -4701,7 +4706,7 @@ rule("Select a global effect & configurate (GE)[SR]")
 			Global.GEName = Custom String("Toxic Clouds!");
 		Else If(Global.TempVar == 50);
 			Global.TempVar3 = Custom String(
-				"Play the lottery by betting at ONE of the zones. This is optional!\n\nEarnings: Demotion, Promotion, Nothing");
+				"(Optional) Play the lottery by betting at ONE of the zones.\n\nEarnings: Demotion, Promotion, Nothing");
 			Global.GEName = Custom String("Rigged Lottery!");
 			"Set the timer for the Global Effect"
 			Global.GEWaitTime = 120;
@@ -7417,7 +7422,7 @@ rule("Init players (Guardian Angel) (GE)")
 			"Save IDs of something for the player(if needed)"
 			Event Player.GEHUDID = Array(Last Text ID);
 			Create HUD Text(Event Player, Custom String("Protecting: {0}", Hero Icon String(Hero Of(Event Player.GEHumanProtect))), Null, Null,
-				Right, 0, Color(Green), Color(White), Color(White), Visible To, Default Visibility);
+				Right, 0, Color(Green), Color(White), Color(White), Visible To and String, Default Visibility);
 			"Save IDs of something for the player(if needed)"
 			Modify Player Variable(Event Player, GEHUDID, Append To Array, Last Text ID);
 			Start Forcing Player Outlines(Event Player, Event Player.GEHumanProtect, True, Color(Yellow), Always);
@@ -7427,7 +7432,7 @@ rule("Init players (Guardian Angel) (GE)")
 			"Save IDs of something for the player(if needed)"
 			Event Player.GEHUDID = Array(Last Text ID);
 			Create HUD Text(Event Player, Custom String("Guardian Angel: {0}", Hero Icon String(Hero Of(Event Player.GEGuardianAngel))), Null,
-				Null, Right, 0, Color(Green), Color(White), Color(White), Visible To, Default Visibility);
+				Null, Right, 0, Color(Green), Color(White), Color(White), Visible To and String, Default Visibility);
 			"Save IDs of something for the player(if needed)"
 			Modify Player Variable(Event Player, GEHUDID, Append To Array, Last Text ID);
 			Start Forcing Player Outlines(Event Player, Event Player.GEGuardianAngel, True, Color(Yellow), Always);
