@@ -4634,7 +4634,7 @@ rule("Select a global effect & configurate (GE)[SR]")
 			Global.TempVar3 = Custom String("Avoid spotlight or risk teleporting to a Bastion!");
 			"Set the timer for the Global Effect"
 			Global.GEWaitTime = Random Integer(160, 250);
-			Global.GEBallPosition = Nearest Walkable Position(Vector(0, 0, 0));
+			Global.GEBallPosition = Random Value In Array(Spawn Points(Team 2));
 			Global.GEBallSpeed = 2.560;
 			Global.TempVar2 = Count Of(Filtered Array(All Players(Team 1), !Current Array Element.IsWinner));
 			Global.GEName = Custom String("Spotlight!");
@@ -7921,7 +7921,7 @@ rule("Set move speed of Ball (Extreme Pong)(GE)[SR]")
 	actions
 	{
 		If(Distance Between(Eye Position(Global.GETarget) - Vector(0, 0.500, 0), Global.GEBallPosition) <= 7);
-			Global.GEBallSpeed = 5;
+			Global.GEBallSpeed = 6;
 		Else;
 			Global.GEBallSpeed = 30;
 	}
