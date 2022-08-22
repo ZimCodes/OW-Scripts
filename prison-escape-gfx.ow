@@ -4287,7 +4287,6 @@ disabled rule("Spawn a lot of friendly soldiers. Stress Test (debug)")
 	{
 		Call Subroutine(SpawnFriendlySoldier);
 		Call Subroutine(SpawnFriendlySoldier);
-		disabled Call Subroutine(SpawnFriendlySoldier);
 	}
 }
 
@@ -4350,7 +4349,7 @@ rule("Select a global effect & configurate (GE)[SR]")
 		"Current NUMBER of players currently around. Used if global effect requires more than 1 player"
 		Global.TempVar2 = 1;
 		"DEBUG: Chose a specific global effect"
-		disabled Global.TempVar = 26;
+		disabled Global.TempVar = 38;
 		If(Global.TempVar == 1);
 			"The Patrol Guard to use"
 			Global.GEPatrolChoice = Random Integer(0, 3);
@@ -4634,7 +4633,7 @@ rule("Select a global effect & configurate (GE)[SR]")
 			Global.TempVar3 = Custom String("Avoid spotlight or risk teleporting to a Bastion!");
 			"Set the timer for the Global Effect"
 			Global.GEWaitTime = Random Integer(160, 250);
-			Global.GEBallPosition = Random Value In Array(Spawn Points(Team 2));
+			Global.GEBallPosition = Nearest Walkable Position(Random Value In Array(Spawn Points(Team 2)));
 			Global.GEBallSpeed = 2.560;
 			Global.TempVar2 = Count Of(Filtered Array(All Players(Team 1), !Current Array Element.IsWinner));
 			Global.GEName = Custom String("Spotlight!");
