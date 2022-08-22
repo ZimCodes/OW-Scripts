@@ -2570,7 +2570,7 @@ rule("winner effects on reach to end")
 			Global.CurWinnerCount += 1;
 			Skip If(Global.HeroDataSaveIndexWS == -1, 1);
 			Modify Global Variable(SavedWinners, Append To Array, Custom String("{0}", Event Player));
-			Big Message(All Players(Team 1), Custom String("{0} escaped with [{1}] deaths!!!", Event Player, Event Player.Deaths));
+			Big Message(All Players(Team 1), Custom String("{0} escaped with {1} deaths!!!", Event Player, Event Player.Deaths));
 		End;
 		Play Effect(All Players(Team 1), Buff Explosion Sound, Color(White), Event Player, 200);
 		Call Subroutine(SpawnAtAltLoc);
@@ -4344,18 +4344,19 @@ rule("Select a global effect & configurate (GE)[SR]")
 
 	actions
 	{
-		Global.TempVar = Random Integer(1, 50);
+		Global.TempVar = Random Integer(1, 53);
 		Global.GEMinPlayerReq = 1;
 		"Current NUMBER of players currently around. Used if global effect requires more than 1 player"
 		Global.TempVar2 = 1;
 		"DEBUG: Chose a specific global effect"
-		disabled Global.TempVar = 38;
-		If(Global.TempVar == 1);
+		disabled Global.TempVar = 1;
+		If(Global.TempVar == 1 || Global.TempVar == 51);
+			Global.GEMinPlayerReq = 2;
 			"The Patrol Guard to use"
 			Global.GEPatrolChoice = Random Integer(0, 3);
 			"DEBUGGING: Deactivate if not trying to debug this Global Effect"
 			disabled Global.GEPatrolChoice = 3;
-			Global.TempVar2 = Randomized Array(Filtered Array(All Players(Team 1), !Is In Spawn Room(Current Array Element)
+			Global.TempVar2 = Count Of(Filtered Array(All Players(Team 1), !Is In Spawn Room(Current Array Element)
 				&& !Current Array Element.IsWinner));
 			Global.TempVar3 = Custom String("Incoming patrols are here to cause mayhem!");
 			Global.GEName = Custom String("Patrol Guards!");
@@ -4601,7 +4602,7 @@ rule("Select a global effect & configurate (GE)[SR]")
 			Global.TempVar3 = Custom String("Self-healing is [{0}].", Global.GEToggles[0] ? Custom String("no longer active") : Custom String(
 				"now active"));
 			Global.GEName = Custom String("I Need Healing!");
-		Else If(Global.TempVar == 34);
+		Else If(Global.TempVar == 34 || Global.TempVar == 52);
 			Call Subroutine(BeforeNewBastionBulletUpgrade);
 			Global.BUChoices[0] = Random Value In Array(Filtered Array(Array(0, 1, 2, 3, 4, 5, 6),
 				Current Array Element != Global.BUChoices[0]));
@@ -4663,7 +4664,7 @@ rule("Select a global effect & configurate (GE)[SR]")
 			Global.GEName = Custom String("Reveal!");
 			"Set the timer for the Global Effect"
 			Global.GEWaitTime = Random Integer(60, 120);
-		Else If(Global.TempVar == 43);
+		Else If(Global.TempVar == 43 || Global.TempVar == 53);
 			Global.BUChoices[1] = Random Value In Array(Filtered Array(Array(0, 1, 2, 3, 4, 5, 6),
 				Current Array Element != Global.BUChoices[1]));
 			Global.GEName = Custom String("Bastion Extra Upgrade!");
@@ -4686,7 +4687,7 @@ rule("Select a global effect & configurate (GE)[SR]")
 			Global.TempVar3 = Custom String("Players move forward very fast! No emotes allowed!");
 			Global.GEName = Custom String("Forward March!");
 			"Set the timer for the Global Effect"
-			Global.GEWaitTime = Random Integer(30, 90);
+			Global.GEWaitTime = Random Integer(30, 70);
 		Else If(Global.TempVar == 46);
 			Global.TempVar3 = Custom String("Some players are taller! Don't squish your smaller allies!");
 			Global.GEName = Custom String("Growth Spurt!");
@@ -4963,7 +4964,7 @@ rule("Start Global Effect -- [Type A] (GE)")
 	{
 		Global.IsGEEnabledWS == True;
 		Global.CanStartGE == 1;
-		(Global.GEChoice == 1 || Global.GEChoice == 50) == True;
+		(Global.GEChoice == 1 || Global.GEChoice == 50 || Global.GEChoice == 51) == True;
 	}
 
 	actions
@@ -4992,8 +4993,8 @@ rule("Init Type A (CHOICE:Variety)(NOT:Winners,In spawn) (GE)[SR]")
 
 	actions
 	{
-		"Roadhog Time"
-		If(Global.GEChoice == 1);
+		"Patrol Guards"
+		If(Global.GEChoice == 1 || Global.GEChoice == 51);
 			Call Subroutine(SelectAPatrol);
 		"Rigged Lottery"
 		Else If(Global.GEChoice == 50);
@@ -5096,7 +5097,7 @@ rule("Start Global Effect -- [Type C] (GE)")
 		Global.IsGEEnabledWS == True;
 		Global.CanStartGE == 1;
 		(
-			Global.GEChoice == 4 || Global.GEChoice == 32 || Global.GEChoice == 33 || Global.GEChoice == 34 || Global.GEChoice == 35 || Global.GEChoice == 43 || Global.GEChoice == 48 || Global.GEChoice == 49)
+			Global.GEChoice == 4 || Global.GEChoice == 32 || Global.GEChoice == 33 || Global.GEChoice == 34 || Global.GEChoice == 35 || Global.GEChoice == 43 || Global.GEChoice == 48 || Global.GEChoice == 49 || Global.GEChoice == 52 || Global.GEChoice == 53)
 			== True;
 	}
 
@@ -5137,7 +5138,7 @@ rule("Init Type C (CHOICE:All)(NOT:Timer) (GE)[SR]")
 				Stop All Heal Over Time(All Players(All Teams));
 			End;
 		"Bastion Bullet Upgrade"
-		Else If(Global.GEChoice == 34);
+		Else If(Global.GEChoice == 34 || Global.GEChoice == 52);
 			Call Subroutine(SelectBastionBulletUpgrade);
 		"Blood Sacrifice"
 		Else If(Global.GEChoice == 35);
@@ -5145,7 +5146,7 @@ rule("Init Type C (CHOICE:All)(NOT:Timer) (GE)[SR]")
 			Global.BacktrackSteps = Random Value In Array(Filtered Array(Array(1, 2, 1, 3, 1, 2, 2, 3, 1, 2),
 				Current Array Element != Global.BacktrackSteps));
 		"Bastion Extra Upgrade"
-		Else If(Global.GEChoice == 43);
+		Else If(Global.GEChoice == 43 || Global.GEChoice == 53);
 			Call Subroutine(SelectBastionExtraUpgrade);
 		"Boop"
 		Else If(Global.GEChoice == 48);
@@ -5587,7 +5588,7 @@ rule("Clean up specific Global Effect at the end (GE)[SR]")
 	{
 		Stop Forcing Player Outlines(All Players(Team 1), All Players(Team 1));
 		"Patrol Guards"
-		If(Global.GEChoice == 1);
+		If(Global.GEChoice == 1 || Global.GEChoice == 51);
 			Call Subroutine(CleanUpPatrol);
 		"Frozen"
 		Else If(Global.GEChoice == 2);
@@ -6176,6 +6177,10 @@ rule("Set the timer for (Patrol Guards)[SR]")
 		If(Global.GEPatrolChoice == 0);
 			"Set the timer for the Global Effect"
 			Global.GEWaitTime = Random Integer(7, 11);
+		"Widowmaker"
+		Else If(Global.GEPatrolChoice == 3);
+			"Set the timer for the Global Effect"
+			Global.GEWaitTime = Random Integer(90, 120);
 		Else;
 			"Set the timer for the Global Effect"
 			Global.GEWaitTime = Random Integer(60, 120);
@@ -6295,7 +6300,7 @@ rule("init Roadhogs stats (Patrol Guards)(GE)")
 
 	conditions
 	{
-		Global.GEChoice == 1;
+		(Global.GEChoice == 1 || Global.GEChoice == 51) == True;
 		Global.GEPatrolChoice == 0;
 		Has Spawned(Event Player) == True;
 		Is Dummy Bot(Event Player) == True;
@@ -6325,7 +6330,7 @@ rule("set Roadhog ultimate (Patrol Guards)(GE)")
 
 	conditions
 	{
-		Global.GEChoice == 1;
+		(Global.GEChoice == 1 || Global.GEChoice == 51) == True;
 		Global.GEPatrolChoice == 0;
 		Is Dummy Bot(Event Player) == True;
 		Ultimate Charge Percent(Event Player) < 100;
@@ -6349,7 +6354,7 @@ rule("Use Roadhog ultimate (Patrol Guards)(GE)")
 
 	conditions
 	{
-		Global.GEChoice == 1;
+		(Global.GEChoice == 1 || Global.GEChoice == 51) == True;
 		Global.GEPatrolChoice == 0;
 		Is Dummy Bot(Event Player) == True;
 		Ultimate Charge Percent(Event Player) == 100;
@@ -6374,7 +6379,7 @@ rule("init Winstons stats (Patrol Guards)(GE)")
 
 	conditions
 	{
-		Global.GEChoice == 1;
+		(Global.GEChoice == 1 || Global.GEChoice == 51) == True;
 		Global.GEPatrolChoice == 1;
 		Has Spawned(Event Player) == True;
 		Is Dummy Bot(Event Player) == True;
@@ -6410,7 +6415,7 @@ rule("Winston Attack (Patrol Guards)(GE)")
 
 	conditions
 	{
-		Global.GEChoice == 1;
+		(Global.GEChoice == 1 || Global.GEChoice == 51) == True;
 		Global.GEPatrolChoice == 1;
 		Is Using Ultimate(Event Player) == True;
 	}
@@ -6432,7 +6437,7 @@ rule("Winston Jumps (Patrol Guards)(GE)")
 
 	conditions
 	{
-		Global.GEChoice == 1;
+		(Global.GEChoice == 1 || Global.GEChoice == 51) == True;
 		Global.GEPatrolChoice == 1;
 		Is Using Ultimate(Event Player) == True;
 		Is Using Ability 1(Event Player) == False;
@@ -6457,7 +6462,7 @@ rule("Teleport Winston to player (Patrol Guards)(GE)")
 
 	conditions
 	{
-		Global.GEChoice == 1;
+		(Global.GEChoice == 1 || Global.GEChoice == 51) == True;
 		Global.GEPatrolChoice == 1;
 		Is Using Ultimate(Event Player) == True;
 		Is In Line of Sight(Position Of(Closest Player To(Event Player, Team 1)), Position Of(Event Player), Barriers Do Not Block LOS)
@@ -6491,7 +6496,7 @@ rule("init Reinhardt stats (Patrol Guards)(GE)")
 
 	conditions
 	{
-		Global.GEChoice == 1;
+		(Global.GEChoice == 1 || Global.GEChoice == 51) == True;
 		Global.GEPatrolChoice == 2;
 		Has Spawned(Event Player) == True;
 		Is Dummy Bot(Event Player) == True;
@@ -6519,7 +6524,7 @@ rule("Reinhardt charges (Patrol Guards)(GE)")
 
 	conditions
 	{
-		Global.GEChoice == 1;
+		(Global.GEChoice == 1 || Global.GEChoice == 51) == True;
 		Global.GEPatrolChoice == 2;
 	}
 
@@ -6551,7 +6556,7 @@ rule("Init Widowmaker (Patrol Guards)(GE)")
 
 	conditions
 	{
-		Global.GEChoice == 1;
+		(Global.GEChoice == 1 || Global.GEChoice == 51) == True;
 		Global.GEPatrolChoice == 3;
 		Is Dummy Bot(Event Player) == True;
 		Has Spawned(Event Player) == True;
@@ -6566,6 +6571,31 @@ rule("Init Widowmaker (Patrol Guards)(GE)")
 	}
 }
 
+rule("Move Widowmaker (Patrol Guards)(GE)")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 2;
+		Widowmaker;
+	}
+
+	conditions
+	{
+		(Global.GEChoice == 1 || Global.GEChoice == 51) == True;
+		Global.GEPatrolChoice == 3;
+		Is Dummy Bot(Event Player) == True;
+	}
+
+	actions
+	{
+		Wait(Random Real(10, 40), Abort When False);
+		Call Subroutine(SpawnWidowPatrolLoc);
+		Teleport(Event Player, Global.TempVar3);
+		Loop If Condition Is True;
+	}
+}
+
 rule("Target is in line of sight of Widowmaker (Patrol Guards)(GE)")
 {
 	event
@@ -6577,7 +6607,7 @@ rule("Target is in line of sight of Widowmaker (Patrol Guards)(GE)")
 
 	conditions
 	{
-		Global.GEChoice == 1;
+		(Global.GEChoice == 1 || Global.GEChoice == 51) == True;
 		Global.GEPatrolChoice == 3;
 		Is Dummy Bot(Event Player) == True;
 		Is True For Any(All Players(Team 1), !Current Array Element.IsWinner && Is In Line of Sight(Eye Position(Event Player),
@@ -6590,9 +6620,10 @@ rule("Target is in line of sight of Widowmaker (Patrol Guards)(GE)")
 		Event Player.GETarget = Random Value In Array(Filtered Array(All Players(Team 1),
 			!Current Array Element.IsWinner && Is In Line of Sight(Eye Position(Event Player), Eye Position(Current Array Element),
 			Barriers Do Not Block LOS)));
-		Start Facing(Event Player, Eye Position(Event Player.GETarget) - Vector(Z Component Of(Facing Direction Of(Event Player.GETarget)
-			* -1), 1.400, 0) - Position Of(Event Player), 900, To World, Direction and Turn Rate);
-		Wait(Random Real(0.900, 2.500), Ignore Condition);
+		Start Facing(Event Player, Eye Position(Event Player.GETarget) - Vector(X Component Of(Throttle Of(Event Player.GETarget) * -1)
+			/ 10, 1.300, Z Component Of(Throttle Of(Event Player.GETarget) * -1) / 10) - Position Of(Event Player), 900, To World,
+			Direction and Turn Rate);
+		Wait(Random Real(0.900, 4), Ignore Condition);
 		Press Button(Event Player, Button(Primary Fire));
 		Loop If Condition Is True;
 	}
@@ -6609,7 +6640,7 @@ rule("Widowmaker hits a player (Patrol Guards)(GE)")
 
 	conditions
 	{
-		Global.GEChoice == 1;
+		(Global.GEChoice == 1 || Global.GEChoice == 51) == True;
 		Global.GEPatrolChoice == 3;
 		Is Dummy Bot(Event Player) == True;
 		Array Contains(All Tank Heroes, Hero Of(Victim)) == True;
