@@ -424,7 +424,7 @@ rule("Workshop Settings")
 		Global.BastionPosIntervalMinMaxWS[0] = Workshop Setting Integer(Custom String("Bastion Position"), Custom String(
 			"Minimum change interval (random only)"), 70, 30, 1000, 1);
 		Global.BastionPosIntervalMinMaxWS[1] = Workshop Setting Integer(Custom String("Bastion Position"), Custom String(
-			"Maximum change interval (random only)"), 160, 30, 1000, 2);
+			"Maximum change interval (random only)"), 145, 30, 1000, 2);
 		Global.BastionPosIntervalMinMaxWS = Array(Min(Global.BastionPosIntervalMinMaxWS[0], Global.BastionPosIntervalMinMaxWS[1]), Max(
 			Global.BastionPosIntervalMinMaxWS[0], Global.BastionPosIntervalMinMaxWS[1]));
 		Global.BastionPosTypeWS = Workshop Setting Combo(Custom String("Bastion Position"), Custom String("Position Type"), 1, Array(
@@ -2712,6 +2712,7 @@ rule("heal")
 	{
 		Is Alive(Event Player) == True;
 		Global.GEToggles[0] == False;
+		Event Player.IsWinner == False;
 	}
 
 	actions
@@ -4387,7 +4388,7 @@ rule("Select a global effect & configurate (GE)[SR]")
 			"Set the timer for the Global Effect"
 			Global.GEWaitTime = Random Integer(10, 20);
 		Else If(Global.TempVar == 7);
-			Global.TempVar3 = Custom String("Say 'Hello','Thanks', 'No', etc. Wait 5 seconds \nbefore each usage..");
+			Global.TempVar3 = Custom String("Say 'Hello','Thanks', 'No', etc. Wait 5 seconds \nbefore each usage.");
 			Global.GEName = Custom String("Communicate or Die!");
 			"Amount of times to communicate"
 			Global.GERequiredNum = Random Integer(1, 3);
@@ -4544,7 +4545,7 @@ rule("Select a global effect & configurate (GE)[SR]")
 			"World Tag"
 			Global.TempVar2 = Count Of(Filtered Array(All Players(Team 1), !Current Array Element.IsWinner));
 			Global.TempVar3 = Custom String(
-				"A Tagger is chosen. The Tagger must tag players \nwho have NOT been tagged before.\n\nThe penalty is a demotion!!!.");
+				"A Tagger is chosen. The Tagger must tag players \nwho have NOT been tagged before.\n\nThe penalty is demotion!!!");
 			Global.GEName = Custom String("World Tag!");
 			Global.GERequiredNum = Random Integer(1, Global.TempVar2 - 1);
 			"Set the timer for the Global Effect"
@@ -4687,7 +4688,7 @@ rule("Select a global effect & configurate (GE)[SR]")
 			Global.TempVar3 = Custom String("Players move forward very fast! No emotes allowed!");
 			Global.GEName = Custom String("Forward March!");
 			"Set the timer for the Global Effect"
-			Global.GEWaitTime = Random Integer(30, 70);
+			Global.GEWaitTime = Random Integer(30, 50);
 		Else If(Global.TempVar == 46);
 			Global.TempVar3 = Custom String("Some players are taller! Don't squish your smaller allies!");
 			Global.GEName = Custom String("Growth Spurt!");
@@ -5153,10 +5154,6 @@ rule("Init Type C (CHOICE:All)(NOT:Timer) (GE)[SR]")
 			Call Subroutine(SetBoopDirection);
 			Global.TempVar = All Players(Team 1);
 			Apply Impulse(Global.TempVar, Global.GEBallPosition, Random Real(8000, 12000), To World, Cancel Contrary Motion);
-			For Global Variable(TempVar2, 0, Count Of(Global.TempVar), 1);
-				Play Effect(All Players(Team 1), Buff Impact Sound, Color(White), Global.TempVar[Global.TempVar2], 80);
-				Wait(0.400, Ignore Condition);
-			End;
 		"Toxic Clouds"
 		Else If(Global.GEChoice == 49 && !Global.GEToggles[1]);
 			Global.TempVar = Filtered Array(All Players(Team 2), Hero Of(Current Array Element) == Hero(Bastion));
