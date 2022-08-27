@@ -189,7 +189,6 @@ variables
 		2: BastionBotCount
 		3: IsGEEnabledWS
 		4: GEChoice
-		5: IsDVADebug
 		6: IsDebugMode
 		7: BastionDamages
 		8: GEText
@@ -272,11 +271,9 @@ variables
 		3: CurrentHero
 		4: BUPlayersNearby
 		5: Deaths
-		6: DVADebugStates
 		8: BacktrackDeaths
 		9: randBacktrackNum
 		10: hasPlayedSaveMessage
-		11: playerToPushBack
 		13: GEHelpTextIDs
 		14: GETimerID
 		15: GEID
@@ -359,14 +356,12 @@ subroutines
 	26: GEStartTypeJ
 	27: AddBacktrackDeath
 	28: SelectBastionBulletUpgrade
-	29: SetKillSphereLoc
 	30: SetNewBastionPosition
 	31: ApplyWinnerStats
 	32: SetupGameSettingsText
 	33: CreateJumpPads
 	34: CreateTeleporters
 	35: PromoteHeroRider
-	36: SetKeyLocation
 	37: EscapeWithKey
 	38: SelectWindDir
 	39: SetWindSpeedRate
@@ -390,6 +385,7 @@ subroutines
 	57: ApplyTankForm
 	58: SetToxicCloudLoc
 	59: SpawnWidowPatrolLoc
+	60: SelectLocFromAllDirs
 }
 
 rule("Workshop Settings")
@@ -446,39 +442,33 @@ rule("Init custom hero list")
 
 	actions
 	{
-		Global.HeroList = Empty Array;
-		Global.HeroList[0] = Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 1"), Sombra, 0);
-		Global.HeroList[1] = Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 2"), Tracer, 0);
-		Global.HeroList[2] = Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 3"), Reaper, 0);
-		Global.HeroList[3] = Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 4"), Symmetra, 0);
-		Global.HeroList[4] = Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 5"), Moira, 0);
-		Global.HeroList[5] = Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 6"), Doomfist, 0);
-		Global.HeroList[6] = Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 7"), Genji, 0);
-		Global.HeroList[7] = Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 8"), D.Va, 0);
-		Global.HeroList[8] = Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 9"), Echo, 0);
-		Global.HeroList[9] = Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 10"), Brigitte, 1);
-		Global.HeroList[10] = Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 11"), Widowmaker, 1);
-		Global.HeroList[11] = Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 12"), Mei, 1);
-		Global.HeroList[12] = Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 13"), Baptiste, 1);
-		Global.HeroList[13] = Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 14"), Soldier: 76, 1);
-		Global.HeroList[14] = Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 15"), Wrecking Ball, 1);
-		Global.HeroList[15] = Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 16"), Hanzo, 1);
-		Global.HeroList[16] = Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 17"), Ashe, 1);
-		Global.HeroList[17] = Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 18"), Cassidy, 1);
-		Global.HeroList[18] = Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 19"), Lúcio, 1);
-		Global.HeroList[19] = Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 20"), Winston, 2);
-		Global.HeroList[20] = Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 21"), Junkrat, 2);
-		Global.HeroList[21] = Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 22"), Pharah, 2);
-		Global.HeroList[22] = Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 23"), Mercy, 2);
-		Global.HeroList[23] = Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 24"), Reinhardt, 2);
-		Global.HeroList[24] = Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 25"), Zarya, 2);
-		Global.HeroList[25] = Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 26"), Orisa, 2);
-		Global.HeroList[26] = Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 27"), Sigma, 2);
-		Global.HeroList[27] = Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 28"), Torbjörn, 2);
-		Global.HeroList[28] = Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 29"), Ana, 2);
-		Global.HeroList[29] = Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 30"), Zenyatta, 3);
-		Global.HeroList[30] = Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 31"), Roadhog, 3);
-		Global.HeroList[31] = Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 32"), Bastion, 3);
+		Global.HeroList = Array(Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 1"), Sombra, 0),
+			Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 2"), Tracer, 0), Workshop Setting Hero(
+			Custom String("Custom Order List"), Custom String("Hero 3"), Reaper, 0), Workshop Setting Hero(Custom String(
+			"Custom Order List"), Custom String("Hero 4"), Symmetra, 0), Workshop Setting Hero(Custom String("Custom Order List"),
+			Custom String("Hero 5"), Moira, 0), Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 6"),
+			Doomfist, 0), Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 7"), Genji, 0),
+			Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 8"), D.Va, 0), Workshop Setting Hero(
+			Custom String("Custom Order List"), Custom String("Hero 9"), Echo, 0), Workshop Setting Hero(Custom String(
+			"Custom Order List"), Custom String("Hero 10"), Brigitte, 1), Workshop Setting Hero(Custom String("Custom Order List"),
+			Custom String("Hero 11"), Widowmaker, 1), Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 12"),
+			Mei, 1), Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 13"), Baptiste, 1),
+			Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 14"), Soldier: 76, 1), Workshop Setting Hero(
+			Custom String("Custom Order List"), Custom String("Hero 15"), Wrecking Ball, 1), Workshop Setting Hero(Custom String(
+			"Custom Order List"), Custom String("Hero 16"), Hanzo, 1), Workshop Setting Hero(Custom String("Custom Order List"),
+			Custom String("Hero 17"), Ashe, 1), Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 18"),
+			Cassidy, 1), Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 19"), Lúcio, 1),
+			Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 20"), Winston, 2), Workshop Setting Hero(
+			Custom String("Custom Order List"), Custom String("Hero 21"), Junkrat, 2), Workshop Setting Hero(Custom String(
+			"Custom Order List"), Custom String("Hero 22"), Pharah, 2), Workshop Setting Hero(Custom String("Custom Order List"),
+			Custom String("Hero 23"), Mercy, 2), Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 24"),
+			Reinhardt, 2), Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 25"), Zarya, 2),
+			Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 26"), Orisa, 2), Workshop Setting Hero(
+			Custom String("Custom Order List"), Custom String("Hero 27"), Sigma, 2), Workshop Setting Hero(Custom String(
+			"Custom Order List"), Custom String("Hero 28"), Torbjörn, 2), Workshop Setting Hero(Custom String("Custom Order List"),
+			Custom String("Hero 29"), Ana, 2), Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 30"),
+			Zenyatta, 3), Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 31"), Roadhog, 3),
+			Workshop Setting Hero(Custom String("Custom Order List"), Custom String("Hero 32"), Bastion, 3));
 	}
 }
 
@@ -2423,37 +2413,6 @@ rule("Change Bastion positions when player escapes (RBP)[SR]")
 	}
 }
 
-rule("push players back from team 2")
-{
-	event
-	{
-		Ongoing - Each Player;
-		Team 2;
-		All;
-	}
-
-	conditions
-	{
-		Event Player.IsWinner != True;
-		Global.IsDebugMode == False;
-		(Hero Of(Event Player) == Hero(Bastion) || Hero Of(Event Player) == Hero(Roadhog)) == True;
-		Is True For Any(Players Within Radius(Position Of(Event Player), 3, Team 1, Off), Current Array Element != Null) == True;
-	}
-
-	actions
-	{
-		Event Player.playerToPushBack = Closest Player To(Position Of(Event Player), Team 1);
-		Skip If(Is In Air(Event Player.playerToPushBack) == True, 1);
-		Apply Impulse(Event Player.playerToPushBack, Position Of(Event Player.playerToPushBack) - Position Of(Event Player), 10, To World,
-			Cancel Contrary Motion);
-		Skip If(Is In Air(Event Player.playerToPushBack) == False, 1);
-		Apply Impulse(Event Player.playerToPushBack, Position Of(Event Player.playerToPushBack) - Position Of(Event Player), 5, To World,
-			Cancel Contrary Motion);
-		Wait(0.150, Ignore Condition);
-		Loop If Condition Is True;
-	}
-}
-
 rule("teleport bastions back")
 {
 	event
@@ -2508,13 +2467,13 @@ rule("Display info about the goal of the game")
 
 	conditions
 	{
-		Event Player.CurrentHero == 0;
+		(Event Player.CurrentHero == 0 || Event Player.CurrentHero == 1) == True;
 		Event Player.IsInSpawnRoom == True;
 	}
 
 	actions
 	{
-		Small Message(Event Player, Custom String("Mission --> Escape prison with all heroes!"));
+		Small Message(Event Player, Custom String("Goal: Reach the exit with all heroes!"));
 		Wait(2.900, Abort When False);
 		Loop If Condition Is True;
 	}
@@ -2589,7 +2548,6 @@ rule("goal effects")
 
 	actions
 	{
-		Create Effect(All Players(Team 1), Ring, Color(Team 1), Global.EndPosition, 4, Visible To Position and Radius);
 		Create Effect(All Players(Team 1), Light Shaft, Color(Team 1), Global.EndPosition, 4, Visible To Position and Radius);
 		Create Icon(All Players(All Teams), Global.EndPosition + Vector(Empty Array, 5, Empty Array), Flag, Visible To and Position, Color(
 			Blue), True);
@@ -2842,9 +2800,6 @@ rule("Destroy goal HUD for D.Va mech [SR]")
 			Wait(0.250, Abort When False);
 			Destroy HUD Text(Event Player.H[1]);
 			Event Player.H[1] = Null;
-			If(Global.IsDVADebug == True);
-				Modify Player Variable(Event Player, DVADebugStates, Append To Array, Custom String("Destroy Mech Goal HUD"));
-			End;
 	}
 }
 
@@ -2872,9 +2827,6 @@ rule("Create D.Va's goal HUD for mech")
 			50 - Distance Between(Position Of(Event Player) * Vector(1, Empty Array, 1), Event Player.M))), Null, Null, Top, 5, Color(
 			White), Color(White), Color(White), Visible To and String, Default Visibility);
 		Event Player.H[1] = Last Text ID;
-		If(Global.IsDVADebug == True);
-			Modify Player Variable(Event Player, DVADebugStates, Append To Array, Custom String("Create Mech Goal HUD"));
-		End;
 	}
 }
 
@@ -2900,8 +2852,6 @@ rule("if D.Va haven't reached 50 meters yet")
 		Set Ultimate Charge(Event Player, 2 * Distance Between(Position Of(Event Player) * Vector(1, Empty Array, 1), Event Player.M));
 		Wait(0.100, Ignore Condition);
 		Loop If Condition Is True;
-		If(Global.IsDVADebug == True);
-			Modify Player Variable(Event Player, DVADebugStates, Append To Array, Custom String("Not Reached Goal"));
 	}
 }
 
@@ -2925,8 +2875,6 @@ rule("If D.Va passes 50 meters")
 	actions
 	{
 		Set Ultimate Charge(Event Player, 100);
-		If(Global.IsDVADebug == True);
-			Modify Player Variable(Event Player, DVADebugStates, Append To Array, Custom String("Reached Goal"));
 	}
 }
 
@@ -2954,9 +2902,6 @@ rule("If D.Va calls mech")
 		Press Button(Event Player, Button(Ultimate));
 		Loop If(Ultimate Charge Percent(Event Player) == 100);
 		Disallow Button(Event Player, Button(Ultimate));
-		If(Global.IsDVADebug == True);
-			Modify Player Variable(Event Player, DVADebugStates, Append To Array, Custom String("Mech Called"));
-		End;
 	}
 }
 
@@ -2978,29 +2923,6 @@ rule("If D.Va respawns in alternative form")
 	actions
 	{
 		Set Ultimate Charge(Event Player, 100);
-		If(Global.IsDVADebug == True);
-			Modify Player Variable(Event Player, DVADebugStates, Append To Array, Custom String("Respawn in Alt form"));
-	}
-}
-
-disabled rule("D.Va states (debug)")
-{
-	event
-	{
-		Ongoing - Each Player;
-		Team 1;
-		D.Va;
-	}
-
-	conditions
-	{
-		Global.IsDebugMode == True;
-	}
-
-	actions
-	{
-		Event Player.DVADebugStates = Empty Array;
-		Global.IsDVADebug = True;
 	}
 }
 
@@ -3049,8 +2971,6 @@ rule("If D.Va dies")
 			Event Player.H[1] = Null;
 		End;
 		Set Move Speed(Event Player, 100);
-		If(Global.IsDVADebug == True);
-			Modify Player Variable(Event Player, DVADebugStates, Append To Array, Custom String("Died"));
 	}
 }
 
@@ -3249,29 +3169,7 @@ disabled rule("no dmg (debug)")
 	}
 }
 
-disabled rule("speed trigger on (player t0)(debug)")
-{
-	event
-	{
-		Ongoing - Each Player;
-		Team 1;
-		All;
-	}
-
-	conditions
-	{
-		First Of(Event Player.Z) == True;
-		Global.IsDebugMode == True;
-	}
-
-	actions
-	{
-		Set Move Speed(Event Player, 200);
-		Set Projectile Speed(Event Player, 200);
-	}
-}
-
-disabled rule("speed button (debug)")
+disabled rule("speed (debug)")
 {
 	event
 	{
@@ -3288,7 +3186,8 @@ disabled rule("speed button (debug)")
 
 	actions
 	{
-		Event Player.Z[0] = !First Of(Event Player.Z);
+		Set Move Speed(Event Player, 200);
+		Set Projectile Speed(Event Player, 200);
 	}
 }
 
@@ -4515,7 +4414,7 @@ rule("Select a global effect & configurate (GE)[SR]")
 			Global.TempVar3 = Custom String("Some players can now carry other players.\nCarry limit is 1.");
 			Global.GEName = Custom String("Piggyback!");
 			"Set the timer for the Global Effect"
-			Global.GEWaitTime = Random Integer(30, 150);
+			Global.GEWaitTime = Random Integer(60, 160);
 			Global.GEViewAngle = 45;
 			Global.GEMeleeDistance = 3;
 		Else If(Global.TempVar == 23);
@@ -5479,7 +5378,7 @@ rule("Init Type I (CHOICE:Single)(NOT:Winners) (GE)[SR]")
 			Global.GEAffectedPlayer = Global.TempVar;
 		"Lockdown"
 		Else If(Global.GEChoice == 36);
-			Call Subroutine(SetKeyLocation);
+			Call Subroutine(SelectLocFromAllDirs);
 			Create Effect(All Players(Team 1), Orb, Color(Blue), Global.GEBallPosition, Global.GERadius, Visible To Position and Radius);
 			Global.GEBallID = Array(Last Created Entity);
 			Create Effect(All Players(Team 1), Sparkles Sound, Color(White), Global.GEBallPosition, 70, Visible To Position and Radius);
@@ -5493,11 +5392,11 @@ rule("Init Type I (CHOICE:Single)(NOT:Winners) (GE)[SR]")
 			Modify Global Variable(GEBallID, Append To Array, Last Created Entity);
 		"One-For-All"
 		Else If(Global.GEChoice == 44);
-			Respawn(All Players(Team 1));
+			Respawn(Filtered Array(All Players(Team 1), !Current Array Element.IsWinner));
 			Call Subroutine(SpawnAllAtAltLoc);
 		"Kill Sphere"
 		Else If(Global.GEChoice == 47);
-			Call Subroutine(SetKillSphereLoc);
+			Call Subroutine(SelectLocFromAllDirs);
 			Create Effect(All Players(Team 1), Sphere, Color(Red), Global.GEBallPosition, Global.GERadius, Visible To Position and Radius);
 			Global.GEBallID[0] = Last Created Entity;
 			Create Effect(All Players(Team 1), Energy Sound, Color(White), Global.GEBallPosition, 100, Visible To);
@@ -5906,6 +5805,79 @@ rule("End of Global Effect *GLOBAL* (GE)")
 		End;
 		Global.GEAffectedPlayer = Null;
 		Call Subroutine(EndGlobalEffect);
+	}
+}
+
+rule("Select a position from ALL directions (Kill Sphere & Lockdown)(GE)[SR]")
+{
+	event
+	{
+		Subroutine;
+		SelectLocFromAllDirs;
+	}
+
+	actions
+	{
+		"47 = Kill Sphere"
+		Global.TempVar = Global.GEChoice == 47 ? Random Value In Array(All Players(Team 2)) : Random Value In Array(Filtered Array(
+			All Players(Team 1), !Current Array Element.IsWinner));
+		Global.TempVar2 = Random Integer(0, 25);
+		Global.GESpawnDistance = Global.GEChoice == 47 ? Random Real(0, 60) : Random Real(15, 90);
+		If(Global.TempVar2 == 0);
+			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + Forward * Global.GESpawnDistance);
+		Else If(Global.TempVar2 == 1);
+			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Forward + Right) * Global.GESpawnDistance);
+		Else If(Global.TempVar2 == 2);
+			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + Right * Global.GESpawnDistance);
+		Else If(Global.TempVar2 == 3);
+			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Backward + Right) * Global.GESpawnDistance);
+		Else If(Global.TempVar2 == 4);
+			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + Backward * Global.GESpawnDistance);
+		Else If(Global.TempVar2 == 5);
+			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Backward + Left) * Global.GESpawnDistance);
+		Else If(Global.TempVar2 == 6);
+			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + Left * Global.GESpawnDistance);
+		Else If(Global.TempVar2 == 7);
+			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Forward + Left) * Global.GESpawnDistance);
+		Else If(Global.TempVar2 == 8);
+			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Forward + Down) * Global.GESpawnDistance);
+		Else If(Global.TempVar2 == 9);
+			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Forward + Up) * Global.GESpawnDistance);
+		Else If(Global.TempVar2 == 10);
+			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Right + Up) * Global.GESpawnDistance);
+		Else If(Global.TempVar2 == 11);
+			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Right + Down) * Global.GESpawnDistance);
+		Else If(Global.TempVar2 == 12);
+			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Backward + Down) * Global.GESpawnDistance);
+		Else If(Global.TempVar2 == 13);
+			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Backward + Up) * Global.GESpawnDistance);
+		Else If(Global.TempVar2 == 14);
+			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Left + Up) * Global.GESpawnDistance);
+		Else If(Global.TempVar2 == 15);
+			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Left + Down) * Global.GESpawnDistance);
+		Else If(Global.TempVar2 == 16);
+			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Forward + Right + Up) * Global.GESpawnDistance);
+		Else If(Global.TempVar2 == 17);
+			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Forward + Right + Down) * Global.GESpawnDistance);
+		Else If(Global.TempVar2 == 18);
+			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Backward + Right + Down)
+				* Global.GESpawnDistance);
+		Else If(Global.TempVar2 == 19);
+			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Backward + Right + Up) * Global.GESpawnDistance);
+		Else If(Global.TempVar2 == 20);
+			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Forward + Left + Up) * Global.GESpawnDistance);
+		Else If(Global.TempVar2 == 21);
+			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Forward + Left + Down) * Global.GESpawnDistance);
+		Else If(Global.TempVar2 == 22);
+			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Backward + Left + Down) * Global.GESpawnDistance);
+		Else If(Global.TempVar2 == 23);
+			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Backward + Left + Up) * Global.GESpawnDistance);
+		Else If(Global.TempVar2 == 24);
+			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + Up * Global.GESpawnDistance);
+		Else If(Global.TempVar2 == 25);
+			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + Down * Global.GESpawnDistance);
+		End;
+		Global.GEBallPosition += Vector(0, Global.GEChoice == 47 ? Random Real(0, 10) : Random Real(0, 5), 0);
 	}
 }
 
@@ -8296,7 +8268,7 @@ rule("Bastion kills player (BU)[Bullet]")
 			Wait Until(Is Alive(Victim), 5);
 			Teleport(Victim, Victim.BUTeleStats[0]);
 			Play Effect(Event Player, Moira Fade Reappear Sound, Color(White), Event Player, 90);
-			Set Status(Victim, Null, Invincible, 1.600);
+			Set Status(Victim, Null, Invincible, 1.400);
 	}
 }
 
@@ -8311,6 +8283,7 @@ rule("Before New Bastion Upgrade Choice (BU)[Bullet][SR]")
 	actions
 	{
 		Global.TempVar4 = Filtered Array(All Players(Team 2), Hero Of(Current Array Element) == Hero(Bastion));
+		Set Projectile Speed(Global.TempVar4, 100);
 		If(Global.BUChoices[0] == 4);
 			Clear Status(Global.TempVar4, Unkillable);
 			Kill(Global.TempVar4, Null);
@@ -8357,6 +8330,7 @@ rule("Transform Bastions into tank form (BU)[Bullet][SR]")
 		Press Button(Global.TempVar4, Button(Ultimate));
 		Disallow Button(Global.TempVar4, Button(Ultimate));
 		Set Ultimate Ability Enabled(Global.TempVar4, False);
+		Set Projectile Speed(Global.TempVar4, 125);
 		Global.BastionDamages[1] = Global.BastionDamages[0];
 	}
 }
@@ -8381,77 +8355,6 @@ rule("Make sure Bastion stays in tank form _if selected_ (BU)[Bullet]")
 		Call Subroutine(ApplyTankForm);
 		Call Subroutine(BeforeNewBastionBulletUpgrade);
 		Call Subroutine(SetGEBastionDamage);
-	}
-}
-
-rule("Set new key location (Lockdown)(GE)[SR]")
-{
-	event
-	{
-		Subroutine;
-		SetKeyLocation;
-	}
-
-	actions
-	{
-		Global.TempVar = Random Value In Array(Filtered Array(All Players(Team 1), !Current Array Element.IsWinner));
-		Global.TempVar2 = Random Integer(0, 25);
-		Global.GESpawnDistance = Random Real(15, 90);
-		If(Global.TempVar2 == 0);
-			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + Forward * Global.GESpawnDistance);
-		Else If(Global.TempVar2 == 1);
-			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Forward + Right) * Global.GESpawnDistance);
-		Else If(Global.TempVar2 == 2);
-			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + Right * Global.GESpawnDistance);
-		Else If(Global.TempVar2 == 3);
-			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Backward + Right) * Global.GESpawnDistance);
-		Else If(Global.TempVar2 == 4);
-			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + Backward * Global.GESpawnDistance);
-		Else If(Global.TempVar2 == 5);
-			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Backward + Left) * Global.GESpawnDistance);
-		Else If(Global.TempVar2 == 6);
-			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + Left * Global.GESpawnDistance);
-		Else If(Global.TempVar2 == 7);
-			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Forward + Left) * Global.GESpawnDistance);
-		Else If(Global.TempVar2 == 8);
-			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Forward + Down) * Global.GESpawnDistance);
-		Else If(Global.TempVar2 == 9);
-			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Forward + Up) * Global.GESpawnDistance);
-		Else If(Global.TempVar2 == 10);
-			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Right + Up) * Global.GESpawnDistance);
-		Else If(Global.TempVar2 == 11);
-			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Right + Down) * Global.GESpawnDistance);
-		Else If(Global.TempVar2 == 12);
-			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Backward + Down) * Global.GESpawnDistance);
-		Else If(Global.TempVar2 == 13);
-			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Backward + Up) * Global.GESpawnDistance);
-		Else If(Global.TempVar2 == 14);
-			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Left + Up) * Global.GESpawnDistance);
-		Else If(Global.TempVar2 == 15);
-			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Left + Down) * Global.GESpawnDistance);
-		Else If(Global.TempVar2 == 16);
-			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Forward + Right + Up) * Global.GESpawnDistance);
-		Else If(Global.TempVar2 == 17);
-			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Forward + Right + Down) * Global.GESpawnDistance);
-		Else If(Global.TempVar2 == 18);
-			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Backward + Right + Down)
-				* Global.GESpawnDistance);
-		Else If(Global.TempVar2 == 19);
-			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Backward + Right + Up) * Global.GESpawnDistance);
-		Else If(Global.TempVar2 == 20);
-			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Forward + Left + Up) * Global.GESpawnDistance);
-		Else If(Global.TempVar2 == 21);
-			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Forward + Left + Down) * Global.GESpawnDistance);
-		Else If(Global.TempVar2 == 22);
-			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Backward + Left + Down) * Global.GESpawnDistance);
-		Else If(Global.TempVar2 == 23);
-			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Backward + Left + Up) * Global.GESpawnDistance);
-		Else If(Global.TempVar2 == 24);
-			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + Up * Global.GESpawnDistance);
-		Else If(Global.TempVar2 == 25);
-			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + Down * Global.GESpawnDistance);
-		End;
-		Global.GEBallPosition += Vector(0, Random Real(0, 5), 0);
 	}
 }
 
@@ -8516,7 +8419,7 @@ rule("Relocate key (Lockdown)(GE)")
 		Else;
 			Wait(Random Real(40, 120), Abort When False);
 		End;
-		Call Subroutine(SetKeyLocation);
+		Call Subroutine(SelectLocFromAllDirs);
 		Loop If Condition Is True;
 	}
 }
@@ -8538,7 +8441,7 @@ rule("Player with the key is no longer in the game (Lockdown)(GE)")
 
 	actions
 	{
-		Call Subroutine(SetKeyLocation);
+		Call Subroutine(SelectLocFromAllDirs);
 	}
 }
 
@@ -9265,6 +9168,7 @@ rule("Init marching motion (Forward March)(GE)")
 	{
 		Global.GEChoice == 45;
 		Global.IsGETimerStart == True;
+		Event Player.IsWinner == False;
 		Event Player.GEID == Null;
 	}
 
@@ -9291,83 +9195,13 @@ rule("Player emotes (Forward March)(GE)")
 	{
 		Global.GEChoice == 45;
 		Global.IsGETimerStart == True;
+		Event Player.IsWinner == False;
 		Is Communicating Any Emote(Event Player) == True;
 	}
 
 	actions
 	{
 		Kill(Event Player, Closest Player To(Event Player, Team 2));
-	}
-}
-
-rule("Set sphere location (Kill Sphere)(GE)[SR]")
-{
-	event
-	{
-		Subroutine;
-		SetKillSphereLoc;
-	}
-
-	actions
-	{
-		Global.TempVar = Random Value In Array(All Players(Team 2));
-		Global.TempVar2 = Random Integer(0, 25);
-		Global.GESpawnDistance = Random Real(0, 60);
-		If(Global.TempVar2 == 0);
-			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + Forward * Global.GESpawnDistance);
-		Else If(Global.TempVar2 == 1);
-			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Forward + Right) * Global.GESpawnDistance);
-		Else If(Global.TempVar2 == 2);
-			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + Right * Global.GESpawnDistance);
-		Else If(Global.TempVar2 == 3);
-			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Backward + Right) * Global.GESpawnDistance);
-		Else If(Global.TempVar2 == 4);
-			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + Backward * Global.GESpawnDistance);
-		Else If(Global.TempVar2 == 5);
-			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Backward + Left) * Global.GESpawnDistance);
-		Else If(Global.TempVar2 == 6);
-			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + Left * Global.GESpawnDistance);
-		Else If(Global.TempVar2 == 7);
-			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Forward + Left) * Global.GESpawnDistance);
-		Else If(Global.TempVar2 == 8);
-			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Forward + Down) * Global.GESpawnDistance);
-		Else If(Global.TempVar2 == 9);
-			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Forward + Up) * Global.GESpawnDistance);
-		Else If(Global.TempVar2 == 10);
-			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Right + Up) * Global.GESpawnDistance);
-		Else If(Global.TempVar2 == 11);
-			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Right + Down) * Global.GESpawnDistance);
-		Else If(Global.TempVar2 == 12);
-			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Backward + Down) * Global.GESpawnDistance);
-		Else If(Global.TempVar2 == 13);
-			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Backward + Up) * Global.GESpawnDistance);
-		Else If(Global.TempVar2 == 14);
-			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Left + Up) * Global.GESpawnDistance);
-		Else If(Global.TempVar2 == 15);
-			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Left + Down) * Global.GESpawnDistance);
-		Else If(Global.TempVar2 == 16);
-			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Forward + Right + Up) * Global.GESpawnDistance);
-		Else If(Global.TempVar2 == 17);
-			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Forward + Right + Down) * Global.GESpawnDistance);
-		Else If(Global.TempVar2 == 18);
-			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Backward + Right + Down)
-				* Global.GESpawnDistance);
-		Else If(Global.TempVar2 == 19);
-			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Backward + Right + Up) * Global.GESpawnDistance);
-		Else If(Global.TempVar2 == 20);
-			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Forward + Left + Up) * Global.GESpawnDistance);
-		Else If(Global.TempVar2 == 21);
-			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Forward + Left + Down) * Global.GESpawnDistance);
-		Else If(Global.TempVar2 == 22);
-			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Backward + Left + Down) * Global.GESpawnDistance);
-		Else If(Global.TempVar2 == 23);
-			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + (Backward + Left + Up) * Global.GESpawnDistance);
-		Else If(Global.TempVar2 == 24);
-			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + Up * Global.GESpawnDistance);
-		Else If(Global.TempVar2 == 25);
-			Global.GEBallPosition = Nearest Walkable Position(Position Of(Global.TempVar) + Down * Global.GESpawnDistance);
-		End;
-		Global.GEBallPosition += Vector(0, Random Real(0, 10), 0);
 	}
 }
 
