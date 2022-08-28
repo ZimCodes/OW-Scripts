@@ -2,7 +2,7 @@ settings
 {
 	main
 	{
-		Description: "Work cooperatively to escape death row. Escape prison with ALL heroes to finish the game.\n\n*This is an alternative version of BASTION ESCAPE 2."
+		Description: "Prisoners are placed on death row. Can you escape your fate? Escape prison with ALL heroes to finish the game.\n\n*This is an alternative version of BASTION ESCAPE 2."
 		Mode Name: "PRISON ESCAPE"
 	}
 
@@ -189,6 +189,7 @@ variables
 		2: BastionBotCount
 		3: IsGEEnabledWS
 		4: GEChoice
+		5: MaxSafetyServerLoad
 		6: IsDebugMode
 		7: BastionDamages
 		8: GEText
@@ -579,6 +580,8 @@ rule("Global Stats & inits")
 				Global.EscapeBoardStats[3].TargetHero + 1)), Left, 13, Color(White), Color(White), Color(Orange), Visible To and String,
 				Default Visibility);
 		End;
+		"Maximum server load allowed to allow actions"
+		Global.MaxSafetyServerLoad = 80;
 	}
 }
 
@@ -1588,10 +1591,10 @@ rule("Select the next winner hero using ring (END GAME)")
 		Event Player.IsWinner == True;
 		Global.WinnerHeroesRingStats[2] != Null;
 		Is Button Held(Event Player, Button(Jump)) == True;
+		"Fail-safe mechanism to prevent server from crashing!"
+		Round To Integer(Server Load / 255 * 100, To Nearest) < Global.MaxSafetyServerLoad;
 		Is True For Any(Players Within Radius(Global.WinnerHeroesRingStats[0], Global.WinnerHeroesRingStats[1], Team 1, Off),
 			Current Array Element == Event Player) == True;
-		"Fail-safe mechanism to prevent server from crashing!"
-		Round To Integer(Server Load / 255 * 100, To Nearest) < 80;
 	}
 
 	actions
@@ -1621,10 +1624,10 @@ rule("Select the previous winner hero using ring (END GAME)")
 		Event Player.IsWinner == True;
 		Global.WinnerHeroesRingStats[2] != Null;
 		Is Button Held(Event Player, Button(Crouch)) == True;
+		"Fail-safe mechanism for server crashes! Prevents usage if above specified percentage"
+		Round To Integer(Server Load / 255 * 100, To Nearest) < Global.MaxSafetyServerLoad;
 		Is True For Any(Players Within Radius(Global.WinnerHeroesRingStats[0], Global.WinnerHeroesRingStats[1], Team 1, Off),
 			Current Array Element == Event Player) == True;
-		"Fail-safe mechanism for server crashes! Prevents usage if above specified percentage"
-		Round To Integer(Server Load / 255 * 100, To Nearest) < 80;
 	}
 
 	actions
@@ -2508,6 +2511,8 @@ rule("winner effects on reach to end")
 		Event Player.IsWinner != True;
 		Y Component Of(Position Of(Event Player)) >= Y Component Of(Global.EndPosition);
 		((Global.GEChoice == 36 && Event Player == Global.GEAffectedPlayer) || (Global.GEChoice != 36)) == True;
+		"Fail-safe mechanism for server crashes! Prevents usage if above specified percentage"
+		Round To Integer(Server Load / 255 * 100, To Nearest) < Global.MaxSafetyServerLoad;
 		Distance Between(Position Of(Event Player), Vector(X Component Of(Global.EndPosition), Y Component Of(Position Of(Event Player)),
 			Z Component Of(Global.EndPosition))) <= 4;
 	}
@@ -8148,6 +8153,7 @@ rule("Player took damage (BU)[Bullet]")
 	conditions
 	{
 		Attacker != Event Player;
+		Hero Of(Attacker) == Hero(Bastion);
 		(Global.BUChoices[0] == 2 || Global.BUChoices[0] == 1 || Global.BUChoices[0] == 5 || Global.BUChoices[0] == 6) == True;
 	}
 
@@ -8167,7 +8173,7 @@ rule("Player took damage (BU)[Bullet]")
 		Else If(Global.BUChoices[0] == 6);
 			Event Player.BUPlayersNearby = Players Within Radius(Event Player, 10, Team 1, Off);
 			For Player Variable(Event Player, BUIndex, 0, Count Of(Event Player.BUPlayersNearby), 1);
-				Damage(Event Player.BUPlayersNearby[Event Player.BUIndex], Closest Player To(Event Player, Team 2), Event Damage * 0.700);
+				Damage(Event Player.BUPlayersNearby[Event Player.BUIndex], Closest Player To(Event Player, Team 2), Event Damage * 0.500);
 				Create Beam Effect(All Players(Team 1), Bad Beam, Event Player, Event Player.BUPlayersNearby[Event Player.BUIndex], Color(Aqua),
 					Visible To Position and Radius);
 				Event Player.BUBulletEffectIDs[0] = Last Created Entity;
