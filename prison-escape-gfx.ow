@@ -6763,6 +6763,38 @@ rule("Set Hanzo Ult (Patrol Guards)(GE)")
 	}
 }
 
+rule("Move Hanzo (Patrol Guards)(GE)")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 2;
+		Hanzo;
+	}
+
+	conditions
+	{
+		(Global.GEChoice == 1 || Global.GEChoice == 51) == True;
+		Global.GEPatrolChoice == 4;
+		Is Dummy Bot(Event Player) == True;
+	}
+
+	actions
+	{
+		Wait(Random Real(5, 30), Abort When False);
+		Call Subroutine(SpawnDistantPlayerPatrolLoc);
+		Teleport(Event Player, Event Player.PatrolMoveStats[0]);
+		Play Effect(All Players(Team 1), Bad Pickup Effect, Color(Orange), Event Player, 5);
+		Play Effect(All Players(Team 1), Debuff Impact Sound, Color(White), Event Player, 80);
+		Start Facing(Event Player, Eye Position(Random Value In Array(Filtered Array(All Players(Team 1),
+			!Current Array Element.IsInSpawnRoom))) - Eye Position(Event Player), 2000, To World, Direction and Turn Rate);
+		Press Button(Event Player, Button(Ultimate));
+		Wait Until(!Is Using Ultimate(Event Player), 99999);
+		Stop Facing(Event Player);
+		Loop If Condition Is True;
+	}
+}
+
 rule("Init D.Va (Patrol Guards)(GE)")
 {
 	event
@@ -6795,38 +6827,6 @@ rule("Init D.Va (Patrol Guards)(GE)")
 		Set Ultimate Charge(Event Player, 100);
 		Wait Until(Ultimate Charge Percent(Event Player) == 100, 99999);
 		Press Button(Event Player, Button(Ultimate));
-	}
-}
-
-rule("Move Hanzo (Patrol Guards)(GE)")
-{
-	event
-	{
-		Ongoing - Each Player;
-		Team 2;
-		Hanzo;
-	}
-
-	conditions
-	{
-		(Global.GEChoice == 1 || Global.GEChoice == 51) == True;
-		Global.GEPatrolChoice == 4;
-		Is Dummy Bot(Event Player) == True;
-	}
-
-	actions
-	{
-		Wait(Random Real(5, 30), Abort When False);
-		Call Subroutine(SpawnDistantPlayerPatrolLoc);
-		Teleport(Event Player, Event Player.PatrolMoveStats[0]);
-		Play Effect(All Players(Team 1), Bad Pickup Effect, Color(Orange), Event Player, 5);
-		Play Effect(All Players(Team 1), Debuff Impact Sound, Color(White), Event Player, 80);
-		Start Facing(Event Player, Eye Position(Random Value In Array(Filtered Array(All Players(Team 1),
-			!Current Array Element.IsInSpawnRoom))) - Eye Position(Event Player), 2000, To World, Direction and Turn Rate);
-		Press Button(Event Player, Button(Ultimate));
-		Wait Until(!Is Using Ultimate(Event Player), 99999);
-		Stop Facing(Event Player);
-		Loop If Condition Is True;
 	}
 }
 
