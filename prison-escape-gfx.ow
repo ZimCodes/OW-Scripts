@@ -272,6 +272,7 @@ variables
 		3: CurrentHero
 		4: BUPlayersNearby
 		5: Deaths
+		6: PatrolMoveStats
 		8: BacktrackDeaths
 		9: randBacktrackNum
 		10: hasPlayedSaveMessage
@@ -364,6 +365,7 @@ subroutines
 	33: CreateJumpPads
 	34: CreateTeleporters
 	35: PromoteHeroRider
+	36: SpawnDistantPlayerPatrolLoc
 	37: EscapeWithKey
 	38: SelectWindDir
 	39: SetWindSpeedRate
@@ -386,7 +388,7 @@ subroutines
 	56: SetBetZoneLoc
 	57: ApplyTankForm
 	58: SetToxicCloudLoc
-	59: SpawnWidowPatrolLoc
+	59: SpawnDistantPatrolLoc
 	60: SelectLocFromAllDirs
 }
 
@@ -2174,21 +2176,6 @@ rule("Jump pad position init (global J, global K) - hanamura")
 	{
 		Modify Global Variable(JumpPadLocList, Append To Array, Vector(33.167, 3, -24.676));
 		Modify Global Variable(JumpPadPowerList, Append To Array, 18);
-	}
-}
-
-rule("disable ult")
-{
-	event
-	{
-		Player Died;
-		All;
-		All;
-	}
-
-	actions
-	{
-		Disallow Button(Event Player, Button(Ultimate));
 	}
 }
 
@@ -4255,13 +4242,13 @@ rule("Select a global effect & configurate (GE)[SR]")
 		"Current NUMBER of players currently around. Used if global effect requires more than 1 player"
 		Global.TempVar2 = 1;
 		"DEBUG: Chose a specific global effect"
-		disabled Global.TempVar = 34;
+		disabled Global.TempVar = 1;
 		If(Global.TempVar == 1 || Global.TempVar == 51);
 			Global.GEMinPlayerReq = 2;
 			"The Patrol Guard to use"
-			Global.GEPatrolChoice = Random Integer(0, 3);
+			Global.GEPatrolChoice = Random Integer(0, 5);
 			"DEBUGGING: Deactivate if not trying to debug this Global Effect"
-			disabled Global.GEPatrolChoice = 3;
+			disabled Global.GEPatrolChoice = 5;
 			Global.TempVar2 = Count Of(Filtered Array(All Players(Team 1), !Is In Spawn Room(Current Array Element)
 				&& !Current Array Element.IsWinner));
 			Global.TempVar3 = Custom String("Incoming patrols are here to cause mayhem!");
@@ -6134,12 +6121,13 @@ rule("Select a patrol guard (Patrol Guards)[SR]")
 	actions
 	{
 		Global.GETempVar5 = Global.GEPatrolChoice == 0 ? Hero(Roadhog) : (Global.GEPatrolChoice == 1 ? Hero(Winston) : (
-			Global.GEPatrolChoice == 2 ? Hero(Reinhardt) : Hero(Widowmaker)));
+			Global.GEPatrolChoice == 2 ? Hero(Reinhardt) : (Global.GEPatrolChoice == 3 ? Hero(Widowmaker) : (
+			Global.GEPatrolChoice == 4 ? Hero(Hanzo) : Hero(D.Va)))));
 		For Global Variable(TempVar2, 0, Count Of(Global.TempVar), 1);
-			If(Global.GEPatrolChoice != 3);
+			If(Global.GEPatrolChoice < 3 || Global.GEPatrolChoice == 5);
 				Call Subroutine(SpawnPatrolLoc);
 			Else;
-				Call Subroutine(SpawnWidowPatrolLoc);
+				Call Subroutine(SpawnDistantPatrolLoc);
 			End;
 			Create Dummy Bot(Global.GETempVar5, Team 2, -1, Nearest Walkable Position(Global.TempVar3), Global.TempVar4);
 		End;
@@ -6160,10 +6148,14 @@ rule("Set the timer for (Patrol Guards)[SR]")
 		If(Global.GEPatrolChoice == 0);
 			"Set the timer for the Global Effect"
 			Global.GEWaitTime = Random Integer(7, 11);
-		"Widowmaker"
-		Else If(Global.GEPatrolChoice == 3);
+		"Widowmaker/Hanzo"
+		Else If(Global.GEPatrolChoice == 3 && Global.GEPatrolChoice == 4);
 			"Set the timer for the Global Effect"
 			Global.GEWaitTime = Random Integer(90, 120);
+		"D.Va"
+		Else If(Global.GEPatrolChoice == 5);
+			"Set the timer for the Global Effect"
+			Global.GEWaitTime = 10;
 		Else;
 			"Set the timer for the Global Effect"
 			Global.GEWaitTime = Random Integer(60, 120);
@@ -6182,7 +6174,7 @@ rule("Clean up (Patrol Guards)[SR]")
 	{
 		Global.TempVar = Filtered Array(All Players(Team 2), Hero Of(Current Array Element) == Hero(Roadhog) || Hero Of(
 			Current Array Element) == Hero(Winston) || Hero Of(Current Array Element) == Hero(Reinhardt) || Hero Of(Current Array Element)
-			== Hero(Widowmaker));
+			== Hero(Widowmaker) || Hero Of(Current Array Element) == Hero(Hanzo) || Hero Of(Current Array Element) == Hero(D.Va));
 		Stop Facing(Global.TempVar);
 		Stop Forcing Throttle(Global.TempVar);
 		Stop Holding Button(Global.TempVar, Button(Secondary Fire));
@@ -6231,44 +6223,127 @@ rule("Location to spawn near a player (Patrols Guards)(GE)[SR]")
 	}
 }
 
-rule("Location to spawn Widowmaker near a player (Patrols Guards)(GE)[SR]")
+rule("Location to spawn distant from a player *GLOBAL* (Patrols Guards)(GE)[SR]")
 {
 	event
 	{
 		Subroutine;
-		SpawnWidowPatrolLoc;
+		SpawnDistantPatrolLoc;
 	}
 
 	actions
 	{
-		Global.TempVar3 = Random Integer(0, 8);
-		Global.GESpawnDistance = Random Real(10, 70);
+		Global.TempVar3 = Random Integer(0, 16);
+		Global.GESpawnDistance = Random Real(5, 70);
 		If(Global.TempVar3 == 0);
-			Global.TempVar3 = Nearest Walkable Position(Position Of(Global.TempVar[Global.TempVar2]) + (Forward + Up)
-				* Global.GESpawnDistance);
+			Global.TempVar3 = Nearest Walkable Position(Position Of(Global.TempVar[Global.TempVar2]) + Forward * Global.GESpawnDistance);
 		Else If(Global.TempVar3 == 1);
-			Global.TempVar3 = Nearest Walkable Position(Position Of(Global.TempVar[Global.TempVar2]) + (Left + Up) * Global.GESpawnDistance);
+			Global.TempVar3 = Nearest Walkable Position(Position Of(Global.TempVar[Global.TempVar2]) + (Forward + Right)
+				* Global.GESpawnDistance);
 		Else If(Global.TempVar3 == 2);
-			Global.TempVar3 = Nearest Walkable Position(Position Of(Global.TempVar[Global.TempVar2]) + (Right + Up) * Global.GESpawnDistance);
+			Global.TempVar3 = Nearest Walkable Position(Position Of(Global.TempVar[Global.TempVar2]) + Right * Global.GESpawnDistance);
 		Else If(Global.TempVar3 == 3);
-			Global.TempVar3 = Nearest Walkable Position(Position Of(Global.TempVar[Global.TempVar2]) + (Backward + Up)
+			Global.TempVar3 = Nearest Walkable Position(Position Of(Global.TempVar[Global.TempVar2]) + (Backward + Right)
 				* Global.GESpawnDistance);
 		Else If(Global.TempVar3 == 4);
-			Global.TempVar3 = Nearest Walkable Position(Position Of(Global.TempVar[Global.TempVar2]) + (Backward + Left + Up)
-				* Global.GESpawnDistance);
+			Global.TempVar3 = Nearest Walkable Position(Position Of(Global.TempVar[Global.TempVar2]) + Backward * Global.GESpawnDistance);
 		Else If(Global.TempVar3 == 5);
-			Global.TempVar3 = Nearest Walkable Position(Position Of(Global.TempVar[Global.TempVar2]) + (Backward + Right + Up)
+			Global.TempVar3 = Nearest Walkable Position(Position Of(Global.TempVar[Global.TempVar2]) + (Backward + Left)
 				* Global.GESpawnDistance);
 		Else If(Global.TempVar3 == 6);
-			Global.TempVar3 = Nearest Walkable Position(Position Of(Global.TempVar[Global.TempVar2]) + (Forward + Left + Up)
-				* Global.GESpawnDistance);
+			Global.TempVar3 = Nearest Walkable Position(Position Of(Global.TempVar[Global.TempVar2]) + Left * Global.GESpawnDistance);
 		Else If(Global.TempVar3 == 7);
+			Global.TempVar3 = Nearest Walkable Position(Position Of(Global.TempVar[Global.TempVar2]) + (Forward + Left)
+				* Global.GESpawnDistance);
+		Else If(Global.TempVar3 == 8);
+			Global.TempVar3 = Nearest Walkable Position(Position Of(Global.TempVar[Global.TempVar2]) + (Forward + Up)
+				* Global.GESpawnDistance);
+		Else If(Global.TempVar3 == 9);
+			Global.TempVar3 = Nearest Walkable Position(Position Of(Global.TempVar[Global.TempVar2]) + (Right + Up) * Global.GESpawnDistance);
+		Else If(Global.TempVar3 == 10);
+			Global.TempVar3 = Nearest Walkable Position(Position Of(Global.TempVar[Global.TempVar2]) + (Backward + Up)
+				* Global.GESpawnDistance);
+		Else If(Global.TempVar3 == 11);
+			Global.TempVar3 = Nearest Walkable Position(Position Of(Global.TempVar[Global.TempVar2]) + (Left + Up) * Global.GESpawnDistance);
+		Else If(Global.TempVar3 == 12);
 			Global.TempVar3 = Nearest Walkable Position(Position Of(Global.TempVar[Global.TempVar2]) + (Forward + Right + Up)
 				* Global.GESpawnDistance);
-		Else;
-			Global.TempVar3 = Nearest Walkable Position(Position Of(Global.TempVar[Global.TempVar2]));
+		Else If(Global.TempVar3 == 13);
+			Global.TempVar3 = Nearest Walkable Position(Position Of(Global.TempVar[Global.TempVar2]) + (Backward + Right + Up)
+				* Global.GESpawnDistance);
+		Else If(Global.TempVar3 == 14);
+			Global.TempVar3 = Nearest Walkable Position(Position Of(Global.TempVar[Global.TempVar2]) + (Forward + Left + Up)
+				* Global.GESpawnDistance);
+		Else If(Global.TempVar3 == 15);
+			Global.TempVar3 = Nearest Walkable Position(Position Of(Global.TempVar[Global.TempVar2]) + (Backward + Left + Up)
+				* Global.GESpawnDistance);
+		Else If(Global.TempVar3 == 16);
+			Global.TempVar3 = Nearest Walkable Position(Position Of(Global.TempVar[Global.TempVar2]) + Up * Global.GESpawnDistance);
 		End;
 		Global.TempVar4 = Forward;
+	}
+}
+
+rule("Location to spawn distant from a player *EVENT PLAYER* (Patrols Guards)(GE)[SR]")
+{
+	event
+	{
+		Subroutine;
+		SpawnDistantPlayerPatrolLoc;
+	}
+
+	actions
+	{
+		Event Player.PatrolMoveStats[0] = Random Integer(0, 16);
+		Event Player.PatrolMoveStats[1] = Random Real(5, 70);
+		If(Event Player.PatrolMoveStats[0] == 0);
+			Event Player.PatrolMoveStats[0] = Nearest Walkable Position(Position Of(Event Player) + Forward * Event Player.PatrolMoveStats[1]);
+		Else If(Event Player.PatrolMoveStats[0] == 1);
+			Event Player.PatrolMoveStats[0] = Nearest Walkable Position(Position Of(Event Player) + (Forward + Right)
+				* Event Player.PatrolMoveStats[1]);
+		Else If(Event Player.PatrolMoveStats[0] == 2);
+			Event Player.PatrolMoveStats[0] = Nearest Walkable Position(Position Of(Event Player) + Right * Event Player.PatrolMoveStats[1]);
+		Else If(Event Player.PatrolMoveStats[0] == 3);
+			Event Player.PatrolMoveStats[0] = Nearest Walkable Position(Position Of(Event Player) + (Backward + Right)
+				* Event Player.PatrolMoveStats[1]);
+		Else If(Event Player.PatrolMoveStats[0] == 4);
+			Event Player.PatrolMoveStats[0] = Nearest Walkable Position(Position Of(Event Player)
+				+ Backward * Event Player.PatrolMoveStats[1]);
+		Else If(Event Player.PatrolMoveStats[0] == 5);
+			Event Player.PatrolMoveStats[0] = Nearest Walkable Position(Position Of(Event Player) + (Backward + Left)
+				* Event Player.PatrolMoveStats[1]);
+		Else If(Event Player.PatrolMoveStats[0] == 6);
+			Event Player.PatrolMoveStats[0] = Nearest Walkable Position(Position Of(Event Player) + Left * Event Player.PatrolMoveStats[1]);
+		Else If(Event Player.PatrolMoveStats[0] == 7);
+			Event Player.PatrolMoveStats[0] = Nearest Walkable Position(Position Of(Event Player) + (Forward + Left)
+				* Event Player.PatrolMoveStats[1]);
+		Else If(Event Player.PatrolMoveStats[0] == 8);
+			Event Player.PatrolMoveStats[0] = Nearest Walkable Position(Position Of(Event Player) + (Forward + Up)
+				* Event Player.PatrolMoveStats[1]);
+		Else If(Event Player.PatrolMoveStats[0] == 9);
+			Event Player.PatrolMoveStats[0] = Nearest Walkable Position(Position Of(Event Player) + (Right + Up)
+				* Event Player.PatrolMoveStats[1]);
+		Else If(Event Player.PatrolMoveStats[0] == 10);
+			Event Player.PatrolMoveStats[0] = Nearest Walkable Position(Position Of(Event Player) + (Backward + Up)
+				* Event Player.PatrolMoveStats[1]);
+		Else If(Event Player.PatrolMoveStats[0] == 11);
+			Event Player.PatrolMoveStats[0] = Nearest Walkable Position(Position Of(Event Player) + (Left + Up)
+				* Event Player.PatrolMoveStats[1]);
+		Else If(Event Player.PatrolMoveStats[0] == 12);
+			Event Player.PatrolMoveStats[0] = Nearest Walkable Position(Position Of(Event Player) + (Forward + Right + Up)
+				* Event Player.PatrolMoveStats[1]);
+		Else If(Event Player.PatrolMoveStats[0] == 13);
+			Event Player.PatrolMoveStats[0] = Nearest Walkable Position(Position Of(Event Player) + (Backward + Right + Up)
+				* Event Player.PatrolMoveStats[1]);
+		Else If(Event Player.PatrolMoveStats[0] == 14);
+			Event Player.PatrolMoveStats[0] = Nearest Walkable Position(Position Of(Event Player) + (Forward + Left + Up)
+				* Event Player.PatrolMoveStats[1]);
+		Else If(Event Player.PatrolMoveStats[0] == 15);
+			Event Player.PatrolMoveStats[0] = Nearest Walkable Position(Position Of(Event Player) + (Backward + Left + Up)
+				* Event Player.PatrolMoveStats[1]);
+		Else If(Event Player.PatrolMoveStats[0] == 16);
+			Event Player.PatrolMoveStats[0] = Nearest Walkable Position(Position Of(Event Player) + Up * Event Player.PatrolMoveStats[1]);
+		End;
 	}
 }
 
@@ -6547,6 +6622,7 @@ rule("Init Widowmaker (Patrol Guards)(GE)")
 
 	actions
 	{
+		Set Status(Event Player, Null, Phased Out, 9999);
 		Set Status(Event Player, Null, Invincible, 9999);
 		Disable Movement Collision With Environment(Event Player, False);
 		Disable Movement Collision With Players(Event Player);
@@ -6573,8 +6649,8 @@ rule("Move Widowmaker (Patrol Guards)(GE)")
 	actions
 	{
 		Wait(Random Real(10, 40), Abort When False);
-		Call Subroutine(SpawnWidowPatrolLoc);
-		Teleport(Event Player, Global.TempVar3);
+		Call Subroutine(SpawnDistantPlayerPatrolLoc);
+		Teleport(Event Player, Event Player.PatrolMoveStats[0]);
 		Loop If Condition Is True;
 	}
 }
@@ -6633,6 +6709,124 @@ rule("Widowmaker hits a player (Patrol Guards)(GE)")
 	actions
 	{
 		Damage(Victim, Event Player, Event Damage);
+	}
+}
+
+rule("Init Hanzo (Patrol Guards)(GE)")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 2;
+		Hanzo;
+	}
+
+	conditions
+	{
+		(Global.GEChoice == 1 || Global.GEChoice == 51) == True;
+		Global.GEPatrolChoice == 4;
+		Is Dummy Bot(Event Player) == True;
+		Has Spawned(Event Player) == True;
+	}
+
+	actions
+	{
+		Set Status(Event Player, Null, Phased Out, 9999);
+		Set Status(Event Player, Null, Invincible, 9999);
+		Disable Movement Collision With Environment(Event Player, False);
+		Disable Movement Collision With Players(Event Player);
+	}
+}
+
+rule("Set Hanzo Ult (Patrol Guards)(GE)")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 2;
+		Hanzo;
+	}
+
+	conditions
+	{
+		(Global.GEChoice == 1 || Global.GEChoice == 51) == True;
+		Global.GEPatrolChoice == 4;
+		Is Dummy Bot(Event Player) == True;
+		Has Spawned(Event Player) == True;
+		Ultimate Charge Percent(Event Player) < 100;
+	}
+
+	actions
+	{
+		Set Ultimate Ability Enabled(Event Player, True);
+		Set Ultimate Charge(Event Player, 100);
+	}
+}
+
+rule("Init D.Va (Patrol Guards)(GE)")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 2;
+		D.Va;
+	}
+
+	conditions
+	{
+		(Global.GEChoice == 1 || Global.GEChoice == 51) == True;
+		Global.GEPatrolChoice == 5;
+		Has Spawned(Event Player) == True;
+		Is Dummy Bot(Event Player) == True;
+	}
+
+	actions
+	{
+		Set Knockback Dealt(Event Player, 300);
+		Set Status(Event Player, Null, Invincible, 9999);
+		Disable Movement Collision With Environment(Event Player, False);
+		Set Ultimate Ability Enabled(Event Player, True);
+		Wait(Random Integer(2, 4), Ignore Condition);
+		Set Facing(Event Player, Eye Position(Closest Player To(Event Player, Team 1)) - Eye Position(Event Player) + Up, To World);
+		"Fly mech towards a player"
+		If(Random Integer(0, 1) == 0);
+			Press Button(Event Player, Button(Ability 1));
+		End;
+		Set Ultimate Charge(Event Player, 100);
+		Wait Until(Ultimate Charge Percent(Event Player) == 100, 99999);
+		Press Button(Event Player, Button(Ultimate));
+	}
+}
+
+rule("Move Hanzo (Patrol Guards)(GE)")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 2;
+		Hanzo;
+	}
+
+	conditions
+	{
+		(Global.GEChoice == 1 || Global.GEChoice == 51) == True;
+		Global.GEPatrolChoice == 4;
+		Is Dummy Bot(Event Player) == True;
+	}
+
+	actions
+	{
+		Wait(Random Real(5, 30), Abort When False);
+		Call Subroutine(SpawnDistantPlayerPatrolLoc);
+		Teleport(Event Player, Event Player.PatrolMoveStats[0]);
+		Play Effect(All Players(Team 1), Bad Pickup Effect, Color(Orange), Event Player, 5);
+		Play Effect(All Players(Team 1), Debuff Impact Sound, Color(White), Event Player, 80);
+		Start Facing(Event Player, Eye Position(Random Value In Array(Filtered Array(All Players(Team 1),
+			!Current Array Element.IsInSpawnRoom))) - Eye Position(Event Player), 2000, To World, Direction and Turn Rate);
+		Press Button(Event Player, Button(Ultimate));
+		Wait Until(!Is Using Ultimate(Event Player), 99999);
+		Stop Facing(Event Player);
+		Loop If Condition Is True;
 	}
 }
 
