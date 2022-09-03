@@ -6651,6 +6651,8 @@ rule("Move Widowmaker (Patrol Guards)(GE)")
 		Wait(Random Real(10, 40), Abort When False);
 		Call Subroutine(SpawnDistantPlayerPatrolLoc);
 		Teleport(Event Player, Event Player.PatrolMoveStats[0]);
+		Play Effect(All Players(Team 1), Bad Pickup Effect, Color(Orange), Event Player, 5);
+		Play Effect(All Players(Team 1), Debuff Impact Sound, Color(White), Event Player, 80);
 		Loop If Condition Is True;
 	}
 }
