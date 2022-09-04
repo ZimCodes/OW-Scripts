@@ -4242,13 +4242,13 @@ rule("Select a global effect & configurate (GE)[SR]")
 		"Current NUMBER of players currently around. Used if global effect requires more than 1 player"
 		Global.TempVar2 = 1;
 		"DEBUG: Chose a specific global effect"
-		disabled Global.TempVar = 1;
+		disabled Global.TempVar = 40;
 		If(Global.TempVar == 1 || Global.TempVar == 51);
 			Global.GEMinPlayerReq = 2;
 			"The Patrol Guard to use"
 			Global.GEPatrolChoice = Random Integer(0, 5);
 			"DEBUGGING: Deactivate if not trying to debug this Global Effect"
-			disabled Global.GEPatrolChoice = 5;
+			disabled Global.GEPatrolChoice = 4;
 			Global.TempVar2 = Count Of(Filtered Array(All Players(Team 1), !Is In Spawn Room(Current Array Element)
 				&& !Current Array Element.IsWinner));
 			Global.TempVar3 = Custom String("Incoming patrols are here to cause mayhem!");
@@ -4542,11 +4542,12 @@ rule("Select a global effect & configurate (GE)[SR]")
 			"Set the timer for the Global Effect"
 			Global.GEWaitTime = Random Integer(60, 120);
 		Else If(Global.TempVar == 40);
-			Global.GECameraChoice = Random Integer(0, 2);
+			Global.GECameraChoice = Random Integer(0, 3);
 			"DEBUGGING ONLY: Selects a camera view"
-			disabled Global.GECameraChoice = 2;
+			disabled Global.GECameraChoice = 3;
 			Global.TempVar3 = Custom String("Camera is now in [{0}] mode!", Global.GECameraChoice == 0 ? Custom String("3rd-person") : (
-				Global.GECameraChoice == 1 ? Custom String("top-down") : Custom String("selfie")));
+				Global.GECameraChoice == 1 ? Custom String("top-down") : (Global.GECameraChoice == 2 ? Custom String("selfie") : Custom String(
+				"cinematic"))));
 			Global.GEName = Custom String("Wacky Camera!");
 			"Set the timer for the Global Effect"
 			Global.GEWaitTime = Random Integer(60, 120);
@@ -4945,6 +4946,9 @@ rule("Init Type B (CHOICE:All) (GE)[SR]")
 		"Big Barrier"
 		If(Global.GEChoice == 10);
 			Start Scaling Barriers(Global.TempVar, 5, False);
+		"Voice Line Or Die"
+		Else If(Global.GEChoice == 15);
+			Start Modifying Hero Voice Lines(Global.TempVar, Random Real(0.500, 1.500), False);
 		"Bastion Deactivated"
 		Else If(Global.GEChoice == 16);
 			Set Status(All Players(Team 2), Null, Frozen, 9999);
@@ -5334,6 +5338,7 @@ rule("Init Type H (CHOICE:Some or Single)(NOT:Winners) (GE)[SR]")
 			End;
 			Disable Movement Collision With Environment(Global.TempVar, False);
 			Disable Nameplates(All Players(Team 1), All Players(Team 1));
+			Start Modifying Hero Voice Lines(Global.TempVar, 0.500, False);
 	}
 }
 
@@ -5470,6 +5475,7 @@ rule("Init Type J (CHOICE:Variety)(NOT:Winners) (GE)[SR]")
 				Global.TempVar[Global.TempVar2].GEIsAffectedPlayer = True;
 			End;
 			Disable Nameplates(Global.TempVar, All Players(Team 1));
+			Start Modifying Hero Voice Lines(Global.TempVar, 1.500, False);
 	}
 }
 
@@ -5502,6 +5508,7 @@ rule("Clean up specific Global Effect at the end (GE)[SR]")
 		Else If(Global.GEChoice == 7 || Global.GEChoice == 13 || Global.GEChoice == 15);
 			Kill(Filtered Array(All Players(Team 1), Current Array Element.GECount < Global.GERequiredNum && !Current Array Element.IsWinner),
 				Random Value In Array(All Players(Team 2)));
+			Stop Modifying Hero Voice Lines(All Players(Team 1));
 		"I'm the Bomb"
 		Else If(Global.GEChoice == 8);
 			For Global Variable(TempVar2, 0, Count Of(Global.GECarriers), 1);
@@ -5620,6 +5627,7 @@ rule("Clean up specific Global Effect at the end (GE)[SR]")
 			Stop Scaling Player(All Players(Team 1));
 			Set Move Speed(All Players(Team 1), 100);
 			Enable Movement Collision With Environment(All Players(Team 1));
+			Stop Modifying Hero Voice Lines(All Players(Team 1));
 		"Leap Frog"
 		Else If(Global.GEChoice == 28);
 			Set Jump Vertical Speed(All Players(Team 1), 100);
@@ -6148,8 +6156,8 @@ rule("Set the timer for (Patrol Guards)[SR]")
 		If(Global.GEPatrolChoice == 0);
 			"Set the timer for the Global Effect"
 			Global.GEWaitTime = Random Integer(7, 11);
-		"Widowmaker/Hanzo"
-		Else If(Global.GEPatrolChoice == 3 && Global.GEPatrolChoice == 4);
+		"Widowmaker"
+		Else If(Global.GEPatrolChoice == 3);
 			"Set the timer for the Global Effect"
 			Global.GEWaitTime = Random Integer(90, 120);
 		"D.Va"
@@ -6648,7 +6656,7 @@ rule("Move Widowmaker (Patrol Guards)(GE)")
 
 	actions
 	{
-		Wait(Random Real(10, 40), Abort When False);
+		Wait(Random Real(10, 35), Abort When False);
 		Call Subroutine(SpawnDistantPlayerPatrolLoc);
 		Teleport(Event Player, Event Player.PatrolMoveStats[0]);
 		Play Effect(All Players(Team 1), Bad Pickup Effect, Color(Orange), Event Player, 5);
@@ -6783,7 +6791,7 @@ rule("Move Hanzo (Patrol Guards)(GE)")
 
 	actions
 	{
-		Wait(Random Real(5, 30), Abort When False);
+		Wait(Random Real(5, 25), Abort When False);
 		Call Subroutine(SpawnDistantPlayerPatrolLoc);
 		Teleport(Event Player, Event Player.PatrolMoveStats[0]);
 		Play Effect(All Players(Team 1), Bad Pickup Effect, Color(Orange), Event Player, 5);
@@ -6822,6 +6830,7 @@ rule("Init D.Va (Patrol Guards)(GE)")
 		Set Ultimate Ability Enabled(Event Player, True);
 		Wait(Random Integer(2, 4), Ignore Condition);
 		Set Facing(Event Player, Eye Position(Closest Player To(Event Player, Team 1)) - Eye Position(Event Player) + Up, To World);
+		Communicate(Event Player, Hello);
 		"Fly mech towards a player"
 		If(Random Integer(0, 1) == 0);
 			Press Button(Event Player, Button(Ability 1));
@@ -8987,6 +8996,38 @@ rule("Set camera view (Wacky Camera)(GE)[SR]")
 			Start Camera(Event Player, Ray Cast Hit Position(Eye Position(Event Player), Facing Direction Of(Event Player)
 				* Event Player.GECameraStats[0] + Eye Position(Event Player) + Vector(0, Event Player.GECameraStats[1], 0), All Players(
 				All Teams), Event Player, False), Eye Position(Event Player), 15);
+		"Cinematic"
+		Else If(Global.GECameraChoice == 3);
+			"Camera Distance"
+			Event Player.GECameraStats = Ray Cast Hit Position(Eye Position(Event Player), Eye Position(Event Player) + Facing Direction Of(
+				Event Player) * -1 + Vector(0, 20, 0), All Players(All Teams), Event Player, False);
+			Start Camera(Event Player, Event Player.GECameraStats, Eye Position(Event Player), 15);
+	}
+}
+
+rule("Move cinematic camera (Wacky Camera)(GE)")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		All;
+	}
+
+	conditions
+	{
+		Global.GEChoice == 40;
+		Global.IsGETimerStart == True;
+		Is In Line of Sight(Event Player.GECameraStats, Eye Position(Event Player), Barriers Do Not Block LOS) == False;
+	}
+
+	actions
+	{
+		Wait(0.600, Abort When False);
+		"Camera Distance"
+		Event Player.GECameraStats = Ray Cast Hit Position(Eye Position(Event Player), Eye Position(Event Player) + Facing Direction Of(
+			Event Player) * -1 + Vector(0, 20, 0), All Players(All Teams), Event Player, False);
+		Loop If Condition Is True;
 	}
 }
 
@@ -9274,7 +9315,7 @@ rule("Assign new body (One-For-All)(GE)")
 
 	actions
 	{
-		Wait Until(Global.GEAffectedPlayer == Null, Random Real(10, 40));
+		Wait Until(Global.GEAffectedPlayer == Null, Random Real(5, 30));
 		Abort If Condition Is False;
 		Global.GETarget = Global.GEAffectedPlayer;
 		Global.GEAffectedPlayer = Random Value In Array(Filtered Array(All Players(Team 1),
