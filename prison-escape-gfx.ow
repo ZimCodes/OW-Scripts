@@ -299,8 +299,7 @@ variables
 		35: GEHeroCarrier
 		36: GEGuardianAngel
 		37: GEHumanProtect
-		38: GESoulMate
-		39: GEIsRecentlyHurt
+		38: GEPartner
 		40: GEIsTagger
 		41: GEIsTagged
 		42: GELagType
@@ -352,8 +351,7 @@ subroutines
 	20: GEStartTypeH
 	21: GEResetHeroCarrierStats
 	22: GEResetHeroRiderStats
-	23: GECombineMaxHealth
-	24: GESelectThrottle
+	23: GEPromoteWingman
 	25: GEStartTypeI
 	26: GEStartTypeJ
 	27: AddBacktrackDeath
@@ -2507,6 +2505,7 @@ rule("winner effects on reach to end")
 
 	actions
 	{
+		Call Subroutine(GEPromoteWingman);
 		Call Subroutine(OneForAllGoal);
 		Call Subroutine(EscapeWithKey);
 		Call Subroutine(PromoteHeroRider);
@@ -4242,7 +4241,7 @@ rule("Select a global effect & configurate (GE)[SR]")
 		"Current NUMBER of players currently around. Used if global effect requires more than 1 player"
 		Global.TempVar2 = 1;
 		"DEBUG: Chose a specific global effect"
-		disabled Global.TempVar = 40;
+		disabled Global.TempVar = 24;
 		If(Global.TempVar == 1 || Global.TempVar == 51);
 			Global.GEMinPlayerReq = 2;
 			"The Patrol Guard to use"
@@ -4420,18 +4419,23 @@ rule("Select a global effect & configurate (GE)[SR]")
 			"Set the timer for the Global Effect"
 			Global.GEWaitTime = Random Integer(30, 120);
 		Else If(Global.TempVar == 24);
-			"Soul Link"
+			"Wingman"
 			Global.TempVar2 = Count Of(Filtered Array(All Players(Team 1), !Current Array Element.IsWinner));
 			Global.GEMinPlayerReq = 2;
-			Global.TempVar3 = Custom String("Some players are soulmates. Health and Damage received \nare shared with your soulmate equally.");
-			Global.GEName = Custom String("Soul Link!");
+			Global.TempVar3 = Custom String("Stick close to your wingman!");
+			Global.GEName = Custom String("Wingman!");
 			"Set the timer for the Global Effect"
-			Global.GEWaitTime = Random Integer(30, 180);
+			Global.GEWaitTime = Random Integer(60, 180);
+			"Tether Distance"
+			Global.GERadius = 7;
 		Else If(Global.TempVar == 25);
-			Global.TempVar3 = Custom String("Players move in one direction. Forwards, backwards, sideways.");
-			Global.GEName = Custom String("One Direction!");
+			"Staring Contest"
+			Global.TempVar2 = Count Of(Filtered Array(All Players(Team 1), !Current Array Element.IsWinner));
+			Global.GEMinPlayerReq = 3;
+			Global.TempVar3 = Custom String("Players alternate staring at each other.");
+			Global.GEName = Custom String("Staring Contest!");
 			"Set the timer for the Global Effect"
-			Global.GEWaitTime = Random Integer(30, 60);
+			Global.GEWaitTime = Random Integer(60, 150);
 		Else If(Global.TempVar == 26);
 			Global.GEMinPlayerReq = 3;
 			"World Tag"
@@ -4921,7 +4925,7 @@ rule("Start Global Effect -- [Type B] (GE)")
 		Global.IsGEEnabledWS == True;
 		Global.CanStartGE == 1;
 		(
-			Global.GEChoice == 3 || Global.GEChoice == 7 || Global.GEChoice == 9 || Global.GEChoice == 10 || Global.GEChoice == 13 || Global.GEChoice == 15 || Global.GEChoice == 16 || Global.GEChoice == 17 || Global.GEChoice == 18 || Global.GEChoice == 20 || Global.GEChoice == 25 || Global.GEChoice == 28 || Global.GEChoice == 30 || Global.GEChoice == 31 || Global.GEChoice == 39 || Global.GEChoice == 40 || Global.GEChoice == 41 || Global.GEChoice == 42 || Global.GEChoice == 45)
+			Global.GEChoice == 3 || Global.GEChoice == 7 || Global.GEChoice == 9 || Global.GEChoice == 10 || Global.GEChoice == 13 || Global.GEChoice == 15 || Global.GEChoice == 16 || Global.GEChoice == 17 || Global.GEChoice == 18 || Global.GEChoice == 20 || Global.GEChoice == 24 || Global.GEChoice == 25 || Global.GEChoice == 28 || Global.GEChoice == 30 || Global.GEChoice == 31 || Global.GEChoice == 39 || Global.GEChoice == 40 || Global.GEChoice == 41 || Global.GEChoice == 42 || Global.GEChoice == 45)
 			== True;
 	}
 
@@ -4960,6 +4964,10 @@ rule("Init Type B (CHOICE:All) (GE)[SR]")
 			Set Invisible(Global.TempVar, All);
 			Disable Movement Collision With Environment(Global.TempVar, False);
 			Disable Movement Collision With Players(Global.TempVar);
+		"Wingman"
+		Else If(Global.GEChoice == 24);
+			Respawn(Global.TempVar);
+			Call Subroutine(SpawnAllAtAltLoc);
 		"Leap Frog"
 		Else If(Global.GEChoice == 28);
 			Set Jump Vertical Speed(Global.TempVar, 200);
@@ -5166,7 +5174,7 @@ rule("Start Global Effect -- [Type F] (GE)")
 	{
 		Global.IsGEEnabledWS == True;
 		Global.CanStartGE == 1;
-		(Global.GEChoice == 12 || Global.GEChoice == 21 || Global.GEChoice == 23 || Global.GEChoice == 24) == True;
+		(Global.GEChoice == 12 || Global.GEChoice == 21 || Global.GEChoice == 23) == True;
 	}
 
 	actions
@@ -5208,16 +5216,6 @@ rule("Init Type F (CHOICE:Some)(NOT:Winners) (GE)[SR]")
 				Global.TempVar3 = Filtered Array(Global.TempVar3, Global.TempVar[Global.TempVar2] != Current Array Element);
 				Global.TempVar[Global.TempVar2].GEGuardianAngel = First Of(Global.TempVar3);
 				Global.TempVar[Global.TempVar2].GEGuardianAngel.GEHumanProtect = Global.TempVar[Global.TempVar2];
-				Modify Global Variable(TempVar3, Remove From Array By Index, 0);
-			End;
-		"Soul Link"
-		Else If(Global.GEChoice == 24);
-			Global.TempVar3 = Filtered Array(All Players(Team 1), !Current Array Element.IsWinner);
-			"Enter logic below"
-			For Global Variable(TempVar2, 0, Count Of(Global.TempVar), 1);
-				Global.TempVar3 = Filtered Array(Global.TempVar3, Global.TempVar[Global.TempVar2] != Current Array Element);
-				Global.TempVar[Global.TempVar2].GESoulMate = First Of(Global.TempVar3);
-				Global.TempVar[Global.TempVar2].GESoulMate.GESoulMate = Global.TempVar[Global.TempVar2];
 				Modify Global Variable(TempVar3, Remove From Array By Index, 0);
 			End;
 	}
@@ -5584,18 +5582,9 @@ rule("Clean up specific Global Effect at the end (GE)[SR]")
 				Global.TempVar[Global.TempVar2].GEGuardianAngel = Null;
 				Global.TempVar[Global.TempVar2].GEHumanProtect = Null;
 			End;
-		"Soul Link"
-		Else If(Global.GEChoice == 24);
-			Global.TempVar = All Players(Team 1);
-			Heal(Filtered Array(Global.TempVar, Current Array Element.GESoulMate != Null), Null, 9999);
-			For Global Variable(TempVar2, 0, Count Of(Global.TempVar), 1);
-				Global.TempVar[Global.TempVar2].GESoulMate = Null;
-				Global.TempVar[Global.TempVar2].GEIsRecentlyHurt = False;
-				Set Max Health(Global.TempVar[Global.TempVar2], 100);
-			End;
-		"One Direction"
+		"Staring Contest"
 		Else If(Global.GEChoice == 25);
-			Stop Forcing Throttle(All Players(Team 1));
+			Stop Facing(All Players(Team 1));
 		"World Tag"
 		Else If(Global.GEChoice == 26);
 			If(Global.GECurReqNum < Global.GERequiredNum);
@@ -5744,6 +5733,7 @@ rule("End of Global Effect *EVENT PLAYER*(GE)")
 		Event Player.GEIsAffectedPlayer = False;
 		Event Player.GECount = 0;
 		Event Player.LotteryChoice = 0;
+		Event Player.GEPartner = Null;
 		Call Subroutine(ApplyWinnerStats);
 	}
 }
@@ -5905,7 +5895,7 @@ rule("Set basic HUD & stats (GE)")
 		Event Player.IsWinner == False;
 		Event Player.GEHUDID == Null;
 		(
-			Global.GEChoice == 7 || Global.GEChoice == 13 || Global.GEChoice == 15 || Global.GEChoice == 21 || Global.GEChoice == 26 || Global.GEChoice == 29 || Global.GEChoice == 30 || Global.GEChoice == 36 || Global.GEChoice == 38 || Global.GEChoice == 39 || Global.GEChoice == 50)
+			Global.GEChoice == 7 || Global.GEChoice == 13 || Global.GEChoice == 15 || Global.GEChoice == 21 || Global.GEChoice == 25 || Global.GEChoice == 26 || Global.GEChoice == 29 || Global.GEChoice == 30 || Global.GEChoice == 36 || Global.GEChoice == 38 || Global.GEChoice == 39 || Global.GEChoice == 50)
 			== True;
 	}
 
@@ -5935,6 +5925,11 @@ rule("Set basic HUD & stats (GE)")
 		Else If(Global.GEChoice == 21);
 			Create HUD Text(Event Player, Custom String("TBags Count: {0}/{1}", Event Player.GECount, Global.GERequiredNum), Null, Null, Right,
 				0, Color(Blue), Color(White), Color(White), Visible To and String, Default Visibility);
+			Event Player.GEHUDID = Last Text ID;
+		"Staring Contest"
+		Else If(Global.GEChoice == 25);
+			Create HUD Text(Event Player, Custom String("Staring At: {0}", Event Player.GEPartner), Null, Null, Right, 0, Color(Orange), Color(
+				White), Color(White), Visible To and String, Default Visibility);
 			Event Player.GEHUDID = Last Text ID;
 		"World Tag"
 		Else If(Global.GEChoice == 26);
@@ -7723,29 +7718,29 @@ rule("Human about to die (Guardian Angel)(GE)")
 	}
 }
 
-rule("Combine max health with soulmate (Soul Link)(GE)[SR]")
+rule("Promote wingman when player reaches goal (Wingman)(GE)[SR]")
 {
 	event
 	{
 		Subroutine;
-		GECombineMaxHealth;
+		GEPromoteWingman;
 	}
 
 	actions
 	{
-		If(Global.GEChoice == 24 && Event Player.GESoulMate != Null);
-			Set Max Health(Event Player, 100);
-			Set Max Health(Event Player.GESoulMate, 100);
-			Event Player.GETempVar = (Max Health(Event Player) + Max Health(Event Player.GESoulMate)) / Max Health(Event Player) * 100;
-			Set Max Health(Event Player, Event Player.GETempVar);
-			Set Max Health(Event Player.GESoulMate, Event Player.GETempVar);
-			Wait(0.250, Ignore Condition);
-			Heal(Event Player, Null, 9999);
-			Heal(Event Player.GESoulMate, Null, 9999);
+		If(Global.GEChoice == 24 && Event Player.GEPartner != Null && !Event Player.GEIsAffectedPlayer);
+			Event Player.GEIsAffectedPlayer = True;
+			If(!Event Player.GEPartner.GEIsAffectedPlayer);
+				Teleport(Event Player.GEPartner, Global.EndPosition + Vector(0, 5, 0));
+			End;
+			If(Event Player.GEPartner.GEIsAffectedPlayer && Event Player.GEIsAffectedPlayer);
+				Event Player.GEPartner.GEIsAffectedPlayer = False;
+				Event Player.GEIsAffectedPlayer = False;
+			End;
 	}
 }
 
-rule("Init soulmate players (Soul Link)(GE)")
+rule("Init wingman (Wingman)(GE)")
 {
 	event
 	{
@@ -7760,25 +7755,40 @@ rule("Init soulmate players (Soul Link)(GE)")
 		Global.GEChoice == 24;
 		Global.IsGETimerStart == True;
 		Event Player.IsWinner == False;
-		Event Player.GEHUDID == Null;
-		Event Player.GESoulMate != Null;
+		Event Player.GEPartner == Null;
 	}
 
 	actions
 	{
-		Create HUD Text(Event Player, Custom String("Soulmate: {0}", Hero Icon String(Hero Of(Event Player.GESoulMate))), Null, Null,
-			Right, 0, Color(Yellow), Color(White), Color(White), Visible To and String, Default Visibility);
+		Event Player.GEPartner = Random Value In Array(Filtered Array(All Players(Team 1),
+			Current Array Element.GEPartner == Null && !Current Array Element.IsWinner && Current Array Element != Event Player));
+		Abort If(Event Player.GEPartner == Null);
+		Event Player.GEPartner.GEPartner = Event Player;
+		"Self Initialization"
+		Start Forcing Player Outlines(Event Player, Event Player.GEPartner, True, Color(Yellow), Always);
+		Create HUD Text(Event Player, Custom String("Wingman: {0}", Event Player.GEPartner), Null, Null, Right, 0, Color(Yellow), Color(
+			White), Color(White), Visible To and String, Default Visibility);
 		Event Player.GEHUDID = Last Text ID;
-		Start Forcing Player Outlines(Event Player, Event Player.GESoulMate, True, Color(Yellow), Always);
-		Call Subroutine(GECombineMaxHealth);
+		Create Beam Effect(Event Player, Good Beam, Event Player, Event Player.GEPartner, Distance Between(Position Of(Event Player),
+			Position Of(Event Player.GEPartner)) <= Global.GERadius ? Color(Green) : Color(Orange), Visible To Position Radius and Color);
+		Event Player.GEID = Last Created Entity;
+		"Wingman Initialization"
+		Start Forcing Player Outlines(Event Player.GEPartner, Event Player, True, Color(Yellow), Always);
+		Create HUD Text(Event Player.GEPartner, Custom String("Wingman: {0}", Event Player.GEPartner.GEPartner), Null, Null, Right, 0,
+			Color(Yellow), Color(White), Color(White), Visible To and String, Default Visibility);
+		Event Player.GEPartner.GEHUDID = Last Text ID;
+		Create Beam Effect(Event Player.GEPartner, Good Beam, Event Player.GEPartner, Event Player, Distance Between(Position Of(
+			Event Player.GEPartner), Position Of(Event Player)) <= Global.GERadius ? Color(Green) : Color(Orange),
+			Visible To Position Radius and Color);
+		Event Player.GEPartner.GEID = Last Created Entity;
 	}
 }
 
-rule("soul linked player takes damage (Soul Link)(GE)")
+rule("Player is far from wingman (Wingman)(GE)")
 {
 	event
 	{
-		Player Took Damage;
+		Ongoing - Each Player;
 		Team 1;
 		All;
 	}
@@ -7789,18 +7799,26 @@ rule("soul linked player takes damage (Soul Link)(GE)")
 		Global.GEChoice == 24;
 		Global.IsGETimerStart == True;
 		Event Player.IsWinner == False;
-		Event Player.GESoulMate != Null;
+		Event Player.GEPartner != Null;
+		Distance Between(Position Of(Event Player), Position Of(Event Player.GEPartner)) > Global.GERadius + 2;
 	}
 
 	actions
 	{
-		Event Player.GEIsRecentlyHurt = True;
-		Wait(2, Ignore Condition);
-		Event Player.GEIsRecentlyHurt = False;
+		Respawn(Event Player);
+		Call Subroutine(SpawnAtAltLoc);
+		Respawn(Event Player.GEPartner);
+		If(Current Map == Map(Blizzard World) || Current Map == Map(Blizzard World Winter));
+			Teleport(Event Player.GEPartner, Global.BlizzWorldSpawnLoc);
+			Set Facing(Event Player.GEPartner, Forward + Left, To World);
+		Else If(Current Map == Map(Hollywood) || Current Map == Map(Hollywood Halloween));
+			Teleport(Event Player.GEPartner, Global.HollywoodSpawns[0]);
+			Set Facing(Event Player.GEPartner, Right, To World);
+		End;
 	}
 }
 
-rule("soul linked player dies (Soul Link)(GE)")
+rule("Player dies (Wingman)(GE)")
 {
 	event
 	{
@@ -7815,22 +7833,22 @@ rule("soul linked player dies (Soul Link)(GE)")
 		Global.GEChoice == 24;
 		Global.IsGETimerStart == True;
 		Event Player.IsWinner == False;
-		Event Player.GESoulMate != Null;
+		Event Player.GEPartner != Null;
 	}
 
 	actions
 	{
 		"D.va has two forms. This is used to completely kill D.va"
-		If(Hero Of(Event Player.GESoulMate) == Hero(D.Va) && !Is In Alternate Form(Event Player.GESoulMate));
-			Kill(Event Player.GESoulMate, Closest Player To(Position Of(Event Player.GESoulMate), Team 2));
+		If(Hero Of(Event Player.GEPartner) == Hero(D.Va) && !Is In Alternate Form(Event Player.GEPartner));
+			Kill(Event Player.GEPartner, Closest Player To(Position Of(Event Player.GEPartner), Team 2));
 			Wait(1, Ignore Condition);
-			Kill(Event Player.GESoulMate, Closest Player To(Position Of(Event Player.GESoulMate), Team 2));
+			Kill(Event Player.GEPartner, Closest Player To(Position Of(Event Player.GEPartner), Team 2));
 		Else;
-			Kill(Event Player.GESoulMate, Closest Player To(Position Of(Event Player.GESoulMate), Team 2));
+			Kill(Event Player.GEPartner, Closest Player To(Position Of(Event Player.GEPartner), Team 2));
 	}
 }
 
-rule("Link health between soulmates (Soul Link)(GE)")
+rule("Init (Staring Contest)(GE)")
 {
 	event
 	{
@@ -7842,120 +7860,22 @@ rule("Link health between soulmates (Soul Link)(GE)")
 	conditions
 	{
 		"Change the ID # from -1 to a positive number"
-		Global.GEChoice == 24;
+		Global.GEChoice == 25;
 		Global.IsGETimerStart == True;
 		Event Player.IsWinner == False;
-		Event Player.GESoulMate != Null;
-		Health(Event Player) != Health(Event Player.GESoulMate);
 	}
 
 	actions
 	{
-		If(Event Player.GEIsRecentlyHurt || Event Player.GESoulMate.GEIsRecentlyHurt);
-			Event Player.temp = Min(Health(Event Player), Health(Event Player.GESoulMate));
-		Else;
-			Event Player.temp = Max(Health(Event Player), Health(Event Player.GESoulMate));
-		End;
-		Set Player Health(Event Player, Event Player.temp);
-		Set Player Health(Event Player.GESoulMate, Event Player.temp);
-		Wait(0.250, Ignore Condition);
+		Wait Until(Event Player.GEPartner == Null, Random Real(10, 30));
+		Abort If Condition Is False;
+		Stop Facing(Event Player);
+		Event Player.GEPartner = Random Value In Array(Filtered Array(All Players(Team 1),
+			Event Player != Current Array Element && Event Player.GEPartner != Current Array Element && !Current Array Element.IsWinner));
+		Start Facing(Event Player, Direction Towards(Eye Position(Event Player), Eye Position(Event Player.GEPartner)), 100, To World,
+			Direction and Turn Rate);
+		Wait(0.016, Abort When False);
 		Loop If Condition Is True;
-	}
-}
-
-rule("soul linked player receives healing (Soul Link)(GE)")
-{
-	event
-	{
-		Player Received Healing;
-		Team 1;
-		All;
-	}
-
-	conditions
-	{
-		"Change the ID # from -1 to a positive number"
-		Global.GEChoice == 24;
-		Global.IsGETimerStart == True;
-		Event Player.IsWinner == False;
-		Event Player.GESoulMate != Null;
-		Is In Spawn Room(Event Player) == False;
-	}
-
-	actions
-	{
-		Heal(Event Player.GESoulMate, Null, Event Healing);
-	}
-}
-
-rule("Select a throttle for the player to move (One Direction)(GE)[SR]")
-{
-	event
-	{
-		Subroutine;
-		GESelectThrottle;
-	}
-
-	actions
-	{
-		Stop Forcing Throttle(Event Player);
-		Global.GEMultiChoice = Random Integer(0, 2);
-		"Forward"
-		If(Global.GEMultiChoice == 0);
-			Start Forcing Throttle(Event Player, 0, 1, 0, 0, 0, 0);
-		Else If(Global.GEMultiChoice == 1);
-			Start Forcing Throttle(Event Player, 0, 0, 0, 1, 0, 0);
-		Else;
-			Start Forcing Throttle(Event Player, 0, 0, 0, 0, 0, 1);
-	}
-}
-
-rule("Set initial throttle (One Direction)(GE)")
-{
-	event
-	{
-		Ongoing - Each Player;
-		Team 1;
-		All;
-	}
-
-	conditions
-	{
-		"Change the ID # from -1 to a positive number"
-		Global.GEChoice == 25;
-		Global.IsGETimerStart == True;
-		Event Player.IsWinner == False;
-		Event Player.GEID == Null;
-	}
-
-	actions
-	{
-		"Save IDs of something for the player(if needed)"
-		Event Player.GEID = 22;
-		Call Subroutine(GESelectThrottle);
-	}
-}
-
-rule("Change throttle if player dies (One Direction)(GE)")
-{
-	event
-	{
-		Player Died;
-		Team 1;
-		All;
-	}
-
-	conditions
-	{
-		"Change the ID # from -1 to a positive number"
-		Global.GEChoice == 25;
-		Global.IsGETimerStart == True;
-		Event Player.IsWinner == False;
-	}
-
-	actions
-	{
-		Call Subroutine(GESelectThrottle);
 	}
 }
 
@@ -8626,7 +8546,7 @@ rule("Player picks up key (Lockdown)(GE)")
 		Global.IsGETimerStart == True;
 		Global.GEChoice == 36;
 		Global.GEAffectedPlayer == Null;
-		Is True For Any(Players Within Radius(Global.GEBallPosition, Global.GERadius + 0.200, Team 1, Off), Is Alive(Current Array Element)
+		Is True For Any(Players Within Radius(Global.GEBallPosition, Global.GERadius + 1, Team 1, Off), Is Alive(Current Array Element)
 			&& !Current Array Element.IsWinner) == True;
 	}
 
