@@ -433,7 +433,7 @@ rule("Workshop Settings")
 		Global.HasSeventhBastionWS = Workshop Setting Toggle(Custom String("Experimental"), Custom String("Add 7th Bastion"), True, 0);
 		"Maximum server load to allow actions"
 		Global.MaxSafetyServerLoadWS = Workshop Setting Integer(Custom String("Game"), Custom String(
-			"Max Server CPU usage until safety mode is active (%)"), 90, 30, 100, 1);
+			"Max Server CPU usage until safety mode is active (%)"), 85, 50, 100, 1);
 	}
 }
 
