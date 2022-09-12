@@ -276,6 +276,7 @@ variables
 		8: BacktrackDeaths
 		9: randBacktrackNum
 		10: hasPlayedSaveMessage
+		11: SideEffectStats
 		13: GEHelpTextIDs
 		14: GETimerID
 		15: GEID
@@ -389,6 +390,8 @@ subroutines
 	58: SetToxicCloudLoc
 	59: SpawnDistantPatrolLoc
 	60: SelectLocFromAllDirs
+	61: ResetPlayerSideEffect
+	62: ResetAllSideEffects
 }
 
 rule("Workshop Settings")
@@ -421,9 +424,9 @@ rule("Workshop Settings")
 		Global.HeroListTypeWS = Workshop Setting Combo(Custom String("Hero Ordering"), Custom String("Hero order to use"), 2, Array(
 			Custom String("Normal"), Custom String("Random"), Custom String("Independent"), Custom String("Custom")), 0);
 		Global.BastionPosIntervalMinMaxWS[0] = Workshop Setting Integer(Custom String("Bastion Position"), Custom String(
-			"Minimum change interval (random only)"), 70, 30, 1000, 1);
+			"Minimum change interval (random only)"), 60, 30, 1000, 1);
 		Global.BastionPosIntervalMinMaxWS[1] = Workshop Setting Integer(Custom String("Bastion Position"), Custom String(
-			"Maximum change interval (random only)"), 145, 30, 1000, 2);
+			"Maximum change interval (random only)"), 140, 30, 1000, 2);
 		Global.BastionPosIntervalMinMaxWS = Array(Min(Global.BastionPosIntervalMinMaxWS[0], Global.BastionPosIntervalMinMaxWS[1]), Max(
 			Global.BastionPosIntervalMinMaxWS[0], Global.BastionPosIntervalMinMaxWS[1]));
 		Global.BastionPosTypeWS = Workshop Setting Combo(Custom String("Bastion Position"), Custom String("Position Type"), 1, Array(
@@ -563,8 +566,8 @@ rule("Global Stats & inits")
 		Global.RBPDefaultMaps = Array(Map(Busan), Map(Eichenwalde), Map(Eichenwalde Halloween), Map(Hanamura), Map(Hanamura Winter), Map(
 			Havana), Map(Horizon Lunar Colony), Map(King's Row), Map(King's Row Winter), Map(Numbani), Map(Oasis), Map(Paris), Map(Rialto),
 			Map(Route 66), Map(Temple of Anubis), Map(Volskaya Industries));
-		"0 = I Need Healing, 1 = Toxic Clouds"
-		Global.GEToggles = Array(False, False);
+		"0 = I Need Healing, 1 = Toxic Clouds, 2 = Drug Packs"
+		Global.GEToggles = Array(False, False, False);
 		"0 = Bullets; 1 = Extra"
 		Global.BUChoices = Array(0, 0);
 		"0 = Initial Damage; 1 = New Base Damage; 2 = Extra Damage; "
@@ -2508,6 +2511,7 @@ rule("winner effects on reach to end")
 
 	actions
 	{
+		Call Subroutine(ResetPlayerSideEffect);
 		Call Subroutine(GEPromoteWingman);
 		Call Subroutine(OneForAllGoal);
 		Call Subroutine(CompleteGlobalEffect);
@@ -4244,7 +4248,7 @@ rule("Select a global effect & configurate (GE)[SR]")
 		"Current NUMBER of players currently around. Used if global effect requires more than 1 player"
 		Global.TempVar2 = 1;
 		"DEBUG: Chose a specific global effect"
-		disabled Global.TempVar = 29;
+		disabled Global.TempVar = 2;
 		If(Global.TempVar == 1 || Global.TempVar == 51);
 			Global.GEMinPlayerReq = 2;
 			"The Patrol Guard to use"
@@ -4258,10 +4262,10 @@ rule("Select a global effect & configurate (GE)[SR]")
 			"Set the timer for the Global Effect"
 			Call Subroutine(SetPatrolDuration);
 		Else If(Global.TempVar == 2);
-			Global.TempVar3 = Custom String("Some players will briefly be frozen!");
-			Global.GEName = Custom String("Frozen!");
-			"Set the timer for the Global Effect"
-			Global.GEWaitTime = Random Integer(4, 12);
+			Global.GEName = Custom String("Drug Packs!");
+			Global.GEToggles[2] = !Global.GEToggles[2];
+			Global.TempVar3 = Custom String("Health Packs [{0}] side effects!", Global.GEToggles[2] ? Custom String("introduces")
+				: Custom String("no longer causes"));
 		Else If(Global.TempVar == 3);
 			Global.TempVar3 = Custom String("The floor is HOT! Stay in the air!");
 			Global.GEName = Custom String("Lava Floor!");
@@ -4674,7 +4678,7 @@ rule("End current Global Effect (GE)[SR]")
 	}
 }
 
-rule("Set HUD recent help text for players(GE)")
+rule("Set HUD recent help text for players (GE)")
 {
 	event
 	{
@@ -4692,9 +4696,10 @@ rule("Set HUD recent help text for players(GE)")
 	actions
 	{
 		Create HUD Text(Event Player, Custom String("{0} World Actives: {1}{2}", Icon String(Recycle),
-			!Global.GEToggles[0] ? Ability Icon String(Hero(Soldier: 76), Button(Ability 2)) : String(""),
-			Global.GEToggles[1] ? Icon String(Radioactive) : String("")), Null, Null, Right, -3, Color(Green), Color(White), Color(White),
-			Visible To and String, Default Visibility);
+			!Global.GEToggles[0] ? Ability Icon String(Hero(Soldier: 76), Button(Ability 2)) : String(""), Custom String("{0}{1}",
+			Global.GEToggles[1] ? Icon String(Radioactive) : String(""), Global.GEToggles[2] ? Ability Icon String(Hero(Ana), Button(
+			Ability 2)) : String(""))), Null, Null, Right, -3, Color(Green), Color(White), Color(White), Visible To and String,
+			Default Visibility);
 		Event Player.GEHelpTextIDs = Array(Last Text ID);
 		Create HUD Text(Event Player, Custom String("{0} Recent Effect:", Ability Icon String(Hero(Wrecking Ball), Button(Ability 1))),
 			Null, Null, Right, -2, Color(Sky Blue), Color(White), Color(White), Visible To and String, Default Visibility);
@@ -5013,7 +5018,7 @@ rule("Start Global Effect -- [Type C] (GE)")
 		Global.IsGEEnabledWS == True;
 		Global.CanStartGE == 1;
 		(
-			Global.GEChoice == 4 || Global.GEChoice == 32 || Global.GEChoice == 33 || Global.GEChoice == 34 || Global.GEChoice == 35 || Global.GEChoice == 43 || Global.GEChoice == 48 || Global.GEChoice == 49 || Global.GEChoice == 52 || Global.GEChoice == 53)
+			Global.GEChoice == 2 || Global.GEChoice == 4 || Global.GEChoice == 32 || Global.GEChoice == 33 || Global.GEChoice == 34 || Global.GEChoice == 35 || Global.GEChoice == 43 || Global.GEChoice == 48 || Global.GEChoice == 49 || Global.GEChoice == 52 || Global.GEChoice == 53)
 			== True;
 	}
 
@@ -5421,7 +5426,7 @@ rule("Start Global Effect -- [Type J] (GE)")
 	{
 		Global.IsGEEnabledWS == True;
 		Global.CanStartGE == 1;
-		(Global.GEChoice == 27 || Global.GEChoice == 2 || Global.GEChoice == 6) == True;
+		(Global.GEChoice == 27 || Global.GEChoice == 6) == True;
 	}
 
 	actions
@@ -5449,16 +5454,8 @@ rule("Init Type J (CHOICE:Variety)(NOT:Winners) (GE)[SR]")
 
 	actions
 	{
-		"Frozen"
-		If(Global.GEChoice == 2);
-			"Enter logic below"
-			For Global Variable(TempVar2, 0, Count Of(Global.TempVar), 1);
-				"Is a bug"
-				Global.TempVar[Global.TempVar2].GEIsAffectedPlayer = True;
-			End;
-			Set Status(Global.TempVar, Null, Frozen, 9999);
 		"Invincible"
-		Else If(Global.GEChoice == 6);
+		If(Global.GEChoice == 6);
 			Global.TempVar3 = Filtered Array(All Players(Team 1), !Array Contains(Global.TempVar, Current Array Element));
 			For Global Variable(TempVar4, 0, Count Of(Global.TempVar3), 1);
 				Global.TempVar3[Global.TempVar4].GEHUDID = -2;
@@ -5492,9 +5489,9 @@ rule("Clean up specific Global Effect at the end (GE)[SR]")
 		"Patrol Guards"
 		If(Global.GEChoice == 1 || Global.GEChoice == 51);
 			Call Subroutine(CleanUpPatrol);
-		"Frozen"
-		Else If(Global.GEChoice == 2);
-			Clear Status(All Players(Team 1), Frozen);
+		"Drug Packs"
+		Else If(Global.GEChoice == 2 && !Global.GEToggles[2]);
+			Call Subroutine(ResetAllSideEffects);
 		"Lava Floor"
 		Else If(Global.GEChoice == 3);
 			Clear Status(All Players(Team 1), Burning);
@@ -6863,7 +6860,87 @@ rule("Init D.Va (Patrol Guards)(GE)")
 	}
 }
 
-rule("Refreeze player if no longer frozen (Frozen)(GE)")
+rule("Reset all players' side effects (Drug Packs)(GE)[SR]")
+{
+	event
+	{
+		Subroutine;
+		ResetAllSideEffects;
+	}
+
+	actions
+	{
+		Global.TempVar = All Players(Team 1);
+		For Global Variable(TempVar2, 0, Count Of(Global.TempVar), 1);
+			Destroy HUD Text(Global.TempVar[Global.TempVar2].SideEffectStats[1]);
+			Global.TempVar[Global.TempVar2].SideEffectStats = Null;
+		End;
+		Set Jump Vertical Speed(Global.TempVar, 100);
+		Stop Holding Button(Global.TempVar, Button(Crouch));
+		Set Aim Speed(Global.TempVar, 100);
+	}
+}
+
+rule("Reset player side effect (Drug Packs)(GE)[SR]")
+{
+	event
+	{
+		Subroutine;
+		ResetPlayerSideEffect;
+	}
+
+	actions
+	{
+		If(Global.GEToggles[2] && Event Player.SideEffectStats[0] != 0);
+			Destroy HUD Text(Event Player.SideEffectStats[1]);
+			If(Global.GEChoice != 28);
+				Set Jump Vertical Speed(Event Player, 100);
+			End;
+			Set Aim Speed(Event Player, 100);
+			Stop Holding Button(Event Player, Button(Crouch));
+			Event Player.SideEffectStats = Null;
+	}
+}
+
+rule("Player picks up health pack (Drug Packs)(GE)")
+{
+	event
+	{
+		Player Received Healing;
+		Team 1;
+		All;
+	}
+
+	conditions
+	{
+		Global.GEToggles[2] == True;
+		Event Was Health Pack == True;
+		"0 = Side Effect Type"
+		Event Player.SideEffectStats[0] == 0;
+	}
+
+	actions
+	{
+		"1 = Side Effect HUD key"
+		If(Event Player.SideEffectStats[1] == Null);
+			Create HUD Text(Event Player, Custom String("Side Effect Applied!"), Null, Null, Right, 2, Color(Red), Color(White), Color(White),
+				Visible To and String, Default Visibility);
+			Event Player.SideEffectStats[1] = Last Text ID;
+		End;
+		Event Player.SideEffectStats[0] = 8;
+		"Slow Turn"
+		If(Event Player.SideEffectStats[0] == 2);
+			Set Aim Speed(Event Player, 10);
+		"No Turning"
+		Else If(Event Player.SideEffectStats[0] == 3);
+			Set Aim Speed(Event Player, 0);
+		"High Turn Speed"
+		Else If(Event Player.SideEffectStats[0] == 4);
+			Set Aim Speed(Event Player, 1500);
+	}
+}
+
+rule("Side Effect #1: Frostbite (Drug Packs)(GE)")
 {
 	event
 	{
@@ -6874,16 +6951,180 @@ rule("Refreeze player if no longer frozen (Frozen)(GE)")
 
 	conditions
 	{
-		"Change the ID # from -1 to a positive number"
-		Global.GEChoice == 2;
-		Global.IsGETimerStart == True;
-		Event Player.GEIsAffectedPlayer == True;
+		Global.GEToggles[2] == True;
+		Event Player.SideEffectStats[0] == 1;
 		Has Status(Event Player, Frozen) == False;
 	}
 
 	actions
 	{
-		Set Status(Event Player, Null, Frozen, 9999);
+		Wait(Random Real(2, 8), Abort When False);
+		Set Status(Event Player, Null, Frozen, Random Real(1, 3));
+		Loop If Condition Is True;
+	}
+}
+
+rule("Side Effect #5: Jumpy (Drug Packs)(GE)")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		All;
+	}
+
+	conditions
+	{
+		Global.GEToggles[2] == True;
+		Event Player.SideEffectStats[0] == 5;
+		Is On Ground(Event Player) == True;
+	}
+
+	actions
+	{
+		Wait(Random Real(1, 8), Abort When False);
+		Set Jump Vertical Speed(Event Player, Random Real(75, 300));
+		Press Button(Event Player, Button(Jump));
+		Loop If Condition Is True;
+	}
+}
+
+rule("Side Effect #6: Crouching (Drug Packs)(GE)")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		All;
+	}
+
+	conditions
+	{
+		Global.GEToggles[2] == True;
+		Event Player.SideEffectStats[0] == 6;
+		(Hero Of(Event Player) != Hero(D.Va) && Hero Of(Event Player) != Hero(Wrecking Ball)) == True;
+		Is Crouching(Event Player) == False;
+	}
+
+	actions
+	{
+		Start Holding Button(Event Player, Button(Crouch));
+	}
+}
+
+rule("Side Effect #7A: Abilities (Drug Packs)(GE)")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		All;
+	}
+
+	conditions
+	{
+		Global.GEToggles[2] == True;
+		Event Player.SideEffectStats[0] == 7;
+		Ability Cooldown(Event Player, Button(Ability 1)) == 0;
+	}
+
+	actions
+	{
+		Wait(Random Real(0.500, 7), Abort When False);
+		Press Button(Event Player, Button(Ability 1));
+	}
+}
+
+rule("Side Effect #7B: Abilities (Drug Packs)(GE)")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		All;
+	}
+
+	conditions
+	{
+		Global.GEToggles[2] == True;
+		Event Player.SideEffectStats[0] == 7;
+		Ability Cooldown(Event Player, Button(Ability 2)) == 0;
+	}
+
+	actions
+	{
+		Wait(Random Real(0.500, 7), Abort When False);
+		Press Button(Event Player, Button(Ability 2));
+	}
+}
+
+rule("Side Effect #8: Drowsy (Drug Packs)(GE)")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		All;
+	}
+
+	conditions
+	{
+		Global.GEToggles[2] == True;
+		Event Player.SideEffectStats[0] == 8;
+		Has Status(Event Player, Asleep) == False;
+	}
+
+	actions
+	{
+		Wait(Random Real(5, 15), Abort When False);
+		Set Status(Event Player, Null, Asleep, Random Real(4, 8));
+		Loop If Condition Is True;
+	}
+}
+
+rule("Side Effect #9: Self-Harm (Drug Packs)(GE)")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		All;
+	}
+
+	conditions
+	{
+		Global.GEToggles[2] == True;
+		Event Player.SideEffectStats[0] == 9;
+	}
+
+	actions
+	{
+		Wait(Random Real(1, 10), Abort When False);
+		Damage(Event Player, Closest Player To(Event Player, Team 2), Max Health(Event Player) * Random Real(0.100, 0.300));
+		Loop If Condition Is True;
+	}
+}
+
+rule("Players die while drugged (Drug Packs)(GE)")
+{
+	event
+	{
+		Player Died;
+		Team 1;
+		All;
+	}
+
+	conditions
+	{
+		Global.GEToggles[2] == True;
+		Event Player.SideEffectStats[0] != 0;
+	}
+
+	actions
+	{
+		Call Subroutine(ResetPlayerSideEffect);
+		Event Player.BacktrackDeaths += 1;
+		Call Subroutine(SavePlayerData);
 	}
 }
 
@@ -8069,7 +8310,7 @@ rule("Init Bodyguards (President)(GE)")
 
 	actions
 	{
-		Set Max Health(Event Player, 200);
+		Set Max Health(Event Player, 150);
 	}
 }
 
