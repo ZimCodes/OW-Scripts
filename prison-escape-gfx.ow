@@ -4181,7 +4181,7 @@ rule("Select a global effect & configurate (GE)[SR]")
 		"Current NUMBER of players currently around. Used if global effect requires more than 1 player"
 		Global.TempVar2 = 1;
 		"DEBUG: Chose a specific global effect"
-		disabled Global.TempVar = 11;
+		disabled Global.TempVar = 41;
 		If(Global.TempVar == 1 || Global.TempVar == 51);
 			Global.GEMinPlayerReq = 2;
 			"The Patrol Guard to use"
@@ -4248,7 +4248,7 @@ rule("Select a global effect & configurate (GE)[SR]")
 			Global.GERadius = 4;
 		Else If(Global.TempVar == 10 || Global.TempVar == 54);
 			Global.BUChoices[3] = Random Value In Array(Filtered Array(Array(0, 1, 2, 3), Current Array Element != Global.BUChoices[3]));
-			Global.TempVar3 = Custom String("Bastion receives [{0}] buff!", Global.BUChoices[3] == 1 ? Custom String("Speed") : (
+			Global.TempVar3 = Custom String("Bastion receives [{0}] buff!", Global.BUChoices[3] == 1 ? Custom String("Projectile Speed") : (
 				Global.BUChoices[3] == 2 ? Custom String("Damage Boost") : (Global.BUChoices[3] == 3 ? Custom String("Ample Damage Boost")
 				: String("No"))));
 			Global.GEName = Custom String("Bastion Buff Upgrade!");
@@ -4496,10 +4496,10 @@ rule("Select a global effect & configurate (GE)[SR]")
 			Global.GEName = Custom String("Wacky Camera!");
 			"Set the timer for the Global Effect"
 			Global.GEWaitTime = Random Integer(60, 120);
-		"Bad Jet Boots"
+		"Space Propulsion"
 		Else If(Global.TempVar == 41);
-			Global.TempVar3 = Custom String("Flight Activated! Don't touch the ground or risk exploding!");
-			Global.GEName = Custom String("Bad Jet Boots!");
+			Global.TempVar3 = Custom String("Zero gravity! Propel yourself to move!");
+			Global.GEName = Custom String("Space Propulsion!");
 			"Set the timer for the Global Effect"
 			Global.GEWaitTime = Random Integer(60, 120);
 		Else If(Global.TempVar == 42);
@@ -5569,6 +5569,12 @@ rule("Clean up specific Global Effect at the end (GE)[SR]")
 		"Wacky Camera"
 		Else If(Global.GEChoice == 40);
 			Stop Camera(All Players(Team 1));
+		"Space Propulsion"
+		Else If(Global.GEChoice == 41);
+			Allow Button(All Players(Team 1), Button(Primary Fire));
+			Allow Button(All Players(Team 1), Button(Secondary Fire));
+			Stop Forcing Throttle(All Players(Team 1));
+			Set Gravity(All Players(Team 1), 100);
 		"Reveal"
 		Else If(Global.GEChoice == 42);
 			Destroy Dummy Bot(Team 1, Slot Of(Filtered Array(All Players(Team 1), Hero Of(Current Array Element) == Hero(Widowmaker)
@@ -6041,11 +6047,12 @@ rule("Instructions for players (GE)")
 		Else If(Global.GEChoice == 26 && Event Player.GEIsTagger);
 			Small Message(Event Player, Custom String("Press {0} to tag a player!", Input Binding String(Button(Melee))));
 		Else If(Global.GEChoice == 41);
-			Small Message(Event Player, Custom String("Hold {0} to use jet boots!", Input Binding String(Button(Jump))));
+			Small Message(Event Player, Custom String("{0} = heavy pulse! {1} = light pulse!", Input Binding String(Button(Primary Fire)),
+				Input Binding String(Button(Secondary Fire))));
 		Else If(Global.GEChoice == 50);
 			Small Message(Event Player, Custom String("Hold {0} to place your bets at a zone!", Input Binding String(Button(Reload))));
 		End;
-		Wait(6, Ignore Condition);
+		Wait(2.900, Ignore Condition);
 		Loop If Condition Is True;
 	}
 }
@@ -9202,38 +9209,7 @@ rule("Move cinematic camera (Wacky Camera)(GE)")
 	}
 }
 
-rule("Use jet boots (Bad Jet Boots)(GE)")
-{
-	event
-	{
-		Ongoing - Each Player;
-		Team 1;
-		All;
-	}
-
-	conditions
-	{
-		"Change the ID # from -1 to a positive number"
-		Global.GEChoice == 41;
-		Global.IsGETimerStart == True;
-		Is Button Held(Event Player, Button(Jump)) == True;
-	}
-
-	actions
-	{
-		If(Event Player.GEID == Null);
-			Create Effect(All Players(Team 1), Smoke Sound, Color(White), Event Player, 100, Visible To Position and Radius);
-			Event Player.GEID = Last Created Entity;
-		End;
-		Apply Impulse(Event Player, Up, 5, To World, Cancel Contrary Motion);
-		Wait(0.080, Ignore Condition);
-		Loop If Condition Is True;
-		Destroy Effect(Event Player.GEID);
-		Event Player.GEID = Null;
-	}
-}
-
-rule("Player touches ground (Bad Jet Boots)(GE)")
+rule("Init (Space Propulsion)(GE)")
 {
 	event
 	{
@@ -9248,20 +9224,62 @@ rule("Player touches ground (Bad Jet Boots)(GE)")
 		Global.GEChoice == 41;
 		Global.IsGETimerStart == True;
 		Event Player.IsWinner == False;
-		Event Player.IsInSpawnRoom == False;
-		Is On Ground(Event Player) == True;
 	}
 
 	actions
 	{
-		If(Hero Of(Event Player) == Hero(D.Va));
-			Wait(0.096, Abort When False);
-		End;
-		Kill(Event Player, Closest Player To(Event Player, Team 2));
-		Play Effect(All Players(Team 1), Junkrat Frag Launcher Explosion Sound, Color(White), Event Player, 90);
-		If(Event Player.GEID != Null);
-			Destroy Effect(Event Player.GEID);
-			Event Player.GEID = Null;
+		Set Gravity(Event Player, 0);
+		Start Forcing Throttle(Event Player, 0, 0, 0, 0, 0, 0);
+		Disallow Button(Event Player, Button(Primary Fire));
+		Disallow Button(Event Player, Button(Secondary Fire));
+	}
+}
+
+rule("Use heavy propulsion (Space Propulsion)(GE)")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		All;
+	}
+
+	conditions
+	{
+		"Change the ID # from -1 to a positive number"
+		Global.GEChoice == 41;
+		Global.IsGETimerStart == True;
+		Event Player.IsWinner == False;
+		Is Button Held(Event Player, Button(Primary Fire)) == True;
+	}
+
+	actions
+	{
+		Apply Impulse(Event Player, Facing Direction Of(Event Player) * -1, 10, To World, Cancel Contrary Motion);
+	}
+}
+
+rule("Use light propulsion (Space Propulsion)(GE)")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		All;
+	}
+
+	conditions
+	{
+		"Change the ID # from -1 to a positive number"
+		Global.GEChoice == 41;
+		Global.IsGETimerStart == True;
+		Event Player.IsWinner == False;
+		Is Button Held(Event Player, Button(Secondary Fire)) == True;
+	}
+
+	actions
+	{
+		Apply Impulse(Event Player, Facing Direction Of(Event Player) * -1, 5, To World, Cancel Contrary Motion);
 	}
 }
 
