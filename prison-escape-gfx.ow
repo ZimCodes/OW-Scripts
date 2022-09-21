@@ -427,7 +427,7 @@ rule("Workshop Settings")
 		Global.BastionPosIntervalMinMaxWS[0] = Workshop Setting Integer(Custom String("Bastion Position"), Custom String(
 			"Minimum change interval (random only)"), 60, 30, 1000, 1);
 		Global.BastionPosIntervalMinMaxWS[1] = Workshop Setting Integer(Custom String("Bastion Position"), Custom String(
-			"Maximum change interval (random only)"), 140, 30, 1000, 2);
+			"Maximum change interval (random only)"), 135, 30, 1000, 2);
 		Global.BastionPosIntervalMinMaxWS = Array(Min(Global.BastionPosIntervalMinMaxWS[0], Global.BastionPosIntervalMinMaxWS[1]), Max(
 			Global.BastionPosIntervalMinMaxWS[0], Global.BastionPosIntervalMinMaxWS[1]));
 		Global.BastionPosTypeWS = Workshop Setting Combo(Custom String("Bastion Position"), Custom String("Position Type"), 1, Array(
@@ -6617,7 +6617,7 @@ rule("Move Widowmaker (Patrol Guards)(GE)")
 
 	actions
 	{
-		Wait(Random Real(10, 35), Abort When False);
+		Wait(Random Real(10, 25), Abort When False);
 		Call Subroutine(SpawnDistantPlayerPatrolLoc);
 		Teleport(Event Player, Event Player.PatrolMoveStats[0]);
 		Play Effect(All Players(Team 1), Bad Pickup Effect, Color(Orange), Event Player, 5);
@@ -6752,7 +6752,7 @@ rule("Move Hanzo (Patrol Guards)(GE)")
 
 	actions
 	{
-		Wait(Random Real(5, 25), Abort When False);
+		Wait(Random Real(5, 20), Abort When False);
 		Call Subroutine(SpawnDistantPlayerPatrolLoc);
 		Teleport(Event Player, Event Player.PatrolMoveStats[0]);
 		Play Effect(All Players(Team 1), Bad Pickup Effect, Color(Orange), Event Player, 5);
@@ -7895,6 +7895,35 @@ rule("When Carrier enters spawn, detach Rider(Piggyback)(GE)")
 	}
 }
 
+rule("Make sure Rider is being carried (Piggyback)(GE)")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		All;
+	}
+
+	conditions
+	{
+		"Change the ID # from -1 to a positive number"
+		Global.GEChoice == 22;
+		Is In Spawn Room(Event Player) == False;
+		Event Player.IsWinner == False;
+		Event Player.GEIsHeroCarrier == True;
+		Event Player.GEHeroRider != Null;
+		Distance Between(Position Of(Event Player), Position Of(Event Player.GEHeroRider)) > 1.200;
+	}
+
+	actions
+	{
+		"Count the number of times something happens (if neccessary)"
+		Attach Players(Event Player.GEHeroRider, Event Player, Vector(0, 0.900, -0.425));
+		Start Scaling Player(Event Player.GEHeroRider, 0.400, False);
+		Set Status(Event Player.GEHeroRider, Null, Unkillable, 9999);
+	}
+}
+
 rule("Init players (Guardian Angel) (GE)")
 {
 	event
@@ -8138,7 +8167,7 @@ rule("Init (Staring Contest)(GE)")
 		Wait Until(Event Player.GEPartner == Null, Random Real(10, 30));
 		Abort If Condition Is False;
 		Stop Facing(Event Player);
-		Event Player.GEPartner = Random Value In Array(Filtered Array(All Players(Team 1),
+		Event Player.GEPartner = Random Value In Array(Filtered Array(All Players(All Teams),
 			Event Player != Current Array Element && Event Player.GEPartner != Current Array Element && !Current Array Element.IsWinner));
 		Start Facing(Event Player, Direction Towards(Eye Position(Event Player), Eye Position(Event Player.GEPartner)), 100, To World,
 			Direction and Turn Rate);
