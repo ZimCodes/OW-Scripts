@@ -9958,9 +9958,7 @@ rule("Init (Trap Zones)(GE)")
 		Else If(Event Player.TrapZoneChoice == 4);
 			"Trap Radius"
 			Event Player.TrapZoneStats[2] = Random Integer(4, 8);
-			Create Effect(All Players(Team 1), Ring, Color(Turquoise), Event Player.TrapZoneStats[0], Event Player.TrapZoneStats[2],
-				Visible To Position and Radius);
-			Event Player.TrapIDs[0] = Last Created Entity;
+			Event Player.TrapIDs[0] = -1;
 		"Lazer Field"
 		Else If(Event Player.TrapZoneChoice == 5);
 			Call Subroutine(SetLazerPositions);
