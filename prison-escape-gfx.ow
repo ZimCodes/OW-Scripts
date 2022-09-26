@@ -288,6 +288,7 @@ variables
 		21: loopNum
 		23: IsGETBagStand
 		24: IsGETBagCrouched
+		25: TrapZoneChoice
 		26: Enemy
 		27: AimPosition
 		28: TurnSpeed
@@ -301,6 +302,7 @@ variables
 		36: GEGuardianAngel
 		37: GEHumanProtect
 		38: GEPartner
+		39: TrapZoneStats
 		40: GEIsTagger
 		41: GEIsTagged
 		42: GELagType
@@ -309,6 +311,9 @@ variables
 		45: WinnerHeroCursor
 		46: IndieHeroList
 		47: temp2
+		48: EnemyTrapEntity
+		49: TrapIndex
+		50: FirstLazerPos
 		51: WinnerDeathID
 		52: BUIndex
 		53: BUBulletEffectIDs
@@ -317,11 +322,10 @@ variables
 		56: LotteryChoice
 		57: GEIndex
 		58: BlindChanceNum
-		59: PlayersInToxicCloud
-		60: ToxicCloudSpawnDistance
-		61: ToxicCloudLoc
-		62: ToxicCloudIDs
-		63: ToxicCloudRadius
+		59: PlayersInTrapZone
+		60: SecondLazerPos
+		61: ThirdLazerPos
+		62: TrapIDs
 		64: IsInSpawnRoom
 		65: GETarget
 		66: BUTeleStats
@@ -387,12 +391,15 @@ subroutines
 	55: SetBoopDirection
 	56: SetBetZoneLoc
 	57: ApplyTankForm
-	58: SetToxicCloudLoc
+	58: SetTrapZoneLoc
 	59: SpawnDistantPatrolLoc
 	60: SelectLocFromAllDirs
 	61: ResetPlayerSideEffect
 	62: ResetAllSideEffects
 	63: SelectBastionBuffUpgrade
+	64: CleanUpAllTrapsAndStats
+	65: SelectSpringDir
+	66: SetLazerPositions
 }
 
 rule("Workshop Settings")
@@ -567,7 +574,7 @@ rule("Global Stats & inits")
 		Global.RBPDefaultMaps = Array(Map(Busan), Map(Eichenwalde), Map(Eichenwalde Halloween), Map(Hanamura), Map(Hanamura Winter), Map(
 			Havana), Map(Horizon Lunar Colony), Map(King's Row), Map(King's Row Winter), Map(Numbani), Map(Oasis), Map(Paris), Map(Rialto),
 			Map(Route 66), Map(Temple of Anubis), Map(Volskaya Industries));
-		"0 = I Need Healing, 1 = Toxic Clouds, 2 = Drug Packs"
+		"0 = I Need Healing, 1 = Trap Zones, 2 = Drug Packs"
 		Global.GEToggles = Array(False, False, False);
 		"0 = Bullets; 1 = Extra, 2 = Tank Shell, 3 = Buffs"
 		Global.BUChoices = Array(0, 0, 0, 0);
@@ -4181,7 +4188,7 @@ rule("Select a global effect & configurate (GE)[SR]")
 		"Current NUMBER of players currently around. Used if global effect requires more than 1 player"
 		Global.TempVar2 = 1;
 		"DEBUG: Chose a specific global effect"
-		disabled Global.TempVar = 41;
+		disabled Global.TempVar = 49;
 		If(Global.TempVar == 1 || Global.TempVar == 51);
 			Global.GEMinPlayerReq = 2;
 			"The Patrol Guard to use"
@@ -4546,11 +4553,11 @@ rule("Select a global effect & configurate (GE)[SR]")
 			Global.TempVar3 = Custom String("All players get booped!");
 			Global.GEName = Custom String("Boop!");
 		Else If(Global.TempVar == 49);
-			"Toggle on/off toxic clouds"
+			"Toggle on/off trap zones"
 			Global.GEToggles[1] = !Global.GEToggles[1];
-			Global.TempVar3 = Custom String("{0}", Global.GEToggles[1] ? Custom String("Toxic clouds will spread throughout the lands!")
-				: Custom String("Toxic clouds have dissipated!"));
-			Global.GEName = Custom String("Toxic Clouds!");
+			Global.TempVar3 = Custom String("{0}", Global.GEToggles[1] ? Custom String("Trap zones have been set! Be careful!")
+				: Custom String("Trap zones are no longer present!"));
+			Global.GEName = Custom String("Trap Zones!");
 		Else If(Global.TempVar == 50);
 			Global.TempVar3 = Custom String(
 				"(Optional) Play the lottery by betting at ONE of the zones.\n\nEarnings: Demotion, Promotion, Nothing");
@@ -4629,9 +4636,9 @@ rule("Set HUD recent help text for players (GE)")
 	{
 		Create HUD Text(Event Player, Custom String("{0} World Actives: {1}{2}", Icon String(Recycle),
 			!Global.GEToggles[0] ? Ability Icon String(Hero(Soldier: 76), Button(Ability 2)) : String(""), Custom String("{0}{1}",
-			Global.GEToggles[1] ? Icon String(Radioactive) : String(""), Global.GEToggles[2] ? Ability Icon String(Hero(Ana), Button(
-			Ability 2)) : String(""))), Null, Null, Right, -3, Color(Green), Color(White), Color(White), Visible To and String,
-			Default Visibility);
+			Global.GEToggles[1] ? Ability Icon String(Hero(Junkrat), Button(Ability 2)) : String(""),
+			Global.GEToggles[2] ? Ability Icon String(Hero(Ana), Button(Ability 2)) : String(""))), Null, Null, Right, -3, Color(Green),
+			Color(White), Color(White), Visible To and String, Default Visibility);
 		Event Player.GEHelpTextIDs = Array(Last Text ID);
 		Create HUD Text(Event Player, Custom String("{0} Recent Effect:", Ability Icon String(Hero(Wrecking Ball), Button(Ability 1))),
 			Null, Null, Right, -2, Color(Sky Blue), Color(White), Color(White), Visible To and String, Default Visibility);
@@ -5006,13 +5013,9 @@ rule("Init Type C (CHOICE:All)(NOT:Timer) (GE)[SR]")
 			Call Subroutine(SetBoopDirection);
 			Global.TempVar = All Players(Team 1);
 			Apply Impulse(Global.TempVar, Global.GEBallPosition, Random Real(8000, 12000), To World, Cancel Contrary Motion);
-		"Toxic Clouds"
+		"Trap Zones"
 		Else If(Global.GEChoice == 49 && !Global.GEToggles[1]);
-			Global.TempVar = Filtered Array(All Players(Team 2), Hero Of(Current Array Element) == Hero(Bastion));
-			For Global Variable(TempVar2, 0, Count Of(Global.TempVar), 1);
-				Destroy Effect(Global.TempVar[Global.TempVar2].ToxicCloudIDs);
-				Global.TempVar[Global.TempVar2].ToxicCloudIDs = Null;
-			End;
+			Call Subroutine(CleanUpAllTrapsAndStats);
 	}
 }
 
@@ -5667,6 +5670,7 @@ rule("End of Global Effect *EVENT PLAYER*(GE)")
 		Event Player.GECount = 0;
 		Event Player.LotteryChoice = 0;
 		Event Player.GEPartner = Null;
+		Event Player.EnemyTrapEntity = Null;
 		Call Subroutine(ApplyWinnerStats);
 	}
 }
@@ -6869,7 +6873,8 @@ rule("Player picks up health pack (Drug Packs)(GE)")
 				Visible To and String, Default Visibility);
 			Event Player.SideEffectStats[1] = Last Text ID;
 		End;
-		Event Player.SideEffectStats[0] = 8;
+		"Select a Side Effect"
+		Event Player.SideEffectStats[0] = Random Integer(0, 9);
 		"Slow Turn"
 		If(Event Player.SideEffectStats[0] == 2);
 			Set Aim Speed(Event Player, 10);
@@ -9776,126 +9781,125 @@ rule("Set boop direction (Boop)(GE)[SR]")
 	}
 }
 
-rule("Set toxic cloud location (Toxic Clouds)(GE)[SR]")
+rule("Set trap location (Trap Zones)(GE)[SR]")
 {
 	event
 	{
 		Subroutine;
-		SetToxicCloudLoc;
+		SetTrapZoneLoc;
 	}
 
 	actions
 	{
-		Event Player.ToxicCloudLoc = Random Integer(0, 25);
-		Event Player.ToxicCloudSpawnDistance = Random Real(20, 75);
-		Event Player.ToxicCloudRadius = 5;
-		If(Event Player.ToxicCloudLoc == 0);
-			Event Player.ToxicCloudLoc = Nearest Walkable Position(Position Of(Event Player) + Forward * Event Player.ToxicCloudSpawnDistance);
-		Else If(Event Player.ToxicCloudLoc == 1);
-			Event Player.ToxicCloudLoc = Nearest Walkable Position(Position Of(Event Player) + (Forward + Right)
-				* Event Player.ToxicCloudSpawnDistance);
-		Else If(Event Player.ToxicCloudLoc == 2);
-			Event Player.ToxicCloudLoc = Nearest Walkable Position(Position Of(Event Player) + Right * Event Player.ToxicCloudSpawnDistance);
-		Else If(Event Player.ToxicCloudLoc == 3);
-			Event Player.ToxicCloudLoc = Nearest Walkable Position(Position Of(Event Player) + (Backward + Right)
-				* Event Player.ToxicCloudSpawnDistance);
-		Else If(Event Player.ToxicCloudLoc == 4);
-			Event Player.ToxicCloudLoc = Nearest Walkable Position(Position Of(Event Player)
-				+ Backward * Event Player.ToxicCloudSpawnDistance);
-		Else If(Event Player.ToxicCloudLoc == 5);
-			Event Player.ToxicCloudLoc = Nearest Walkable Position(Position Of(Event Player) + (Backward + Left)
-				* Event Player.ToxicCloudSpawnDistance);
-		Else If(Event Player.ToxicCloudLoc == 6);
-			Event Player.ToxicCloudLoc = Nearest Walkable Position(Position Of(Event Player) + Left * Event Player.ToxicCloudSpawnDistance);
-		Else If(Event Player.ToxicCloudLoc == 7);
-			Event Player.ToxicCloudLoc = Nearest Walkable Position(Position Of(Event Player) + (Forward + Left)
-				* Event Player.ToxicCloudSpawnDistance);
-		Else If(Event Player.ToxicCloudLoc == 8);
-			Event Player.ToxicCloudLoc = Nearest Walkable Position(Position Of(Event Player) + (Forward + Down)
-				* Event Player.ToxicCloudSpawnDistance);
-		Else If(Event Player.ToxicCloudLoc == 9);
-			Event Player.ToxicCloudLoc = Nearest Walkable Position(Position Of(Event Player) + (Forward + Up)
-				* Event Player.ToxicCloudSpawnDistance);
-		Else If(Event Player.ToxicCloudLoc == 10);
-			Event Player.ToxicCloudLoc = Nearest Walkable Position(Position Of(Event Player) + (Right + Up)
-				* Event Player.ToxicCloudSpawnDistance);
-		Else If(Event Player.ToxicCloudLoc == 11);
-			Event Player.ToxicCloudLoc = Nearest Walkable Position(Position Of(Event Player) + (Right + Down)
-				* Event Player.ToxicCloudSpawnDistance);
-		Else If(Event Player.ToxicCloudLoc == 12);
-			Event Player.ToxicCloudLoc = Nearest Walkable Position(Position Of(Event Player) + (Backward + Down)
-				* Event Player.ToxicCloudSpawnDistance);
-		Else If(Event Player.ToxicCloudLoc == 13);
-			Event Player.ToxicCloudLoc = Nearest Walkable Position(Position Of(Event Player) + (Backward + Up)
-				* Event Player.ToxicCloudSpawnDistance);
-		Else If(Event Player.ToxicCloudLoc == 14);
-			Event Player.ToxicCloudLoc = Nearest Walkable Position(Position Of(Event Player) + (Left + Up)
-				* Event Player.ToxicCloudSpawnDistance);
-		Else If(Event Player.ToxicCloudLoc == 15);
-			Event Player.ToxicCloudLoc = Nearest Walkable Position(Position Of(Event Player) + (Left + Down)
-				* Event Player.ToxicCloudSpawnDistance);
-		Else If(Event Player.ToxicCloudLoc == 16);
-			Event Player.ToxicCloudLoc = Nearest Walkable Position(Position Of(Event Player) + (Forward + Right + Up)
-				* Event Player.ToxicCloudSpawnDistance);
-		Else If(Event Player.ToxicCloudLoc == 17);
-			Event Player.ToxicCloudLoc = Nearest Walkable Position(Position Of(Event Player) + (Forward + Right + Down)
-				* Event Player.ToxicCloudSpawnDistance);
-		Else If(Event Player.ToxicCloudLoc == 18);
-			Event Player.ToxicCloudLoc = Nearest Walkable Position(Position Of(Event Player) + (Backward + Right + Down)
-				* Event Player.ToxicCloudSpawnDistance);
-		Else If(Event Player.ToxicCloudLoc == 19);
-			Event Player.ToxicCloudLoc = Nearest Walkable Position(Position Of(Event Player) + (Backward + Right + Up)
-				* Event Player.ToxicCloudSpawnDistance);
-		Else If(Event Player.ToxicCloudLoc == 20);
-			Event Player.ToxicCloudLoc = Nearest Walkable Position(Position Of(Event Player) + (Forward + Left + Up)
-				* Event Player.ToxicCloudSpawnDistance);
-		Else If(Event Player.ToxicCloudLoc == 21);
-			Event Player.ToxicCloudLoc = Nearest Walkable Position(Position Of(Event Player) + (Forward + Left + Down)
-				* Event Player.ToxicCloudSpawnDistance);
-		Else If(Event Player.ToxicCloudLoc == 22);
-			Event Player.ToxicCloudLoc = Nearest Walkable Position(Position Of(Event Player) + (Backward + Left + Down)
-				* Event Player.ToxicCloudSpawnDistance);
-		Else If(Event Player.ToxicCloudLoc == 23);
-			Event Player.ToxicCloudLoc = Nearest Walkable Position(Position Of(Event Player) + (Backward + Left + Up)
-				* Event Player.ToxicCloudSpawnDistance);
-		Else If(Event Player.ToxicCloudLoc == 24);
-			Event Player.ToxicCloudLoc = Nearest Walkable Position(Position Of(Event Player) + Up * Event Player.ToxicCloudSpawnDistance);
-		Else If(Event Player.ToxicCloudLoc == 25);
-			Event Player.ToxicCloudLoc = Nearest Walkable Position(Position Of(Event Player) + Down * Event Player.ToxicCloudSpawnDistance);
+		"Trap Location"
+		Event Player.TrapZoneStats[0] = Random Integer(0, 25);
+		"Trap Spawn Distance"
+		Event Player.TrapZoneStats[1] = Random Real(20, 75);
+		If(Event Player.TrapZoneStats[0] == 0);
+			Event Player.TrapZoneStats[0] = Nearest Walkable Position(Position Of(Event Player) + Forward * Event Player.TrapZoneStats[1]);
+		Else If(Event Player.TrapZoneStats[0] == 1);
+			Event Player.TrapZoneStats[0] = Nearest Walkable Position(Position Of(Event Player) + (Forward + Right)
+				* Event Player.TrapZoneStats[1]);
+		Else If(Event Player.TrapZoneStats[0] == 2);
+			Event Player.TrapZoneStats[0] = Nearest Walkable Position(Position Of(Event Player) + Right * Event Player.TrapZoneStats[1]);
+		Else If(Event Player.TrapZoneStats[0] == 3);
+			Event Player.TrapZoneStats[0] = Nearest Walkable Position(Position Of(Event Player) + (Backward + Right)
+				* Event Player.TrapZoneStats[1]);
+		Else If(Event Player.TrapZoneStats[0] == 4);
+			Event Player.TrapZoneStats[0] = Nearest Walkable Position(Position Of(Event Player) + Backward * Event Player.TrapZoneStats[1]);
+		Else If(Event Player.TrapZoneStats[0] == 5);
+			Event Player.TrapZoneStats[0] = Nearest Walkable Position(Position Of(Event Player) + (Backward + Left)
+				* Event Player.TrapZoneStats[1]);
+		Else If(Event Player.TrapZoneStats[0] == 6);
+			Event Player.TrapZoneStats[0] = Nearest Walkable Position(Position Of(Event Player) + Left * Event Player.TrapZoneStats[1]);
+		Else If(Event Player.TrapZoneStats[0] == 7);
+			Event Player.TrapZoneStats[0] = Nearest Walkable Position(Position Of(Event Player) + (Forward + Left)
+				* Event Player.TrapZoneStats[1]);
+		Else If(Event Player.TrapZoneStats[0] == 8);
+			Event Player.TrapZoneStats[0] = Nearest Walkable Position(Position Of(Event Player) + (Forward + Down)
+				* Event Player.TrapZoneStats[1]);
+		Else If(Event Player.TrapZoneStats[0] == 9);
+			Event Player.TrapZoneStats[0] = Nearest Walkable Position(Position Of(Event Player) + (Forward + Up)
+				* Event Player.TrapZoneStats[1]);
+		Else If(Event Player.TrapZoneStats[0] == 10);
+			Event Player.TrapZoneStats[0] = Nearest Walkable Position(Position Of(Event Player) + (Right + Up)
+				* Event Player.TrapZoneStats[1]);
+		Else If(Event Player.TrapZoneStats[0] == 11);
+			Event Player.TrapZoneStats[0] = Nearest Walkable Position(Position Of(Event Player) + (Right + Down)
+				* Event Player.TrapZoneStats[1]);
+		Else If(Event Player.TrapZoneStats[0] == 12);
+			Event Player.TrapZoneStats[0] = Nearest Walkable Position(Position Of(Event Player) + (Backward + Down)
+				* Event Player.TrapZoneStats[1]);
+		Else If(Event Player.TrapZoneStats[0] == 13);
+			Event Player.TrapZoneStats[0] = Nearest Walkable Position(Position Of(Event Player) + (Backward + Up)
+				* Event Player.TrapZoneStats[1]);
+		Else If(Event Player.TrapZoneStats[0] == 14);
+			Event Player.TrapZoneStats[0] = Nearest Walkable Position(Position Of(Event Player) + (Left + Up) * Event Player.TrapZoneStats[1]);
+		Else If(Event Player.TrapZoneStats[0] == 15);
+			Event Player.TrapZoneStats[0] = Nearest Walkable Position(Position Of(Event Player) + (Left + Down)
+				* Event Player.TrapZoneStats[1]);
+		Else If(Event Player.TrapZoneStats[0] == 16);
+			Event Player.TrapZoneStats[0] = Nearest Walkable Position(Position Of(Event Player) + (Forward + Right + Up)
+				* Event Player.TrapZoneStats[1]);
+		Else If(Event Player.TrapZoneStats[0] == 17);
+			Event Player.TrapZoneStats[0] = Nearest Walkable Position(Position Of(Event Player) + (Forward + Right + Down)
+				* Event Player.TrapZoneStats[1]);
+		Else If(Event Player.TrapZoneStats[0] == 18);
+			Event Player.TrapZoneStats[0] = Nearest Walkable Position(Position Of(Event Player) + (Backward + Right + Down)
+				* Event Player.TrapZoneStats[1]);
+		Else If(Event Player.TrapZoneStats[0] == 19);
+			Event Player.TrapZoneStats[0] = Nearest Walkable Position(Position Of(Event Player) + (Backward + Right + Up)
+				* Event Player.TrapZoneStats[1]);
+		Else If(Event Player.TrapZoneStats[0] == 20);
+			Event Player.TrapZoneStats[0] = Nearest Walkable Position(Position Of(Event Player) + (Forward + Left + Up)
+				* Event Player.TrapZoneStats[1]);
+		Else If(Event Player.TrapZoneStats[0] == 21);
+			Event Player.TrapZoneStats[0] = Nearest Walkable Position(Position Of(Event Player) + (Forward + Left + Down)
+				* Event Player.TrapZoneStats[1]);
+		Else If(Event Player.TrapZoneStats[0] == 22);
+			Event Player.TrapZoneStats[0] = Nearest Walkable Position(Position Of(Event Player) + (Backward + Left + Down)
+				* Event Player.TrapZoneStats[1]);
+		Else If(Event Player.TrapZoneStats[0] == 23);
+			Event Player.TrapZoneStats[0] = Nearest Walkable Position(Position Of(Event Player) + (Backward + Left + Up)
+				* Event Player.TrapZoneStats[1]);
+		Else If(Event Player.TrapZoneStats[0] == 24);
+			Event Player.TrapZoneStats[0] = Nearest Walkable Position(Position Of(Event Player) + Up * Event Player.TrapZoneStats[1]);
+		Else If(Event Player.TrapZoneStats[0] == 25);
+			Event Player.TrapZoneStats[0] = Nearest Walkable Position(Position Of(Event Player) + Down * Event Player.TrapZoneStats[1]);
 		End;
 	}
 }
 
-rule("Init Toxic clouds (Toxic Clouds)(GE)")
+rule("Clean up all traps and stats (Trap Zones)(GE)[SR]")
 {
 	event
 	{
-		Ongoing - Each Player;
-		Team 2;
-		Bastion;
-	}
-
-	conditions
-	{
-		Global.GEToggles[1] == True;
-		Event Player.ToxicCloudIDs == Null;
+		Subroutine;
+		CleanUpAllTrapsAndStats;
 	}
 
 	actions
 	{
-		Call Subroutine(SetToxicCloudLoc);
-		Create Effect(All Players(Team 1), Cloud, Color(Green), Event Player.ToxicCloudLoc + Vector(0, 1.500, 0),
-			Event Player.ToxicCloudRadius, Visible To Position and Radius);
-		Event Player.ToxicCloudIDs[0] = Last Created Entity;
-		Create Effect(All Players(Team 1), Smoke Sound, Color(White), Event Player.ToxicCloudLoc, 90, Visible To Position and Radius);
-		Event Player.ToxicCloudIDs[1] = Last Created Entity;
-		Create Effect(All Players(Team 1), Cloud, Color(Green), Event Player.ToxicCloudLoc - Vector(0, 1.500, 0),
-			Event Player.ToxicCloudRadius, Visible To Position and Radius);
-		Event Player.ToxicCloudIDs[2] = Last Created Entity;
+		Global.TempVar = Filtered Array(All Players(Team 2), Hero Of(Current Array Element) == Hero(Bastion));
+		For Global Variable(TempVar2, 0, Count Of(Global.TempVar), 1);
+			Destroy Effect(Global.TempVar[Global.TempVar2].TrapIDs);
+			Global.TempVar[Global.TempVar2].TrapIDs = Null;
+			Stop Chasing Player Variable(Global.TempVar[Global.TempVar2], FirstLazerPos);
+			Global.TempVar[Global.TempVar2].FirstLazerPos = Null;
+			Stop Chasing Player Variable(Global.TempVar[Global.TempVar2], SecondLazerPos);
+			Global.TempVar[Global.TempVar2].SecondLazerPos = Null;
+			Stop Chasing Player Variable(Global.TempVar[Global.TempVar2], ThirdLazerPos);
+			Global.TempVar[Global.TempVar2].ThirdLazerPos = Null;
+		End;
+		Stop Accelerating(All Players(Team 1));
+		Stop Forcing Throttle(All Players(Team 1));
+		Clear Status(All Players(Team 1), Knocked Down);
+		Clear Status(All Players(Team 1), Rooted);
+		Enable Movement Collision With Environment(All Players(Team 1));
 	}
 }
 
-rule("Move toxic cloud (Toxic Clouds)(GE)")
+rule("Init (Trap Zones)(GE)")
 {
 	event
 	{
@@ -9907,18 +9911,108 @@ rule("Move toxic cloud (Toxic Clouds)(GE)")
 	conditions
 	{
 		Global.GEToggles[1] == True;
-		Event Player.ToxicCloudIDs != Null;
+		Event Player.TrapIDs == Null;
 	}
 
 	actions
 	{
-		Call Subroutine(SetToxicCloudLoc);
-		Wait(Random Integer(40, 180), Abort When False);
+		Call Subroutine(SetTrapZoneLoc);
+		Event Player.TrapZoneChoice = Random Integer(0, 6);
+		"Toxic Clouds"
+		If(Event Player.TrapZoneChoice == 0);
+			"Trap Radius"
+			Event Player.TrapZoneStats[2] = 5;
+			Create Effect(All Players(Team 1), Cloud, Color(Green), Event Player.TrapZoneStats[0] + Vector(0, 1.500, 0),
+				Event Player.TrapZoneStats[2], Visible To Position and Radius);
+			Event Player.TrapIDs[0] = Last Created Entity;
+			Create Effect(All Players(Team 1), Smoke Sound, Color(White), Event Player.TrapZoneStats[0], 90, Visible To Position and Radius);
+			Event Player.TrapIDs[1] = Last Created Entity;
+			Create Effect(All Players(Team 1), Cloud, Color(Green), Event Player.TrapZoneStats[0] - Vector(0, 1.500, 0),
+				Event Player.TrapZoneStats[2], Visible To Position and Radius);
+			Event Player.TrapIDs[2] = Last Created Entity;
+		"Pitfall"
+		Else If(Event Player.TrapZoneChoice == 1);
+			"Trap Radius"
+			Event Player.TrapZoneStats[2] = 10;
+			Create Effect(All Players(Team 1), Ring, Color(Gray), Event Player.TrapZoneStats[0], Event Player.TrapZoneStats[2],
+				Visible To Position and Radius);
+			Event Player.TrapIDs[0] = Last Created Entity;
+		"Blue hole"
+		Else If(Event Player.TrapZoneChoice == 2);
+			"Trap Location"
+			Event Player.TrapZoneStats[0] += Vector(0, 3, 0);
+			"Trap Radius"
+			Event Player.TrapZoneStats[2] = 11;
+			Create Effect(All Players(Team 1), Sparkles, Color(Aqua), Event Player.TrapZoneStats[0], Event Player.TrapZoneStats[2],
+				Visible To Position and Radius);
+			Event Player.TrapIDs[0] = Last Created Entity;
+			Create Effect(All Players(Team 1), Bad Aura, Color(Aqua), Event Player.TrapZoneStats[0], Event Player.TrapZoneStats[2] / 2,
+				Visible To Position and Radius);
+			Event Player.TrapIDs[1] = Last Created Entity;
+		"Rooted"
+		Else If(Event Player.TrapZoneChoice == 3);
+			"Trap Radius"
+			Event Player.TrapZoneStats[2] = 12;
+			Event Player.TrapIDs[0] = -1;
+		"Spring"
+		Else If(Event Player.TrapZoneChoice == 4);
+			"Trap Radius"
+			Event Player.TrapZoneStats[2] = Random Integer(4, 8);
+			Create Effect(All Players(Team 1), Ring, Color(Turquoise), Event Player.TrapZoneStats[0], Event Player.TrapZoneStats[2],
+				Visible To Position and Radius);
+			Event Player.TrapIDs[0] = Last Created Entity;
+		"Lazer Field"
+		Else If(Event Player.TrapZoneChoice == 5);
+			Call Subroutine(SetLazerPositions);
+			"Lazer length"
+			Event Player.TrapZoneStats[2] = 15;
+			"1st Lazer (Bottom)"
+			Create Beam Effect(All Players(Team 1), Bad Beam, Event Player.FirstLazerPos,
+				Event Player.FirstLazerPos + Right * Event Player.TrapZoneStats[2], Color(Red), Visible To Position and Radius);
+			Event Player.TrapIDs[0] = Last Created Entity;
+			"2nd Lazer (Top)"
+			Create Beam Effect(All Players(Team 1), Bad Beam, Event Player.SecondLazerPos,
+				Event Player.SecondLazerPos + Right * Event Player.TrapZoneStats[2], Color(Red), Visible To Position and Radius);
+			Event Player.TrapIDs[1] = Last Created Entity;
+			"3rd Lazer (Middle)"
+			Create Beam Effect(All Players(Team 1), Bad Beam, Event Player.ThirdLazerPos,
+				Event Player.ThirdLazerPos + Right * Event Player.TrapZoneStats[2], Color(Red), Visible To Position and Radius);
+			Event Player.TrapIDs[2] = Last Created Entity;
+		"Nullify Zone"
+		Else If(Event Player.TrapZoneChoice == 6);
+			"Trap Radius"
+			Event Player.TrapZoneStats[2] = Random Real(8, 10);
+			Create Effect(All Players(Team 1), Ring, Color(Purple), Event Player.TrapZoneStats[0], Event Player.TrapZoneStats[2],
+				Visible To Position and Radius);
+			Event Player.TrapIDs[0] = Last Created Entity;
+	}
+}
+
+rule("Relocate trap zone (Trap Zone)(GE)")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 2;
+		Bastion;
+	}
+
+	conditions
+	{
+		Global.GEToggles[1] == True;
+		Event Player.TrapIDs != Null;
+	}
+
+	actions
+	{
+		Call Subroutine(SetTrapZoneLoc);
+		Call Subroutine(SetLazerPositions);
+		Wait(Random Integer(40, 160), Abort When False);
 		Loop If Condition Is True;
 	}
 }
 
-rule("Player touches cloud (Toxic Clouds)(GE)")
+rule("Player touches cloud (Trap Zones)(GE)")
 {
 	event
 	{
@@ -9930,17 +10024,421 @@ rule("Player touches cloud (Toxic Clouds)(GE)")
 	conditions
 	{
 		Global.GEToggles[1] == True;
-		Event Player.ToxicCloudIDs != Null;
-		Is True For Any(Players Within Radius(Event Player.ToxicCloudLoc, Event Player.ToxicCloudRadius - 1, Team 1, Off),
+		Event Player.TrapIDs != Null;
+		Event Player.TrapZoneChoice == 0;
+		Is True For Any(Players Within Radius(Event Player.TrapZoneStats[0], Event Player.TrapZoneStats[2] - 1, Team 1, Off),
 			!Current Array Element.IsWinner && !Current Array Element.IsInSpawnRoom) == True;
 	}
 
 	actions
 	{
-		Event Player.PlayersInToxicCloud = Filtered Array(Players Within Radius(Event Player.ToxicCloudLoc,
-			Event Player.ToxicCloudRadius - 1, Team 1, Off), !Current Array Element.IsWinner && !Current Array Element.IsInSpawnRoom);
-		Start Damage Over Time(Event Player.PlayersInToxicCloud, Event Player, 5, Random Real(16, 32));
+		Event Player.PlayersInTrapZone = Filtered Array(Players Within Radius(Event Player.TrapZoneStats[0],
+			Event Player.TrapZoneStats[2] - 1, Team 1, Off), !Current Array Element.IsWinner && !Current Array Element.IsInSpawnRoom);
+		Start Damage Over Time(Event Player.PlayersInTrapZone, Event Player, 5, Random Real(16, 32));
 		Wait(5, Abort When False);
+		Loop If Condition Is True;
+	}
+}
+
+rule("Player touches pitfall (Trap Zones)(GE)")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 2;
+		Bastion;
+	}
+
+	conditions
+	{
+		Global.GEToggles[1] == True;
+		Event Player.TrapIDs != Null;
+		Event Player.TrapZoneChoice == 1;
+		Is True For Any(Players Within Radius(Event Player.TrapZoneStats[0], Event Player.TrapZoneStats[2] - 1, Team 1, Off),
+			!Current Array Element.IsWinner && !Current Array Element.IsInSpawnRoom && Is On Ground(Current Array Element)) == True;
+	}
+
+	actions
+	{
+		Event Player.PlayersInTrapZone = Filtered Array(Players Within Radius(Event Player.TrapZoneStats[0],
+			Event Player.TrapZoneStats[2] - 1, Team 1, Off),
+			!Current Array Element.IsWinner && !Current Array Element.IsInSpawnRoom && Is On Ground(Current Array Element));
+		Set Status(Event Player.PlayersInTrapZone, Null, Knocked Down, 9999);
+		Wait(0.500, Ignore Condition);
+		Disable Movement Collision With Environment(Event Player.PlayersInTrapZone, True);
+		Wait(1, Abort When False);
+		Loop If Condition Is True;
+	}
+}
+
+rule("Player is inside a trap (Trap Zones)(GE)")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 2;
+		Bastion;
+	}
+
+	conditions
+	{
+		Global.GEToggles[1] == True;
+		Event Player.TrapIDs != Null;
+		(Event Player.TrapZoneChoice == 2 || Event Player.TrapZoneChoice == 3) == True;
+		Is True For Any(Players Within Radius(Event Player.TrapZoneStats[0], Event Player.TrapZoneStats[2] - 1, Team 1, Off),
+			!Current Array Element.IsWinner && !Current Array Element.IsInSpawnRoom && Current Array Element.EnemyTrapEntity == Null)
+			== True;
+	}
+
+	actions
+	{
+		Event Player.PlayersInTrapZone = Filtered Array(Players Within Radius(Event Player.TrapZoneStats[0],
+			Event Player.TrapZoneStats[2] - 1, Team 1, Off),
+			!Current Array Element.IsWinner && !Current Array Element.IsInSpawnRoom && Current Array Element.EnemyTrapEntity == Null);
+		For Player Variable(Event Player, TrapIndex, 0, Count Of(Event Player.PlayersInTrapZone), 1);
+			Event Player.PlayersInTrapZone[Event Player.TrapIndex].EnemyTrapEntity = Event Player;
+		End;
+		Wait(0.500, Abort When False);
+		Loop If Condition Is True;
+	}
+}
+
+rule("Pull Player to blue hole (Trap Zones)(GE)")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		All;
+	}
+
+	conditions
+	{
+		Global.GEToggles[1] == True;
+		Event Player.EnemyTrapEntity != Null;
+		Event Player.EnemyTrapEntity.TrapZoneChoice == 2;
+	}
+
+	actions
+	{
+		Start Accelerating(Event Player, Direction Towards(Position Of(Event Player), Event Player.EnemyTrapEntity.TrapZoneStats[0]), 100,
+			20, To World, Direction Rate and Max Speed);
+		Disable Movement Collision With Environment(Event Player, True);
+		Start Forcing Throttle(Event Player, 0, 0, 0, 0, 0, 0);
+	}
+}
+
+rule("Player is in spawn room (Trap Zones)(GE)")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		All;
+	}
+
+	conditions
+	{
+		Global.GEToggles[1] == True;
+		Event Player.IsWinner == False;
+		Event Player.IsInSpawnRoom == True;
+	}
+
+	actions
+	{
+		Event Player.EnemyTrapEntity = Null;
+		"For Pitfall Trap"
+		If(Global.GEChoice == 20);
+			Disable Movement Collision With Environment(Event Player, False);
+		Else;
+			Enable Movement Collision With Environment(Event Player);
+		End;
+		Clear Status(Event Player, Knocked Down);
+		"For Blue Hole Trap"
+		If(Global.GEChoice != 41 && Global.GEChoice != 44);
+			Stop Accelerating(Event Player);
+		End;
+		Stop Forcing Throttle(Event Player);
+		"For Rooted Trap"
+		Clear Status(Event Player, Rooted);
+	}
+}
+
+rule("Root Player in place (Trap Zones)(GE)")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		All;
+	}
+
+	conditions
+	{
+		Global.GEToggles[1] == True;
+		Event Player.EnemyTrapEntity != Null;
+		Event Player.EnemyTrapEntity.TrapZoneChoice == 3;
+	}
+
+	actions
+	{
+		Set Status(Event Player, Null, Rooted, 5);
+		Small Message(Event Player, Custom String("Rooted!"));
+		Wait Until(!Has Status(Event Player, Rooted), 99999);
+		Wait(3, Ignore Condition);
+		Loop If(Array Contains(Filtered Array(Players Within Radius(Event Player.EnemyTrapEntity[0], Event Player.EnemyTrapEntity[2],
+			Team 1, Off), !Current Array Element.IsWinner && !Current Array Element.IsInSpawnRoom), Event Player));
+		Event Player.EnemyTrapEntity = Null;
+	}
+}
+
+rule("Select spring direction (Trap Zones)(GE)[SR]")
+{
+	event
+	{
+		Subroutine;
+		SelectSpringDir;
+	}
+
+	actions
+	{
+		"Direction to catapult players"
+		Event Player.TrapZoneStats[3] = Random Integer(0, 8);
+		If(Event Player.TrapZoneStats[3] == 0);
+			Event Player.TrapZoneStats[3] = Forward + Up;
+		Else If(Event Player.TrapZoneStats[3] == 1);
+			Event Player.TrapZoneStats[3] = Right + Up;
+		Else If(Event Player.TrapZoneStats[3] == 2);
+			Event Player.TrapZoneStats[3] = Backward + Up;
+		Else If(Event Player.TrapZoneStats[3] == 3);
+			Event Player.TrapZoneStats[3] = Left + Up;
+		Else If(Event Player.TrapZoneStats[3] == 4);
+			Event Player.TrapZoneStats[3] = Forward + Right + Up;
+		Else If(Event Player.TrapZoneStats[3] == 5);
+			Event Player.TrapZoneStats[3] = Backward + Right + Up;
+		Else If(Event Player.TrapZoneStats[3] == 6);
+			Event Player.TrapZoneStats[3] = Forward + Left + Up;
+		Else If(Event Player.TrapZoneStats[3] == 7);
+			Event Player.TrapZoneStats[3] = Backward + Left + Up;
+		Else If(Event Player.TrapZoneStats[3] == 8);
+			Event Player.TrapZoneStats[3] = Up;
+		End;
+	}
+}
+
+rule("Player touches spring (Trap Zones)(GE)")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 2;
+		Bastion;
+	}
+
+	conditions
+	{
+		Global.GEToggles[1] == True;
+		Event Player.TrapIDs != Null;
+		Event Player.TrapZoneChoice == 4;
+		Is True For Any(Players Within Radius(Event Player.TrapZoneStats[0], Event Player.TrapZoneStats[2] - 1, Team 1, Off),
+			!Current Array Element.IsWinner && !Current Array Element.IsInSpawnRoom && Is On Ground(Current Array Element)) == True;
+	}
+
+	actions
+	{
+		Event Player.PlayersInTrapZone = Filtered Array(Players Within Radius(Event Player.TrapZoneStats[0],
+			Event Player.TrapZoneStats[2] - 1, Team 1, Off),
+			!Current Array Element.IsWinner && !Current Array Element.IsInSpawnRoom && Is On Ground(Current Array Element));
+		Call Subroutine(SelectSpringDir);
+		Apply Impulse(Event Player.PlayersInTrapZone, Event Player.TrapZoneStats[3], Random Real(8000, 12000), To World,
+			Cancel Contrary Motion);
+		Play Effect(All Players(Team 1), Ring Explosion, Color(Green), Event Player.TrapZoneStats[0], Event Player.TrapZoneStats[2]);
+		Play Effect(All Players(Team 1), Buff Impact Sound, Color(White), Event Player.TrapZoneStats[0], 90);
+		Wait(1, Abort When False);
+		Loop If Condition Is True;
+	}
+}
+
+rule("Set lazer positions (Trap Zones)(GE)[SR]")
+{
+	event
+	{
+		Subroutine;
+		SetLazerPositions;
+	}
+
+	actions
+	{
+		If(Event Player.TrapZoneChoice == 5);
+			"Max height of lazers from the ground"
+			Event Player.TrapZoneStats[3] = 6;
+			"Current 1st lazer position"
+			Event Player.FirstLazerPos = Event Player.TrapZoneStats[0];
+			"1st lazer speed"
+			Event Player.TrapZoneStats[5] = Random Real(2, 9);
+			"Current 2nd lazer position"
+			Event Player.SecondLazerPos = Event Player.TrapZoneStats[0] + Up * Event Player.TrapZoneStats[3];
+			"2nd lazer speed"
+			Event Player.TrapZoneStats[6] = Random Real(2, 9);
+			"Max lazer position"
+			Event Player.TrapZoneStats[4] = Event Player.SecondLazerPos;
+			"Current 3rd lazer position"
+			Event Player.ThirdLazerPos = Vector(X Component Of(Event Player.SecondLazerPos), Y Component Of(Event Player.SecondLazerPos) / 2,
+				Z Component Of(Event Player.SecondLazerPos));
+			"3rd lazer speed"
+			Event Player.TrapZoneStats[7] = Random Real(2, 9);
+	}
+}
+
+rule("Move 1st lazer (Trap Zones)(GE)")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 2;
+		Bastion;
+	}
+
+	conditions
+	{
+		Global.GEToggles[1] == True;
+		Event Player.TrapIDs != Null;
+		Event Player.TrapZoneChoice == 5;
+	}
+
+	actions
+	{
+		Chase Player Variable Over Time(Event Player, FirstLazerPos, Event Player.TrapZoneStats[4], Event Player.TrapZoneStats[5], None);
+		Wait Until(Event Player.FirstLazerPos == Event Player.TrapZoneStats[4], 15);
+		Stop Chasing Player Variable(Event Player, FirstLazerPos);
+		Abort If Condition Is False;
+		Chase Player Variable Over Time(Event Player, FirstLazerPos, Event Player.TrapZoneStats[0], Event Player.TrapZoneStats[5], None);
+		Wait Until(Event Player.FirstLazerPos == Event Player.TrapZoneStats[0], 15);
+		Stop Chasing Player Variable(Event Player, FirstLazerPos);
+		Abort If Condition Is False;
+		Loop If Condition Is True;
+	}
+}
+
+rule("Move 2nd lazer (Trap Zones)(GE)")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 2;
+		Bastion;
+	}
+
+	conditions
+	{
+		Global.GEToggles[1] == True;
+		Event Player.TrapIDs != Null;
+		Event Player.TrapZoneChoice == 5;
+	}
+
+	actions
+	{
+		Chase Player Variable Over Time(Event Player, SecondLazerPos, Event Player.TrapZoneStats[0], Event Player.TrapZoneStats[6], None);
+		Wait Until(Event Player.SecondLazerPos == Event Player.TrapZoneStats[0], 15);
+		Stop Chasing Player Variable(Event Player, SecondLazerPos);
+		Abort If Condition Is False;
+		Chase Player Variable Over Time(Event Player, SecondLazerPos, Event Player.TrapZoneStats[4], Event Player.TrapZoneStats[6], None);
+		Wait Until(Event Player.SecondLazerPos == Event Player.TrapZoneStats[4], 15);
+		Stop Chasing Player Variable(Event Player, SecondLazerPos);
+		Abort If Condition Is False;
+		Loop If Condition Is True;
+	}
+}
+
+rule("Move 3rd lazer (Trap Zones)(GE)")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 2;
+		Bastion;
+	}
+
+	conditions
+	{
+		Global.GEToggles[1] == True;
+		Event Player.TrapIDs != Null;
+		Event Player.TrapZoneChoice == 5;
+	}
+
+	actions
+	{
+		Chase Player Variable Over Time(Event Player, ThirdLazerPos, Event Player.TrapZoneStats[0], Event Player.TrapZoneStats[7], None);
+		Wait Until(Event Player.ThirdLazerPos == Event Player.TrapZoneStats[0], 15);
+		Stop Chasing Player Variable(Event Player, ThirdLazerPos);
+		Abort If Condition Is False;
+		Chase Player Variable Over Time(Event Player, ThirdLazerPos, Event Player.TrapZoneStats[4], Event Player.TrapZoneStats[7], None);
+		Wait Until(Event Player.ThirdLazerPos == Event Player.TrapZoneStats[4], 15);
+		Stop Chasing Player Variable(Event Player, ThirdLazerPos);
+		Abort If Condition Is False;
+		Loop If Condition Is True;
+	}
+}
+
+rule("Player touches lazer (Trap Zones)(GE)")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 2;
+		Bastion;
+	}
+
+	conditions
+	{
+		Global.GEToggles[1] == True;
+		Event Player.TrapIDs != Null;
+		Event Player.TrapZoneChoice == 5;
+		(Ray Cast Hit Player(Event Player.FirstLazerPos, Event Player.FirstLazerPos + Right * Event Player.TrapZoneStats[2], All Players(
+			Team 1), Null, False) != Null || Ray Cast Hit Player(Event Player.SecondLazerPos,
+			Event Player.SecondLazerPos + Right * Event Player.TrapZoneStats[2], All Players(Team 1), Null, False)
+			!= Null || Ray Cast Hit Player(Event Player.ThirdLazerPos, Event Player.ThirdLazerPos + Right * Event Player.TrapZoneStats[2],
+			All Players(Team 1), Null, False) != Null) == True;
+	}
+
+	actions
+	{
+		Event Player.PlayersInTrapZone[0] = Ray Cast Hit Player(Event Player.FirstLazerPos,
+			Event Player.FirstLazerPos + Right * Event Player.TrapZoneStats[2], All Players(Team 1), Null, False);
+		Event Player.PlayersInTrapZone[1] = Ray Cast Hit Player(Event Player.SecondLazerPos,
+			Event Player.SecondLazerPos + Right * Event Player.TrapZoneStats[2], All Players(Team 1), Null, False);
+		Event Player.PlayersInTrapZone[2] = Ray Cast Hit Player(Event Player.ThirdLazerPos,
+			Event Player.ThirdLazerPos + Right * Event Player.TrapZoneStats[2], All Players(Team 1), Null, False);
+		Kill(Event Player.PlayersInTrapZone, Event Player);
+	}
+}
+
+rule("Player is within nullify zone (Trap Zones)(GE)")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 2;
+		Bastion;
+	}
+
+	conditions
+	{
+		Global.GEToggles[1] == True;
+		Event Player.TrapIDs != Null;
+		Global.GEChoice != 12;
+		Event Player.TrapZoneChoice == 6;
+		Is True For Any(Players Within Radius(Event Player.TrapZoneStats[0], Event Player.TrapZoneStats[2] - 1, Team 1, Off),
+			!Current Array Element.IsWinner && !Current Array Element.IsInSpawnRoom && !Has Status(Current Array Element, Hacked)) == True;
+	}
+
+	actions
+	{
+		Event Player.PlayersInTrapZone = Filtered Array(Players Within Radius(Event Player.TrapZoneStats[0],
+			Event Player.TrapZoneStats[2] - 1, Team 1, Off),
+			!Current Array Element.IsWinner && !Current Array Element.IsInSpawnRoom && !Has Status(Current Array Element, Hacked));
+		Set Status(Event Player.PlayersInTrapZone, Null, Hacked, 8);
+		Wait(1, Abort When False);
 		Loop If Condition Is True;
 	}
 }
