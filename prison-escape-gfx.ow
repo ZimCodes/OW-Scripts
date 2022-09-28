@@ -4188,7 +4188,7 @@ rule("Select a global effect & configurate (GE)[SR]")
 		"Current NUMBER of players currently around. Used if global effect requires more than 1 player"
 		Global.TempVar2 = 1;
 		"DEBUG: Chose a specific global effect"
-		disabled Global.TempVar = 49;
+		disabled Global.TempVar = 1;
 		If(Global.TempVar == 1 || Global.TempVar == 51);
 			Global.GEMinPlayerReq = 2;
 			"The Patrol Guard to use"
@@ -6124,6 +6124,10 @@ rule("Set the timer for (Patrol Guards)[SR]")
 		"Widowmaker"
 		Else If(Global.GEPatrolChoice == 3);
 			"Set the timer for the Global Effect"
+			Global.GEWaitTime = Random Integer(90, 150);
+		"Hanzo"
+		Else If(Global.GEPatrolChoice == 4);
+			"Set the timer for the Global Effect"
 			Global.GEWaitTime = Random Integer(90, 120);
 		"D.Va"
 		Else If(Global.GEPatrolChoice == 5);
@@ -6503,14 +6507,18 @@ rule("Teleport Winston to player (Patrol Guards)(GE)")
 	actions
 	{
 		Wait(2, Abort When False);
-		Event Player.GETempVar = Random Integer(0, 3);
+		Event Player.GETempVar = Random Integer(0, 1);
 		If(Event Player.GETempVar == 0);
-			Teleport(Event Player, Nearest Walkable Position(Eye Position(Closest Player To(Event Player, Team 1)) + Forward * 2.500));
-		Else If(Event Player.GETempVar == 1 || Event Player.GETempVar == 2);
-			Teleport(Event Player, Nearest Walkable Position(Eye Position(Farthest Player From(Event Player, Team 1)) + Forward * 2.500));
+			Event Player.GETarget = Closest Player To(Event Player, Team 1);
 		Else;
-			Teleport(Event Player, Nearest Walkable Position(Eye Position(Random Value In Array(Filtered Array(All Players(Team 1),
-				!Current Array Element.IsWinner))) + Forward * 2.500));
+			Event Player.GETarget = Farthest Player From(Event Player, Team 1);
+		End;
+		If(Event Player.GETarget.IsInSpawnRoom);
+			Event Player.GETarget = Random Value In Array(Filtered Array(All Players(Team 1),
+				!Current Array Element.IsWinner && !Current Array Element.IsInSpawnRoom));
+		End;
+		If(Event Player.GETarget != Null);
+			Teleport(Event Player, Nearest Walkable Position(Eye Position(Event Player.GETarget) + Forward * 2.500));
 		End;
 		Loop If Condition Is True;
 	}
@@ -6563,9 +6571,14 @@ rule("Reinhardt charges (Patrol Guards)(GE)")
 	{
 		Play Effect(All Players(Team 1), Bad Pickup Effect, Color(Orange), Event Player, 5);
 		Play Effect(All Players(Team 1), Debuff Impact Sound, Color(White), Event Player, 80);
-		Teleport(Event Player, Nearest Walkable Position(Eye Position(Random Value In Array(All Players(Team 1))) + Forward * Random Real(
-			3, 5)));
-		Wait(Random Real(1.500, 2.100), Abort When False);
+		Event Player.GETarget = Random Value In Array(Filtered Array(All Players(Team 1),
+			!Current Array Element.IsWinner && !Current Array Element.IsInSpawnRoom));
+		If(Event Player.GETarget == Null);
+			Wait(0.100, Abort When False);
+			Loop If Condition Is True;
+		End;
+		Teleport(Event Player.GETarget, Nearest Walkable Position(Eye Position(Event Player.GETarget) + Forward * Random Real(3, 5)));
+		Wait(Random Real(1.400, 2), Abort When False);
 		Press Button(Event Player, Button(Ability 1));
 		Wait Until(!Is Using Ability 1(Event Player), 99999);
 		If(Random Integer(0, 20) == 6);
@@ -6756,13 +6769,14 @@ rule("Move Hanzo (Patrol Guards)(GE)")
 
 	actions
 	{
-		Wait(Random Real(5, 20), Abort When False);
+		Wait(Random Real(5, 15), Abort When False);
 		Call Subroutine(SpawnDistantPlayerPatrolLoc);
 		Teleport(Event Player, Event Player.PatrolMoveStats[0]);
 		Play Effect(All Players(Team 1), Bad Pickup Effect, Color(Orange), Event Player, 5);
 		Play Effect(All Players(Team 1), Debuff Impact Sound, Color(White), Event Player, 80);
 		Start Facing(Event Player, Eye Position(Random Value In Array(Filtered Array(All Players(Team 1),
-			!Current Array Element.IsInSpawnRoom))) - Eye Position(Event Player), 2000, To World, Direction and Turn Rate);
+			!Current Array Element.IsInSpawnRoom && !Current Array Element.IsWinner))) - Eye Position(Event Player), 2000, To World,
+			Direction and Turn Rate);
 		Press Button(Event Player, Button(Ultimate));
 		Wait Until(!Is Using Ultimate(Event Player), 99999);
 		Stop Facing(Event Player);
@@ -6874,7 +6888,7 @@ rule("Player picks up health pack (Drug Packs)(GE)")
 			Event Player.SideEffectStats[1] = Last Text ID;
 		End;
 		"Select a Side Effect"
-		Event Player.SideEffectStats[0] = Random Integer(0, 9);
+		Event Player.SideEffectStats[0] = Random Integer(1, 9);
 		"Slow Turn"
 		If(Event Player.SideEffectStats[0] == 2);
 			Set Aim Speed(Event Player, 10);
@@ -9290,6 +9304,7 @@ rule("Use heavy propulsion (Space Propulsion)(GE)")
 	actions
 	{
 		Apply Impulse(Event Player, Facing Direction Of(Event Player) * -1, 10, To World, Cancel Contrary Motion);
+		Play Effect(Event Player, Ring Explosion Sound, Color(White), Event Player, 80);
 	}
 }
 
@@ -9314,6 +9329,7 @@ rule("Use light propulsion (Space Propulsion)(GE)")
 	actions
 	{
 		Apply Impulse(Event Player, Facing Direction Of(Event Player) * -1, 5, To World, Cancel Contrary Motion);
+		Play Effect(Event Player, Ring Explosion Sound, Color(White), Event Player, 80);
 	}
 }
 
@@ -9966,15 +9982,15 @@ rule("Init (Trap Zones)(GE)")
 			Event Player.TrapZoneStats[2] = 15;
 			"1st Lazer (Bottom)"
 			Create Beam Effect(All Players(Team 1), Bad Beam, Event Player.FirstLazerPos,
-				Event Player.FirstLazerPos + Right * Event Player.TrapZoneStats[2], Color(Red), Visible To Position and Radius);
+				Event Player.FirstLazerPos + Event Player.TrapZoneStats[8], Color(Red), Visible To Position and Radius);
 			Event Player.TrapIDs[0] = Last Created Entity;
 			"2nd Lazer (Top)"
 			Create Beam Effect(All Players(Team 1), Bad Beam, Event Player.SecondLazerPos,
-				Event Player.SecondLazerPos + Right * Event Player.TrapZoneStats[2], Color(Red), Visible To Position and Radius);
+				Event Player.SecondLazerPos + Event Player.TrapZoneStats[8], Color(Red), Visible To Position and Radius);
 			Event Player.TrapIDs[1] = Last Created Entity;
 			"3rd Lazer (Middle)"
 			Create Beam Effect(All Players(Team 1), Bad Beam, Event Player.ThirdLazerPos,
-				Event Player.ThirdLazerPos + Right * Event Player.TrapZoneStats[2], Color(Red), Visible To Position and Radius);
+				Event Player.ThirdLazerPos + Event Player.TrapZoneStats[8], Color(Red), Visible To Position and Radius);
 			Event Player.TrapIDs[2] = Last Created Entity;
 		"Nullify Zone"
 		Else If(Event Player.TrapZoneChoice == 6);
@@ -10285,6 +10301,13 @@ rule("Set lazer positions (Trap Zones)(GE)[SR]")
 				Z Component Of(Event Player.SecondLazerPos));
 			"3rd lazer speed"
 			Event Player.TrapZoneStats[7] = Random Real(2, 9);
+			"Selects a direction"
+			Event Player.TrapZoneStats[8] = Random Integer(0, 7);
+			"Lazer spread direction"
+			Event Player.TrapZoneStats[8] = (Event Player.TrapZoneStats[8] == 0 ? Right : (Event Player.TrapZoneStats[8] == 1 ? Left : (
+				Event Player.TrapZoneStats[8] == 2 ? Forward : (Event Player.TrapZoneStats[8] == 3 ? Backward : (
+				Event Player.TrapZoneStats[8] == 4 ? Forward + Left : (Event Player.TrapZoneStats[8] == 5 ? Backward + Left : (
+				Event Player.TrapZoneStats[8] == 6 ? Forward + Right : Backward + Right))))))) * Event Player.TrapZoneStats[2];
 	}
 }
 
@@ -10392,21 +10415,21 @@ rule("Player touches lazer (Trap Zones)(GE)")
 		Global.GEToggles[1] == True;
 		Event Player.TrapIDs != Null;
 		Event Player.TrapZoneChoice == 5;
-		(Ray Cast Hit Player(Event Player.FirstLazerPos, Event Player.FirstLazerPos + Right * Event Player.TrapZoneStats[2], All Players(
-			Team 1), Null, False) != Null || Ray Cast Hit Player(Event Player.SecondLazerPos,
-			Event Player.SecondLazerPos + Right * Event Player.TrapZoneStats[2], All Players(Team 1), Null, False)
-			!= Null || Ray Cast Hit Player(Event Player.ThirdLazerPos, Event Player.ThirdLazerPos + Right * Event Player.TrapZoneStats[2],
-			All Players(Team 1), Null, False) != Null) == True;
+		(Ray Cast Hit Player(Event Player.FirstLazerPos, Event Player.FirstLazerPos + Event Player.TrapZoneStats[8], All Players(Team 1),
+			Null, False) != Null || Ray Cast Hit Player(Event Player.SecondLazerPos,
+			Event Player.SecondLazerPos + Event Player.TrapZoneStats[8], All Players(Team 1), Null, False) != Null || Ray Cast Hit Player(
+			Event Player.ThirdLazerPos, Event Player.ThirdLazerPos + Event Player.TrapZoneStats[8], All Players(Team 1), Null, False)
+			!= Null) == True;
 	}
 
 	actions
 	{
 		Event Player.PlayersInTrapZone[0] = Ray Cast Hit Player(Event Player.FirstLazerPos,
-			Event Player.FirstLazerPos + Right * Event Player.TrapZoneStats[2], All Players(Team 1), Null, False);
+			Event Player.FirstLazerPos + Event Player.TrapZoneStats[8], All Players(Team 1), Null, False);
 		Event Player.PlayersInTrapZone[1] = Ray Cast Hit Player(Event Player.SecondLazerPos,
-			Event Player.SecondLazerPos + Right * Event Player.TrapZoneStats[2], All Players(Team 1), Null, False);
+			Event Player.SecondLazerPos + Event Player.TrapZoneStats[8], All Players(Team 1), Null, False);
 		Event Player.PlayersInTrapZone[2] = Ray Cast Hit Player(Event Player.ThirdLazerPos,
-			Event Player.ThirdLazerPos + Right * Event Player.TrapZoneStats[2], All Players(Team 1), Null, False);
+			Event Player.ThirdLazerPos + Event Player.TrapZoneStats[8], All Players(Team 1), Null, False);
 		Kill(Event Player.PlayersInTrapZone, Event Player);
 	}
 }
