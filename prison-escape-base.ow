@@ -1349,8 +1349,8 @@ rule("Game settings world HUD")
 			Call Subroutine(IncrementGameSettingsPos);
 		End;
 		"World game settings HUD"
-		Create In-World Text(All Players(Team 1), Custom String("Game Settings"), Global.GameSettingTextVec, 2.750, Clip Against Surfaces,
-			Visible To, Color(Rose), Default Visibility);
+		Create In-World Text(All Players(Team 1), Custom String("PRISON ESCAPE [BASE]"), Global.GameSettingTextVec, 2.750,
+			Clip Against Surfaces, Visible To, Color(Rose), Default Visibility);
 	}
 }
 
