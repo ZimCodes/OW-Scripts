@@ -290,8 +290,9 @@ rule("init winner hero list")
 
 	actions
 	{
-		Global.WinnerHeroesList = Array(Hero(Ana), Hero(Brigitte), Hero(Cassidy), Hero(D.Va), Hero(Genji), Hero(Lúcio), Hero(Mercy), Hero(
-			Moira), Hero(Orisa), Hero(Reinhardt), Hero(Sigma), Hero(Soldier: 76), Hero(Winston), Hero(Zarya), Hero(Zenyatta));
+		Global.WinnerHeroesList = Array(Hero(Ana), Hero(Baptiste), Hero(Brigitte), Hero(Cassidy), Hero(D.Va), Hero(Genji), Hero(Hanzo),
+			Hero(Lúcio), Hero(Mei), Hero(Mercy), Hero(Moira), Hero(Orisa), Hero(Reinhardt), Hero(Roadhog), Hero(Sigma), Hero(Soldier: 76),
+			Hero(Sombra), Hero(Symmetra), Hero(Winston), Hero(Zarya), Hero(Zenyatta));
 	}
 }
 
@@ -1311,27 +1312,6 @@ rule("map setting (global arr p, global b, global d, global c) - anubis")
 	}
 }
 
-rule("Spawn players at alternative locations instead")
-{
-	event
-	{
-		Ongoing - Each Player;
-		Team 1;
-		All;
-	}
-
-	conditions
-	{
-		Has Spawned(Event Player) == True;
-		Is Alive(Event Player) == True;
-	}
-
-	actions
-	{
-		Call Subroutine(SpawnAtAltLoc);
-	}
-}
-
 rule("Spawn players at alternate spawn location[SR]")
 {
 	event
@@ -1484,7 +1464,8 @@ rule("Select the next winner hero using ring (END GAME)")
 			Event Player.WinnerHeroCursor += 1;
 		End;
 		Start Forcing Player To Be Hero(Event Player, Global.WinnerHeroesList[Event Player.WinnerHeroCursor]);
-		Wait(0.250, Abort When False);
+		Preload Hero(Event Player, Array Slice(Global.WinnerHeroesList, Min(0, Event Player.WinnerHeroCursor - 2), 5));
+		Wait(1, Ignore Condition);
 	}
 }
 
@@ -1514,7 +1495,8 @@ rule("Select the previous winner hero using ring (END GAME)")
 			Event Player.WinnerHeroCursor -= 1;
 		End;
 		Start Forcing Player To Be Hero(Event Player, Global.WinnerHeroesList[Event Player.WinnerHeroCursor]);
-		Wait(0.250, Abort When False);
+		Preload Hero(Event Player, Array Slice(Global.WinnerHeroesList, Min(0, Event Player.WinnerHeroCursor - 2), 5));
+		Wait(1, Ignore Condition);
 	}
 }
 
@@ -2930,6 +2912,7 @@ rule("No Hud & apply winner outline")
 	actions
 	{
 		Disable Game Mode HUD(Event Player);
+		Disable Built-In Game Mode Respawning(Event Player);
 		If(Is True For Any(All Players(Team 1), Current Array Element.IsWinner));
 			Start Forcing Player Outlines(Filtered Array(All Players(Team 1), Current Array Element.IsWinner), All Players(Team 1), True,
 				Color(Green), Always);
@@ -3345,25 +3328,52 @@ rule("Sombra Remove Text")
 	}
 }
 
-rule("Spawn Dead Players")
+rule("Spawn Dead Players (ENEMY)")
 {
 	event
 	{
 		Player Died;
-		All;
+		Team 2;
 		All;
 	}
 
 	conditions
 	{
 		Is Dead(Event Player) == True;
-		Count Of(Filtered Array(All Players(All Teams), Has Spawned(Current Array Element) && Hero Of(Current Array Element) == Hero(
-			Mercy))) <= 0;
 	}
 
 	actions
 	{
 		Wait(0.048, Abort When False);
+		Respawn(Event Player);
+		Set Status(Event Player, Null, Invincible, 9999);
+	}
+}
+
+rule("Spawn Dead Players (PLAYERS)")
+{
+	event
+	{
+		Player Died;
+		Team 1;
+		All;
+	}
+
+	conditions
+	{
+		Is Dead(Event Player) == True;
+	}
+
+	actions
+	{
+		Disable Built-In Game Mode Respawning(Event Player);
+		If(Is True For Any(All Players(Team 1), Hero Of(Current Array Element) == Hero(Mercy) && !Current Array Element.IsWinner));
+			Wait(6, Abort When False);
+		Else If(Is True For Any(All Players(Team 1), Hero Of(Current Array Element) == Hero(Mercy) && Current Array Element.IsWinner));
+			Wait(4, Abort When False);
+		Else;
+			Wait(0.048, Abort When False);
+		End;
 		Respawn(Event Player);
 		Remove All Health Pools From Player(Event Player);
 		If(Hero Of(Event Player) == Hero(Tracer));
@@ -3373,6 +3383,7 @@ rule("Spawn Dead Players")
 		Else If(Hero Of(Event Player) == Hero(Symmetra) && Is Using Ability 2(Event Player));
 			Press Button(Event Player, Button(Ability 2));
 		End;
+		Call Subroutine(SpawnAtAltLoc);
 	}
 }
 
@@ -3656,9 +3667,15 @@ rule("Green outlines for winners")
 		Disable Nameplates(Event Player, All Players(Team 1));
 		Set Move Speed(Event Player, 120);
 		If(Event Player.WinnerDeathID == Null);
+			"Total Death HUD"
 			Create HUD Text(Event Player, Custom String("Total Deaths: {0}", Event Player.Deaths), Null, Null, Left, 2, Color(Turquoise),
 				Color(White), Color(White), Visible To, Default Visibility);
-			Event Player.WinnerDeathID = Last Text ID;
+			Event Player.WinnerDeathID[0] = Last Text ID;
+			"Go to Spawn HUD"
+			Create HUD Text(All Players(All Teams), Null, Custom String(" \nGo To Spawn:"), Custom String("Hold [{0}] + [{1}] + [{2}]",
+				Input Binding String(Button(Reload)), Input Binding String(Button(Jump)), Input Binding String(Button(Interact))), Left, 3,
+				Color(White), Color(Aqua), Color(White), Visible To and String, Default Visibility);
+			Event Player.WinnerDeathID[1] = Last Text ID;
 	}
 }
 
@@ -3719,5 +3736,31 @@ rule("force winner player hero")
 			Start Forcing Player To Be Hero(Event Player, Last Of(Event Player.IndieHeroList));
 		End;
 		Start Forcing Player Outlines(Event Player, All Players(Team 1), True, Color(Green), Always);
+	}
+}
+
+rule("Player reset button combo shortcut (BUTTONS)")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		All;
+	}
+
+	conditions
+	{
+		Event Player.IsWinner == True;
+		Is Button Held(Event Player, Button(Reload)) == True;
+		Is Button Held(Event Player, Button(Jump)) == True;
+		Is Button Held(Event Player, Button(Interact)) == True;
+	}
+
+	actions
+	{
+		Small Message(Event Player, Custom String("Teleporting to spawn. Continue Holding!"));
+		Wait(3, Abort When False);
+		Respawn(Event Player);
+		Call Subroutine(SpawnAtAltLoc);
 	}
 }
