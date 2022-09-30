@@ -2,8 +2,8 @@ settings
 {
 	main
 	{
-		Description: "Prisoners are placed on death row. Can you escape your fate? Escape prison with ALL heroes to finish the game.\n\n*This is an alternative version of BASTION ESCAPE 2."
-		Mode Name: "PRISON ESCAPE"
+		Description: "Prisoners are placed on death row. Can you escape your fate? Escape prison with ALL heroes to finish the game.\n\nGlobal Effects will occur ever so often. Always look on the right side of your screen to understand its effects.\n\n*This version of PRISON ESCAPE is difficult! Not for the faint of heart!"
+		Mode Name: "PRISON ESCAPE [GFX]"
 	}
 
 	lobby
@@ -49,7 +49,7 @@ settings
 			Kill Cam: Off
 			Kill Feed: Off
 			Respawn As Random Hero: On
-			Respawn Time Scalar: 0%
+			Respawn Time Scalar: 40%
 			Spawn Health Packs: Enabled
 		}
 	}
@@ -547,7 +547,7 @@ rule("Global Stats & inits")
 	{
 		Disable Inspector Recording;
 		Disable Built-In Game Mode Completion;
-		Create HUD Text(All Players(All Teams), Null, Null, Custom String("WORKSHOP.CODES/PRISON-ESCAPE | SERVER CPU: {0}%",
+		Create HUD Text(All Players(All Teams), Null, Null, Custom String("WORKSHOP.CODES/PRISON-ESCAPE-GFX | SERVER CPU: {0}%",
 			Round To Integer(Server Load / 255 * 100, To Nearest)), Left, -1000, Color(White), Color(White), Color(White),
 			Visible To and String, Default Visibility);
 		Set Slow Motion(90);
@@ -557,8 +557,8 @@ rule("Global Stats & inits")
 		Create HUD Text(All Players(All Teams), Null, Custom String(" \nGo To Spawn:"), Custom String("Hold [{0}] + [{1}] + [{2}]",
 			Input Binding String(Button(Reload)), Input Binding String(Button(Jump)), Input Binding String(Button(Interact))), Left, 14,
 			Color(White), Color(Aqua), Color(White), Visible To and String, Default Visibility);
-		Create HUD Text(All Players(All Teams), Null, Null, Custom String("PRISON ESCAPE"), Top, 0, Color(White), Color(White), Color(
-			White), Visible To and String, Default Visibility);
+		Create HUD Text(All Players(All Teams), Null, Null, Custom String("PRISON ESCAPE [GFX]"), Top, 0, Color(White), Color(White),
+			Color(White), Visible To and String, Default Visibility);
 		Create HUD Text(All Players(All Teams), Null, Custom String("Code: N0B1R"), Null, Top, 1, Color(White), Color(White), Color(White),
 			Visible To and String, Default Visibility);
 		Global.SavedWinners = Empty Array;
@@ -1540,27 +1540,6 @@ rule("map setting (global arr p, global b, global d, global c) - anubis")
 	}
 }
 
-rule("Spawn players at alternative locations instead")
-{
-	event
-	{
-		Ongoing - Each Player;
-		Team 1;
-		All;
-	}
-
-	conditions
-	{
-		Has Spawned(Event Player) == True;
-		Is Alive(Event Player) == True;
-	}
-
-	actions
-	{
-		Call Subroutine(SpawnAtAltLoc);
-	}
-}
-
 rule("init winners feature rings (END GAME)")
 {
 	event
@@ -1757,8 +1736,8 @@ rule("Game settings world HUD")
 			Call Subroutine(IncrementGameSettingsPos);
 		End;
 		"World game settings HUD"
-		Create In-World Text(All Players(Team 1), Custom String("Prison Escape"), Global.GameSettingTextVec, 2.750, Clip Against Surfaces,
-			Visible To, Color(Rose), Default Visibility);
+		Create In-World Text(All Players(Team 1), Custom String("Prison Escape [GFX]"), Global.GameSettingTextVec, 2.750,
+			Clip Against Surfaces, Visible To, Color(Rose), Default Visibility);
 	}
 }
 
@@ -3792,6 +3771,7 @@ rule("Spawn Dead Players (PLAYERS)")
 		Else If(Hero Of(Event Player) == Hero(Symmetra) && Is Using Ability 2(Event Player));
 			Press Button(Event Player, Button(Ability 2));
 		End;
+		Call Subroutine(SpawnAtAltLoc);
 	}
 }
 
@@ -4100,16 +4080,14 @@ rule("Player reset button combo shortcut (BUTTONS)")
 		Is Button Held(Event Player, Button(Reload)) == True;
 		Is Button Held(Event Player, Button(Jump)) == True;
 		Is Button Held(Event Player, Button(Interact)) == True;
+		"(Piggyback) Prevent Hero Riders from returning to spawn"
+		Event Player.GEHeroCarrier == Null;
 	}
 
 	actions
 	{
 		Small Message(Event Player, Custom String("Teleporting to spawn. Continue Holding!"));
-		If(!Event Player.IsWinner);
-			Wait(5, Abort When False);
-		Else;
-			Wait(3, Abort When False);
-		End;
+		Wait(3, Abort When False);
 		Respawn(Event Player);
 		Call Subroutine(SpawnAtAltLoc);
 	}
