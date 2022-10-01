@@ -203,6 +203,7 @@ variables
 		39: WinnerHeroesList
 		40: WinnerHeroesRingStats
 		41: WinnerResetRingStats
+		42: PlayerRespawnTypeWS
 		44: GameSettingTextVec
 
 	player:
@@ -273,6 +274,8 @@ rule("Workshop Settings")
 			Custom String("Normal"), Custom String("Hard"), Custom String("Expert"), Custom String("Legendary")), 0);
 		Global.WinnerCountToCycleWS = Workshop Setting Integer(Custom String("Game"), Custom String(
 			"Winners needed to cycle map(0=disabled)"), 3, 0, 100, 0);
+		Global.PlayerRespawnTypeWS = Workshop Setting Combo(Custom String("Game"), Custom String("Player Respawn Type"), 1, Array(
+			Custom String("Bastion Escape 2"), Custom String("PRISON ESCAPE")), 0);
 	}
 }
 
@@ -1312,6 +1315,29 @@ rule("map setting (global arr p, global b, global d, global c) - anubis")
 	}
 }
 
+rule("Spawn players at alternative locations instead (RESPAWN)")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		All;
+	}
+
+	conditions
+	{
+		"Bastion Escape 2 type"
+		Global.PlayerRespawnTypeWS == 0;
+		Has Spawned(Event Player) == True;
+		Is Alive(Event Player) == True;
+	}
+
+	actions
+	{
+		Call Subroutine(SpawnAtAltLoc);
+	}
+}
+
 rule("Spawn players at alternate spawn location[SR]")
 {
 	event
@@ -1329,6 +1355,44 @@ rule("Spawn players at alternate spawn location[SR]")
 			Teleport(Event Player, Global.HollywoodSpawnLoc);
 			Set Facing(Event Player, Right, To World);
 		End;
+	}
+}
+
+rule("Place Player away from bad Blizz World spawn (NEW SPAWN FIX)")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		(Current Map == Map(Blizzard World) || Current Map == Map(Blizzard World Winter)) == True;
+		Is True For Any(Players Within Radius(Vector(-78.650, -0.250, 175.310), 8, Team 1, Off), Is Alive(Current Array Element)) == True;
+	}
+
+	actions
+	{
+		Teleport(Players Within Radius(Vector(-78.650, -0.250, 175.310), 8, Team 1, Off), Global.BlizzWorldSpawnLoc);
+	}
+}
+
+rule("Place Player away from bad Hollywood spawn (NEW SPAWN FIX)")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		(Current Map == Map(Hollywood) || Current Map == Map(Hollywood Halloween)) == True;
+		Is True For Any(Players Within Radius(Vector(50.060, 2.750, -54.900), 7, Team 1, Off), Is Alive(Current Array Element)) == True;
+	}
+
+	actions
+	{
+		Teleport(Players Within Radius(Vector(50.060, 2.750, -54.900), 7, Team 1, Off), Global.HollywoodSpawnLoc);
 	}
 }
 
@@ -1372,6 +1436,8 @@ rule("setup game option settings text for world HUD [SR]")
 		Modify Global Variable(GameSettingsHUDWT, Append To Array, Custom String("Hero Order: [{0}]",
 			Global.HeroListTypeWS == 0 ? Custom String("Normal") : (Global.HeroListTypeWS == 1 ? Custom String("Random") : (
 			Global.HeroListTypeWS == 2 ? Custom String("Independent") : Custom String("Custom")))));
+		Modify Global Variable(GameSettingsHUDWT, Append To Array, Custom String("Respawn Type: [{0}]",
+			Global.PlayerRespawnTypeWS == 0 ? Custom String("Bastion Escape 2") : Custom String("PRISON ESCAPE")));
 		Modify Global Variable(GameSettingsHUDWT, Append To Array, Custom String("Backtracking: [{0}]",
 			Global.BacktrackDeathsWS == 0 ? Custom String("Disabled") : Custom String("Enabled")));
 		If(Global.BacktrackDeathsWS != 0);
@@ -2912,7 +2978,10 @@ rule("No Hud & apply winner outline")
 	actions
 	{
 		Disable Game Mode HUD(Event Player);
-		Disable Built-In Game Mode Respawning(Event Player);
+		"PRISON ESCAPE Respawn type"
+		If(Global.PlayerRespawnTypeWS == 1);
+			Disable Built-In Game Mode Respawning(Event Player);
+		End;
 		If(Is True For Any(All Players(Team 1), Current Array Element.IsWinner));
 			Start Forcing Player Outlines(Filtered Array(All Players(Team 1), Current Array Element.IsWinner), All Players(Team 1), True,
 				Color(Green), Always);
@@ -3328,7 +3397,40 @@ rule("Sombra Remove Text")
 	}
 }
 
-rule("Spawn Dead Players (ENEMY)")
+rule("Spawn Dead Players (RESPAWN)")
+{
+	event
+	{
+		Player Died;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		"BASTION ESCAPE 2 type"
+		Global.PlayerRespawnTypeWS == 0;
+		Is Dead(Event Player) == True;
+		Count Of(Filtered Array(All Players(All Teams), Has Spawned(Current Array Element) && Hero Of(Current Array Element) == Hero(
+			Mercy))) <= 0;
+	}
+
+	actions
+	{
+		Wait(0.048, Abort When False);
+		Respawn(Event Player);
+		Remove All Health Pools From Player(Event Player);
+		If(Hero Of(Event Player) == Hero(Tracer));
+			Set Ability Cooldown(Event Player, Button(Ability 2), 5);
+		Else If(Hero Of(Event Player) == Hero(Sombra) && Is Using Ability 2(Event Player));
+			Press Button(Event Player, Button(Interact));
+		Else If(Hero Of(Event Player) == Hero(Symmetra) && Is Using Ability 2(Event Player));
+			Press Button(Event Player, Button(Ability 2));
+		End;
+	}
+}
+
+rule("Spawn Dead Players (ENEMY)(RESPAWN)")
 {
 	event
 	{
@@ -3339,6 +3441,8 @@ rule("Spawn Dead Players (ENEMY)")
 
 	conditions
 	{
+		"PRISON ESCAPE type"
+		Global.PlayerRespawnTypeWS == 1;
 		Is Dead(Event Player) == True;
 	}
 
@@ -3350,7 +3454,7 @@ rule("Spawn Dead Players (ENEMY)")
 	}
 }
 
-rule("Spawn Dead Players (PLAYERS)")
+rule("Spawn Dead Players (PLAYERS)(RESPAWN)")
 {
 	event
 	{
@@ -3361,6 +3465,8 @@ rule("Spawn Dead Players (PLAYERS)")
 
 	conditions
 	{
+		"PRISON ESCAPE type"
+		Global.PlayerRespawnTypeWS == 1;
 		Is Dead(Event Player) == True;
 	}
 
@@ -3368,7 +3474,7 @@ rule("Spawn Dead Players (PLAYERS)")
 	{
 		Disable Built-In Game Mode Respawning(Event Player);
 		If(Is True For Any(All Players(Team 1), Hero Of(Current Array Element) == Hero(Mercy) && !Current Array Element.IsWinner));
-			Wait(6, Abort When False);
+			Wait(5, Abort When False);
 		Else If(Is True For Any(All Players(Team 1), Hero Of(Current Array Element) == Hero(Mercy) && Current Array Element.IsWinner));
 			Wait(4, Abort When False);
 		Else;
