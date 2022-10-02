@@ -3778,7 +3778,7 @@ rule("Green outlines for winners")
 				Color(White), Color(White), Visible To, Default Visibility);
 			Event Player.WinnerDeathID[0] = Last Text ID;
 			"Go to Spawn HUD"
-			Create HUD Text(All Players(All Teams), Null, Custom String(" \nGo To Spawn:"), Custom String("Hold [{0}] + [{1}] + [{2}]",
+			Create HUD Text(Event Player, Null, Custom String(" \nGo To Spawn:"), Custom String("Hold [{0}] + [{1}] + [{2}]",
 				Input Binding String(Button(Reload)), Input Binding String(Button(Jump)), Input Binding String(Button(Interact))), Left, 3,
 				Color(White), Color(Aqua), Color(White), Visible To and String, Default Visibility);
 			Event Player.WinnerDeathID[1] = Last Text ID;
