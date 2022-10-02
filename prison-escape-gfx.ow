@@ -215,7 +215,7 @@ variables
 		31: SavedWinners
 		32: SavedBacktrackDeaths
 		33: BlizzWorldSpawnLoc
-		34: HasAllWinnersToCycleWS
+		34: WinnerCountToCycleWS
 		35: HollywoodSpawns
 		36: RBPDefaultMaps
 		37: isTeleporterEnabled
@@ -434,18 +434,18 @@ rule("Workshop Settings")
 		Global.BastionPosIntervalMinMaxWS[0] = Workshop Setting Integer(Custom String("Bastion Position"), Custom String(
 			"Minimum change interval (random only)"), 60, 30, 1000, 1);
 		Global.BastionPosIntervalMinMaxWS[1] = Workshop Setting Integer(Custom String("Bastion Position"), Custom String(
-			"Maximum change interval (random only)"), 135, 30, 1000, 2);
+			"Maximum change interval (random only)"), 120, 30, 1000, 2);
 		Global.BastionPosIntervalMinMaxWS = Array(Min(Global.BastionPosIntervalMinMaxWS[0], Global.BastionPosIntervalMinMaxWS[1]), Max(
 			Global.BastionPosIntervalMinMaxWS[0], Global.BastionPosIntervalMinMaxWS[1]));
 		Global.BastionPosTypeWS = Workshop Setting Combo(Custom String("Bastion Position"), Custom String("Position Type"), 1, Array(
 			Custom String("Original"), Custom String("Random"), Custom String("Random Once"), Custom String("On Escape")), 0);
-		Global.HasAllWinnersToCycleWS = Workshop Setting Toggle(Custom String("Game"), Custom String(
-			"To cycle next map, the amount of completions = total players in the lobby"), True, 0);
 		Global.ShowEscapeStatusWS = Workshop Setting Toggle(Custom String("Game"), Custom String("Show Escape Status Board"), False, 1);
 		Global.HasSeventhBastionWS = Workshop Setting Toggle(Custom String("Experimental"), Custom String("Add 7th Bastion"), True, 0);
 		"Maximum server load to allow actions"
 		Global.MaxSafetyServerLoadWS = Workshop Setting Integer(Custom String("Game"), Custom String(
 			"Max Server CPU usage until safety mode is active (%)"), 90, 50, 100, 1);
+		Global.WinnerCountToCycleWS = Workshop Setting Integer(Custom String("Game"), Custom String(
+			"Winners needed to cycle map(0=disabled)"), 3, 0, 100, 0);
 	}
 }
 
@@ -708,8 +708,8 @@ rule("Cycle to next map (Map Cycling)")
 
 	conditions
 	{
-		Global.HasAllWinnersToCycleWS == True;
-		Global.CurWinnerCount >= Count Of(All Players(Team 1));
+		Global.WinnerCountToCycleWS != 0;
+		Global.CurWinnerCount >= Global.WinnerCountToCycleWS;
 	}
 
 	actions
@@ -1719,6 +1719,44 @@ rule("Spawn players at alternate spawn location[SR]")
 	}
 }
 
+rule("Place Player away from bad Blizz World spawn (NEW SPAWN FIX)")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		(Current Map == Map(Blizzard World) || Current Map == Map(Blizzard World Winter)) == True;
+		Is True For Any(Players Within Radius(Vector(-78.650, -0.250, 175.310), 8, Team 1, Off), Is Alive(Current Array Element)) == True;
+	}
+
+	actions
+	{
+		Teleport(Players Within Radius(Vector(-78.650, -0.250, 175.310), 8, Team 1, Off), Global.BlizzWorldSpawnLoc);
+	}
+}
+
+rule("Place Player away from bad Hollywood spawn (NEW SPAWN FIX)")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		(Current Map == Map(Hollywood) || Current Map == Map(Hollywood Halloween)) == True;
+		Is True For Any(Players Within Radius(Vector(50.060, 2.750, -54.900), 7, Team 1, Off), Is Alive(Current Array Element)) == True;
+	}
+
+	actions
+	{
+		Teleport(Players Within Radius(Vector(50.060, 2.750, -54.900), 7, Team 1, Off), Global.HollywoodSpawns[0]);
+	}
+}
+
 rule("Game settings world HUD")
 {
 	event
@@ -1774,9 +1812,9 @@ rule("setup game option settings text for world HUD [SR]")
 			Call Subroutine(IncrementGameSettingsPos);
 		End;
 		"The \"Next Map Cycle Option\""
-		If(Global.HasAllWinnersToCycleWS);
-			Create In-World Text(All Players(Team 1), Custom String("Completions Until Next Map: [{0}] / [{1}]", Global.CurWinnerCount,
-				Count Of(All Players(Team 1))), Global.GameOptTextVec, 1.500, Clip Against Surfaces, Visible To and String, Color(Yellow),
+		If(Global.WinnerCountToCycleWS != 0);
+			Create In-World Text(All Players(Team 1), Custom String("Winners Until Next Map: [{0}] / [{1}]", Global.CurWinnerCount,
+				Global.WinnerCountToCycleWS), Global.GameOptTextVec, 1.500, Clip Against Surfaces, Visible To and String, Color(Yellow),
 				Default Visibility);
 			Call Subroutine(IncrementGameSettingsPos);
 		End;
@@ -2511,7 +2549,7 @@ rule("winner effects on reach to end")
 		Event Player.BacktrackDeaths = 0;
 		If(Event Player.CurrentHero == Count Of(Global.HeroList));
 			Event Player.IsWinner = True;
-			Skip If(!Global.HasAllWinnersToCycleWS, 1);
+			Skip If(Global.WinnerCountToCycleWS == 0, 1);
 			Global.CurWinnerCount += 1;
 			Skip If(Global.HeroDataSaveIndexWS == -1, 1);
 			Modify Global Variable(SavedWinners, Append To Array, Custom String("{0}", Event Player));
@@ -4166,7 +4204,7 @@ rule("Select a global effect & configurate (GE)[SR]")
 		"Current NUMBER of players currently around. Used if global effect requires more than 1 player"
 		Global.TempVar2 = 1;
 		"DEBUG: Chose a specific global effect"
-		disabled Global.TempVar = 1;
+		disabled Global.TempVar = 49;
 		If(Global.TempVar == 1 || Global.TempVar == 51);
 			Global.GEMinPlayerReq = 2;
 			"The Patrol Guard to use"
@@ -5523,7 +5561,8 @@ rule("Clean up specific Global Effect at the end (GE)[SR]")
 			Set Max Health(All Players(Team 1), 100);
 			Stop Scaling Player(All Players(Team 1));
 			Set Move Speed(All Players(Team 1), 100);
-			Enable Movement Collision With Environment(All Players(Team 1));
+			Enable Movement Collision With Environment(Filtered Array(All Players(Team 1), Current Array Element.EnemyTrapEntity == Null || (
+				Current Array Element.EnemyTrapEntity != Null && Current Array Element.EnemyTrapEntity.TrapZoneChoice != 3)));
 			Stop Modifying Hero Voice Lines(All Players(Team 1));
 		"Leap Frog"
 		Else If(Global.GEChoice == 28);
@@ -5648,7 +5687,6 @@ rule("End of Global Effect *EVENT PLAYER*(GE)")
 		Event Player.GECount = 0;
 		Event Player.LotteryChoice = 0;
 		Event Player.GEPartner = Null;
-		Event Player.EnemyTrapEntity = Null;
 		Call Subroutine(ApplyWinnerStats);
 	}
 }
@@ -9890,6 +9928,10 @@ rule("Clean up all traps and stats (Trap Zones)(GE)[SR]")
 		Clear Status(All Players(Team 1), Knocked Down);
 		Clear Status(All Players(Team 1), Rooted);
 		Enable Movement Collision With Environment(All Players(Team 1));
+		Global.TempVar = All Players(Team 1);
+		For Global Variable(TempVar2, 0, Count Of(Global.TempVar), 1);
+			Global.TempVar[Global.TempVar2].EnemyTrapEntity = Null;
+		End;
 	}
 }
 
@@ -9931,16 +9973,16 @@ rule("Init (Trap Zones)(GE)")
 			Create Effect(All Players(Team 1), Ring, Color(Gray), Event Player.TrapZoneStats[0], Event Player.TrapZoneStats[2],
 				Visible To Position and Radius);
 			Event Player.TrapIDs[0] = Last Created Entity;
-		"Blue hole"
+		"Black hole"
 		Else If(Event Player.TrapZoneChoice == 2);
 			"Trap Location"
 			Event Player.TrapZoneStats[0] += Vector(0, 3, 0);
 			"Trap Radius"
 			Event Player.TrapZoneStats[2] = 11;
-			Create Effect(All Players(Team 1), Sparkles, Color(Aqua), Event Player.TrapZoneStats[0], Event Player.TrapZoneStats[2],
+			Create Effect(All Players(Team 1), Sparkles, Color(Black), Event Player.TrapZoneStats[0], Event Player.TrapZoneStats[2],
 				Visible To Position and Radius);
 			Event Player.TrapIDs[0] = Last Created Entity;
-			Create Effect(All Players(Team 1), Bad Aura, Color(Aqua), Event Player.TrapZoneStats[0], Event Player.TrapZoneStats[2] / 2,
+			Create Effect(All Players(Team 1), Bad Aura, Color(Black), Event Player.TrapZoneStats[0], Event Player.TrapZoneStats[2] / 2,
 				Visible To Position and Radius);
 			Event Player.TrapIDs[1] = Last Created Entity;
 		"Rooted"
@@ -9951,7 +9993,7 @@ rule("Init (Trap Zones)(GE)")
 		"Spring"
 		Else If(Event Player.TrapZoneChoice == 4);
 			"Trap Radius"
-			Event Player.TrapZoneStats[2] = Random Integer(4, 8);
+			Event Player.TrapZoneStats[2] = Random Integer(8, 10);
 			Event Player.TrapIDs[0] = -1;
 		"Lazer Field"
 		Else If(Event Player.TrapZoneChoice == 5);
@@ -10095,7 +10137,7 @@ rule("Player is inside a trap (Trap Zones)(GE)")
 	}
 }
 
-rule("Pull Player to blue hole (Trap Zones)(GE)")
+rule("Pull Player to black hole (Trap Zones)(GE)")
 {
 	event
 	{
@@ -10146,7 +10188,7 @@ rule("Player is in spawn room (Trap Zones)(GE)")
 			Enable Movement Collision With Environment(Event Player);
 		End;
 		Clear Status(Event Player, Knocked Down);
-		"For Blue Hole Trap"
+		"For Black Hole Trap"
 		If(Global.GEChoice != 41 && Global.GEChoice != 44);
 			Stop Accelerating(Event Player);
 		End;
